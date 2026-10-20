@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Dialogs
-import Swiftify
+import Scarlett
 
 Flickable {
     id: root
@@ -129,7 +129,7 @@ Flickable {
 
         NoteText {
             width: parent.width
-            text: qsTr("Blood Moon saves listens on this device. Spotify’s recent-play list includes timestamps but not listening duration; import Extended Streaming History JSON for accurate listening time and older years.")
+            text: qsTr("Scarlett saves listens on this device. Spotify’s recent-play list includes timestamps but not listening duration; import Extended Streaming History JSON for accurate listening time and older years.")
         }
 
         ConfigSelection {
@@ -190,9 +190,9 @@ Flickable {
                     width: (column.width - 10) / 2
                     height: 90
                     radius: Appearance.rounding.normal
-                    color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.72) : Appearance.colors.layer1
-                    border.width: Appearance.bloodMoon ? 1 : 0
-                    border.color: Appearance.bloodMoon ? Qt.rgba(0.88, 0.87, 0.92, 0.22) : "transparent"
+                    color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.72) : Appearance.colors.layer1
+                    border.width: Appearance.scarlett ? 1 : 0
+                    border.color: Appearance.scarlett ? Qt.rgba(0.88, 0.87, 0.92, 0.22) : "transparent"
 
                     Column {
                         anchors.left: parent.left
@@ -290,9 +290,9 @@ Flickable {
                         width: (parent.width - 10) / 2
                         height: 78
                         radius: Appearance.rounding.normal
-                        color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.72) : Appearance.colors.layer1
-                        border.width: Appearance.bloodMoon ? 1 : 0
-                        border.color: Appearance.bloodMoon ? Qt.rgba(0.88, 0.87, 0.92, 0.22) : "transparent"
+                        color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.72) : Appearance.colors.layer1
+                        border.width: Appearance.scarlett ? 1 : 0
+                        border.color: Appearance.scarlett ? Qt.rgba(0.88, 0.87, 0.92, 0.22) : "transparent"
 
                         Column {
                             anchors.left: parent.left

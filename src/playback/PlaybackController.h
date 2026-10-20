@@ -11,6 +11,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QStringList>
+#include <QVariantList>
 #include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 
@@ -20,7 +21,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 class ErrorCenter;
 class PlaybackCore;
@@ -37,7 +38,7 @@ class PlaybackController : public QObject {
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
     QML_SINGLETON
 
-    Q_PROPERTY(swiftify::Song currentSong READ currentSong NOTIFY currentSongChanged FINAL)
+    Q_PROPERTY(scarlett::Song currentSong READ currentSong NOTIFY currentSongChanged FINAL)
     Q_PROPERTY(bool hasSong READ hasSong NOTIFY currentSongChanged FINAL)
     /// how long the crossfade into the current song lasts, 0 when it started without one
     Q_PROPERTY(int crossfadeMs READ crossfadeMs NOTIFY currentSongChanged FINAL)
@@ -48,17 +49,18 @@ class PlaybackController : public QObject {
     Q_PROPERTY(quint32 livePositionMs READ livePositionMs NOTIFY livePositionChanged FINAL)
     Q_PROPERTY(int durationMs READ durationMs NOTIFY durationChanged FINAL)
     Q_PROPERTY(double volume READ volume WRITE setVolume NOTIFY volumeChanged FINAL)
+    Q_PROPERTY(QVariantList audioOutputDevices READ audioOutputDevices NOTIFY audioOutputDevicesChanged FINAL)
     Q_PROPERTY(bool shuffle READ isShuffleEnabled NOTIFY shuffleChanged FINAL)
     Q_PROPERTY(RepeatMode repeatMode READ repeatMode NOTIFY repeatModeChanged FINAL)
     Q_PROPERTY(bool canSkipBackward READ canSkipBackward NOTIFY queueChanged FINAL)
     Q_PROPERTY(bool canSkipForward READ canSkipForward NOTIFY queueChanged FINAL)
-    Q_PROPERTY(swiftify::SongListModel *upNext READ upNext CONSTANT FINAL)
-    Q_PROPERTY(swiftify::SongListModel *previouslyPlayed READ previouslyPlayed CONSTANT FINAL)
-    Q_PROPERTY(swiftify::SongListModel *listeningHistory READ listeningHistory CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *upNext READ upNext CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *previouslyPlayed READ previouslyPlayed CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *listeningHistory READ listeningHistory CONSTANT FINAL)
     Q_PROPERTY(QStringList listeningHistoryYears READ listeningHistoryYears NOTIFY listeningHistoryChanged FINAL)
     Q_PROPERTY(QStringList listeningHistoryArtists READ listeningHistoryArtists NOTIFY listeningHistoryChanged FINAL)
 
-    Q_PROPERTY(swiftify::LyricsModel *lyrics READ lyrics CONSTANT FINAL)
+    Q_PROPERTY(scarlett::LyricsModel *lyrics READ lyrics CONSTANT FINAL)
     Q_PROPERTY(bool hasLyrics READ hasLyrics NOTIFY lyricsChanged FINAL)
     Q_PROPERTY(bool lyricsSynchronized READ lyricsSynchronized NOTIFY lyricsChanged FINAL)
     Q_PROPERTY(QString lyricsProvider READ lyricsProvider NOTIFY lyricsChanged FINAL)
@@ -105,6 +107,7 @@ public:
     quint32 livePositionMs() const { return m_livePositionMs; }
     int durationMs() const { return int(m_durationMs); }
     double volume() const { return m_volume; }
+    QVariantList audioOutputDevices() const { return m_audioOutputDevices; }
     bool isShuffleEnabled() const { return m_shuffle; }
     RepeatMode repeatMode() const { return m_repeatMode; }
     bool canSkipBackward() const;
@@ -117,7 +120,7 @@ public:
     Q_INVOKABLE QVariantMap historySummary(const QString &period, int year = 0,
                                            const QString &artist = {}) const;
     Q_INVOKABLE QVariantList recentHistoryForArtist(const QString &artist, int limit = 8) const;
-    Q_INVOKABLE int syncSpotifyRecentHistory(swiftify::SongListModel *recent);
+    Q_INVOKABLE int syncSpotifyRecentHistory(scarlett::SongListModel *recent);
     Q_INVOKABLE int importSpotifyHistory(const QStringList &paths);
     Q_INVOKABLE void clearListeningHistory();
     QList<Song> upNextSongs() const;
@@ -157,23 +160,23 @@ public:
     /// plays on its own.
     void play(const Song &song, const QList<Song> &queue, bool fromSearch = false);
     /// plays row `index` of a list, with the list as the queue
-    Q_INVOKABLE void playFromModel(swiftify::SongListModel *model, int index, bool fromSearch = false);
+    Q_INVOKABLE void playFromModel(scarlett::SongListModel *model, int index, bool fromSearch = false);
     /// plays the list from a random song with shuffle on
-    Q_INVOKABLE void shufflePlay(swiftify::SongListModel *model);
-    Q_INVOKABLE void playSong(const swiftify::Song &song);
+    Q_INVOKABLE void shufflePlay(scarlett::SongListModel *model);
+    Q_INVOKABLE void playSong(const scarlett::Song &song);
     /// debugging: plays a song whose load never finishes, so the loading
     /// animation of every visualizer can be watched for as long as wanted.
     /// it waits as a real load does, until paused, skipped or replaced
     Q_INVOKABLE void playLoadingTest();
     /// the never-loading song's uri
-    static constexpr auto kLoadingTestUri = "swiftify:debug:loading";
-    Q_INVOKABLE void playNext(const swiftify::Song &song);
-    Q_INVOKABLE void playLast(const swiftify::Song &song);
+    static constexpr auto kLoadingTestUri = "scarlett:debug:loading";
+    Q_INVOKABLE void playNext(const scarlett::Song &song);
+    Q_INVOKABLE void playLast(const scarlett::Song &song);
     /// songs of one's own whose files now say something else (an edit of
     /// their tags): the ones queued, playing or played take it on, each
     /// staying the occurrence it was
     void refreshSongDetails(const QList<Song> &fresh);
-    Q_INVOKABLE void playFromQueue(const swiftify::Song &song);
+    Q_INVOKABLE void playFromQueue(const scarlett::Song &song);
     Q_INVOKABLE void togglePlayback();
     Q_INVOKABLE void pause();
     /// play from where it is, rebuilding the output or reloading as needed
@@ -186,6 +189,8 @@ public:
     Q_INVOKABLE void seek(int positionMs);
     Q_INVOKABLE void seekBy(int offsetMs);
     Q_INVOKABLE void setVolume(double volume);
+    Q_INVOKABLE void refreshAudioOutputDevices();
+    Q_INVOKABLE void selectAudioOutputDevice(const QString &id);
     Q_INVOKABLE void adjustVolume(double delta);
     Q_INVOKABLE void toggleMute();
     Q_INVOKABLE void toggleShuffle();
@@ -210,6 +215,7 @@ signals:
     void livePositionChanged();
     void durationChanged();
     void volumeChanged();
+    void audioOutputDevicesChanged();
     void shuffleChanged();
     void repeatModeChanged();
     void queueChanged();
@@ -220,7 +226,7 @@ signals:
     void sleepTimerChanged();
     void analysisActiveChanged();
     /// a song started from search results, for the search history
-    void playedFromSearch(const swiftify::Song &song);
+    void playedFromSearch(const scarlett::Song &song);
     /// state the system media session reflects changed
     void mediaStateChanged();
 
@@ -231,7 +237,8 @@ private:
     QCoro::Task<> runStartPlayback(Song song, CancelToken token, bool fromSearch, bool steppingBack,
                                    quint32 crossfadeDurationMs, quint32 initialPositionMs);
     QCoro::Task<> runResume(CancelToken token);
-    QCoro::Task<> restartAudioOutput(CancelToken token);
+    QCoro::Task<> restartAudioOutput(CancelToken token, bool resumeAfter = true);
+    QCoro::Task<> runRestartAudioOutput(CancelToken token, bool resumeAfter);
     QCoro::Task<> runLoadLyrics(Song song, CancelToken token);
     void cancelPlaybackRequest();
     void silenceWithdrawnPlayback();
@@ -328,6 +335,7 @@ private:
     QTimer m_saveTimer;
 
     double m_volume = 0.75;
+    QVariantList m_audioOutputDevices;
     double m_volumeBeforeMute = 0.75;
     bool m_shuffle = false;
     RepeatMode m_repeatMode = RepeatMode::Off;
@@ -353,4 +361,4 @@ private:
     bool m_loadingPulseWasVisible = true;
 };
 
-} // namespace swiftify
+} // namespace scarlett

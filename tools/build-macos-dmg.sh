@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# builds the Blood Moon app for arm64 with Qt bundled, signed ad hoc, in a dmg,
+# builds the Scarlett app for arm64 with Qt bundled, signed ad hoc, in a dmg,
 # against a qt kit from the qt installer or aqtinstall
 #
 # usage
@@ -39,14 +39,14 @@ for tool in cmake ninja git cargo codesign hdiutil lipo vtool; do
 done
 
 SOURCE="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' "$SOURCE/CMakeLists.txt")"
+VERSION="$(sed -n '/^project(Scarlett/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' "$SOURCE/CMakeLists.txt")"
 [[ -n "$VERSION" ]] || fail "could not read the version from CMakeLists.txt"
-NAME="blood-moon-$VERSION-macos-arm64"
+NAME="scarlett-$VERSION-macos-arm64"
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 WORK="$SOURCE/build-macos-dmg"
 DEPS="$WORK/deps"
-APP="$WORK/Blood Moon.app"
+APP="$WORK/Scarlett.app"
 mkdir -p "$WORK/sources"
 
 # the oldest macos the kit's qt runs on, which the app can't go below
@@ -84,11 +84,11 @@ build_dependency qcoro https://github.com/qcoro/qcoro.git v0.13.0 \
     -DUSE_QT_VERSION=6 -DQCORO_WITH_QTDBUS=OFF -DQCORO_WITH_QTWEBSOCKETS=OFF -DQCORO_WITH_QTQUICK=OFF \
     -DQCORO_WITH_QML=OFF -DQCORO_WITH_QTTEST=OFF -DQCORO_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF
 
-cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" -DRust_CARGO_TARGET=aarch64-apple-darwin
-cmake --build "$WORK/swiftify" --parallel "$JOBS"
+cmake -S "$SOURCE" -B "$WORK/scarlett" "${common[@]}" -DRust_CARGO_TARGET=aarch64-apple-darwin
+cmake --build "$WORK/scarlett" --parallel "$JOBS"
 
 rm -rf "${APP:?}"
-ditto "$WORK/swiftify/swiftify.app" "$APP"
+ditto "$WORK/scarlett/scarlett.app" "$APP"
 plutil -replace LSMinimumSystemVersion -string "$MINIMUM" "$APP/Contents/Info.plist"
 "$QT/bin/macdeployqt" "$APP" "-qmldir=$SOURCE/qml"
 
@@ -137,11 +137,11 @@ done < <(find "$APP" -type f -print0)
 STAGE="$WORK/dmg"
 rm -rf "${STAGE:?}"
 mkdir -p "$STAGE"
-ditto "$APP" "$STAGE/Blood Moon.app"
+ditto "$APP" "$STAGE/Scarlett.app"
 ln -s /Applications "$STAGE/Applications"
 rm -f "$OUT/$NAME.dmg"
 for attempt in 1 2 3; do
-    if hdiutil create -volname "Blood Moon" -srcfolder "$STAGE" -fs HFS+ -format UDZO "$OUT/$NAME.dmg"; then
+    if hdiutil create -volname "Scarlett" -srcfolder "$STAGE" -fs HFS+ -format UDZO "$OUT/$NAME.dmg"; then
         break
     fi
     [[ $attempt -lt 3 ]] || fail "hdiutil could not make the dmg"

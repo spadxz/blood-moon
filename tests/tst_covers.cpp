@@ -13,7 +13,7 @@
 
 #include <random>
 
-using namespace swiftify;
+using namespace scarlett;
 
 /// PlaylistCoverArt's rules: ten designs from any palette, a crop that never
 /// leaves a gap, and a jpeg that always fits spotify's 256 kB.
@@ -26,7 +26,7 @@ private slots:
         QNetworkAccessManager network;
         ArtworkCache cache(&network);
         const QString identity = QString::fromUtf8("local:Тихий вечер & + # / 🌙");
-        QUrl url(QStringLiteral("swiftify-cover:/dark"));
+        QUrl url(QStringLiteral("scarlett-cover:/dark"));
         QUrlQuery query;
         query.addQueryItem(QStringLiteral("key"), identity);
         url.setQuery(query);
@@ -92,7 +92,7 @@ private slots:
     {
         // Opt-in native QPainter preview, with the production rasterizer and
         // card proportions. No files are written during an ordinary test run.
-        const QString directory = qEnvironmentVariable("SWIFTIFY_COVER_PREVIEW_DIR");
+        const QString directory = qEnvironmentVariable("SCARLETT_COVER_PREVIEW_DIR");
         if (directory.isEmpty()) {
             return;
         }

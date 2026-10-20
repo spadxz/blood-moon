@@ -7,7 +7,7 @@
 #include "playback/PlaybackState.h"
 #include "spotify/CredentialStore.h"
 #include "spotify/SpotifySession.h"
-#if defined(SWIFTIFY_HAS_DBUS) && defined(Q_OS_LINUX)
+#if defined(SCARLETT_HAS_DBUS) && defined(Q_OS_LINUX)
 #include "system/dbus/Mpris.h"
 #endif
 
@@ -19,8 +19,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-using namespace swiftify;
-using swiftify::testing::FakeCore;
+using namespace scarlett;
+using scarlett::testing::FakeCore;
 
 namespace {
 
@@ -55,7 +55,7 @@ class PlaybackTest : public QObject {
 private:
     struct Rig {
         QTemporaryDir directory;
-        Settings settings {directory.filePath(QStringLiteral("swiftify.conf"))};
+        Settings settings {directory.filePath(QStringLiteral("scarlett.conf"))};
         ErrorCenter errors {nullptr};
         MemoryCredentialStore credentials;
         QNetworkAccessManager network;
@@ -64,7 +64,7 @@ private:
         PlaybackController player {&core, &session, &settings, &errors};
 
         explicit Rig(const QString &path = {})
-            : settings(path.isEmpty() ? directory.filePath(QStringLiteral("swiftify.conf")) : path)
+            : settings(path.isEmpty() ? directory.filePath(QStringLiteral("scarlett.conf")) : path)
         {
         }
 
@@ -332,7 +332,7 @@ private slots:
         // something other than a song, a reconnect for a download, replaced
         // the request in the core before it made any sound
         rig.settle();
-        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SWIFTIFY_CORE_SUPERSEDED));
+        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SCARLETT_CORE_SUPERSEDED));
         rig.settle();
         QVERIFY(rig.player.isLoading());
         QVERIFY(rig.errors.message().isEmpty());
@@ -374,7 +374,7 @@ private slots:
         rig.finishLoading();
         rig.player.skipForward();
         rig.settle();
-        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SWIFTIFY_CORE_UNAVAILABLE));
+        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SCARLETT_CORE_UNAVAILABLE));
         rig.finishLoading();
         QVERIFY(rig.player.isPlaying());
         QVERIFY(rig.player.currentSong().isSameInstance(queue[2]));
@@ -395,7 +395,7 @@ private slots:
         rig.finishLoading();
         rig.player.skipBackward();
         rig.settle();
-        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SWIFTIFY_CORE_UNAVAILABLE));
+        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SCARLETT_CORE_UNAVAILABLE));
         rig.finishLoading();
         QVERIFY(rig.player.currentSong().isSameInstance(queue[0]));
     }
@@ -406,11 +406,11 @@ private slots:
         const QList<Song> queue = makeQueue(1);
         rig.player.play(queue[0], queue);
         rig.settle();
-        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SWIFTIFY_CORE_UNAVAILABLE));
+        rig.core.take(QStringLiteral("playFile"))->fail(QString::fromLatin1(SCARLETT_CORE_UNAVAILABLE));
         rig.settle();
         QVERIFY(!rig.player.isPlaying());
         QVERIFY(rig.core.pending.isEmpty());
-        QCOMPARE(rig.errors.message(), QString::fromLatin1(SWIFTIFY_CORE_UNAVAILABLE));
+        QCOMPARE(rig.errors.message(), QString::fromLatin1(SCARLETT_CORE_UNAVAILABLE));
     }
 
     void seekingNeverStartsSound()
@@ -714,7 +714,7 @@ private slots:
         QVERIFY(rig.player.activeQueue().isEmpty());
     }
 
-#if defined(SWIFTIFY_HAS_DBUS) && defined(Q_OS_LINUX)
+#if defined(SCARLETT_HAS_DBUS) && defined(Q_OS_LINUX)
     void mprisReflectsPlaybackStateAndControls()
     {
         Rig rig;

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // A single quiet chrome reflection when the pointer enters a surface.
 Item {

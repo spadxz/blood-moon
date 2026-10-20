@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // the pages, one for each step of the library's back history
 // (Library.historyDepth). going on keeps the page left behind, hidden and
@@ -58,10 +58,13 @@ Item {
         return slot
     }
 
-    function enter(slot: PageSlot) {
+    function enter(slot: PageSlot, direction: real) {
         enterMotion.stop()
         fade.target = slot
         rise.target = slot
+        slide.target = slot
+        grow.target = slot
+        slide.from = direction * 18
         enterMotion.start()
     }
 
@@ -97,7 +100,7 @@ Item {
             slots[slots.length - keptPages - 2].built = false
             App.trimMemory()
         }
-        enter(slot)
+        enter(slot, 1)
     }
 
     function pop() {
@@ -128,7 +131,7 @@ Item {
             UiState.launchReturn(from, cover, back.returnSource, back.returnCircular)
         }
         back.returnCover = null
-        enter(back)
+        enter(back, -1)
     }
 
     function rebuild(steps: int) {
@@ -143,7 +146,7 @@ Item {
         const slot = slotFor(componentFor(Library.page), true)
         fresh.push(slot)
         slots = fresh
-        enter(slot)
+        enter(slot, 1)
     }
 
     // the hero sits near the top of its page, so the search stays shallow
@@ -185,15 +188,32 @@ Item {
 
     ParallelAnimation {
         id: enterMotion
-        NumberAnimation { id: fade; property: "opacity"; from: 0; to: 1; duration: Appearance.duration(210); easing.type: Easing.OutCubic }
+        NumberAnimation { id: fade; property: "opacity"; from: 0; to: 1; duration: Appearance.duration(190); easing.type: Easing.OutCubic }
         NumberAnimation {
             id: rise
             property: "y"
-            from: 14
+            from: 9
             to: 0
-            duration: Appearance.motion(400)
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(380)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Appearance.curves.emphasizedDecel
+        }
+        NumberAnimation {
+            id: slide
+            property: "x"
+            to: 0
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(330)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Appearance.curves.expressiveDefaultSpatial
+        }
+        NumberAnimation {
+            id: grow
+            property: "scale"
+            from: 0.985
+            to: 1
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(360)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Appearance.curves.expressiveFastSpatial
         }
     }
 

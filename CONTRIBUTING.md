@@ -1,6 +1,6 @@
 # Contributing
 
-thanks for wanting to help. swiftify is a spotify client in C++ and Qt Quick on
+thanks for wanting to help. scarlett is a spotify client in C++ and Qt Quick on
 a rust core that wraps librespot. it follows Material 3 Expressive and runs on
 linux, macos and windows.
 
@@ -67,7 +67,7 @@ cargo test --no-default-features --features capi
 
 ### keep it light
 
-Blood Moon aims to stay lighter than Spotify's own client, so cpu and ram cost matter
+Scarlett aims to stay lighter than Spotify's own client, so cpu and ram cost matter
 as much as how it looks. even with every effect turned on it should stay under
 spotify and its renderers.
 
@@ -114,7 +114,7 @@ the chance of getting an obviously AI generated PR accepted is very slim so plea
 
 - start with `feat:` for a feature or `fix:` for a fix
 - the body says what changed in a line or two
-- bump the version in `project(BloodMoon VERSION x.y.z)` in `CMakeLists.txt`, patch for fixes and minor for features
+- bump the version in `project(Scarlett VERSION x.y.z)` in `CMakeLists.txt`, patch for fixes and minor for features
 
 ```
 fix: remove broken effect for textbuttons

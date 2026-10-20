@@ -11,7 +11,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 class PlaybackController;
 class Settings;
@@ -78,4 +78,4 @@ private:
     qint64 m_lastUpdate = 0;
 };
 
-} // namespace swiftify
+} // namespace scarlett

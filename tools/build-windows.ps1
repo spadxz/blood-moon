@@ -3,7 +3,7 @@ param(
     [string]$QtPath,
     [string]$MingwPath,
     [string]$BuildRoot,
-    [string]$InstallPrefix = "$env:LOCALAPPDATA\Programs\Blood Moon",
+    [string]$InstallPrefix = "$env:LOCALAPPDATA\Programs\Scarlett",
     [ValidateRange(1, 256)]
     [int]$Jobs = [Math]::Max(1, [Math]::Min(8, [Environment]::ProcessorCount))
 )
@@ -156,7 +156,7 @@ function Invoke-WindowsBuild {
     $qtConfiguration = Get-Content -LiteralPath "$QtPath\mkspecs\qconfig.pri" -Raw
     $qtVersion = [regex]::Match($qtConfiguration, '(?m)^QT_VERSION\s*=\s*(\S+)').Groups[1].Value
     if (-not $qtVersion -or [version]$qtVersion -lt [version]'6.10' -or $qtConfiguration -notmatch '(?m)^QT_ARCH\s*=\s*x86_64\s*$') {
-        throw 'Blood Moon requires a Qt 6.10+ x64 kit.'
+        throw 'Scarlett requires a Qt 6.10+ x64 kit.'
     }
     foreach ($module in @('Qt6Core', 'Qt6Widgets', 'Qt6Quick', 'Qt6QuickControls2', 'Qt6ShaderTools')) {
         if (-not (Test-Path -LiteralPath "$QtPath\lib\cmake\$module\${module}Config.cmake")) {
@@ -250,13 +250,13 @@ function Invoke-WindowsBuild {
             Invoke-Native $cmake @('--install', $dependencyBuild) | Out-Host
         }
 
-        Write-Host 'Building Blood Moon...'
-        $appBuild = Join-Path $buildDirectory 'swiftify'
+        Write-Host 'Building Scarlett...'
+        $appBuild = Join-Path $buildDirectory 'scarlett'
         Invoke-Native $cmake (@('-S', $sourceRoot, '-B', $appBuild) + $commonOptions + @("-DRust_TOOLCHAIN=$rustToolchain", "-DRust_CARGO_TARGET=$rustTarget", "-DCMAKE_INSTALL_PREFIX=$($InstallPrefix.Replace('\', '/'))")) | Out-Host
         Invoke-Native $cmake @('--build', $appBuild, '--parallel', "$Jobs") | Out-Host
         Invoke-Native $cmake @('--install', $appBuild) | Out-Host
         $installBin = Join-Path $InstallPrefix 'bin'
-        $executable = Join-Path $installBin 'swiftify.exe'
+        $executable = Join-Path $installBin 'scarlett.exe'
         Invoke-Native $deployQt @('--release', '--force', '--compiler-runtime', '--qmldir', (Join-Path $sourceRoot 'qml'), $executable) | Out-Host
         Copy-Item -Path "$dependencyPrefix\bin\*.dll" -Destination $installBin -Force
         if ($rustTarget -eq 'x86_64-pc-windows-msvc') {
@@ -281,7 +281,7 @@ function Invoke-WindowsBuild {
                 Copy-Item -LiteralPath $runtimePath -Destination $installBin -Force
             }
         }
-        Write-Host "Installed Blood Moon. Run: & `"$executable`""
+        Write-Host "Installed Scarlett. Run: & `"$executable`""
     } finally {
         foreach ($entry in Get-ChildItem Env:) {
             if (-not $originalEnvironment.ContainsKey($entry.Name)) {

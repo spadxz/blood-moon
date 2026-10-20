@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-namespace swiftify {
+namespace scarlett {
 
 std::optional<Lyrics> Lyrics::fromLrc(const QString &text)
 {
@@ -159,4 +159,4 @@ void LyricsModel::setLines(const QList<LyricLine> &lines)
     emit countChanged();
 }
 
-} // namespace swiftify
+} // namespace scarlett

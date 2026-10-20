@@ -10,7 +10,7 @@
 
 class QPainter;
 
-namespace swiftify {
+namespace scarlett {
 
 /// locally drawn playlist covers (PlaylistCoverArt.swift). spotify makes its
 /// own mosaics server side with no api to ask for one, so these are drawn
@@ -69,4 +69,4 @@ QRectF cropRect(QSizeF imageSize, qreal viewport, qreal zoom, QSizeF offset);
 QRectF centredSquare(QSizeF size);
 
 } // namespace covers
-} // namespace swiftify
+} // namespace scarlett

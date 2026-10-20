@@ -1,9 +1,9 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Dialogs
-import Swiftify
+import Scarlett
 
-// the settings themselves (SwiftifySettingsView), one page per rail
+// the settings themselves (ScarlettSettingsView), one page per rail
 // destination: what the visualizers and the backdrop cost, the sleep fade and
 // audio quality, the folders of music of the person's own, how the app fits
 // the desktop, how much it moves and draws, the
@@ -24,6 +24,14 @@ Item {
         if (slot === "lyricsPanel") return qsTr("Lyrics panel")
         if (slot === "windowOverlay") return qsTr("App overlay")
         return slot
+    }
+
+    function audioOutputLabel(deviceId: string): string {
+        if (deviceId.length === 0) return qsTr("System Default")
+        for (const device of Player.audioOutputDevices) {
+            if (device.id === deviceId) return device.name
+        }
+        return qsTr("Unavailable output")
     }
 
     component Page: Column {
@@ -274,6 +282,52 @@ Item {
                 }
                 NoteText {
                     text: qsTr("Streaming quality applies the next time playback connects. Equalizer controls below change tone separately.")
+                }
+            }
+
+            ContentSection {
+                title: qsTr("Audio Output")
+                symbol: "speaker"
+
+                Row {
+                    width: parent.width
+                    spacing: 8
+
+                    TextButton {
+                        id: audioOutputButton
+                        width: Math.min(Math.max(220, implicitWidth), parent.width - 100)
+                        variant: TextButton.Tonal
+                        symbol: "speaker"
+                        text: root.audioOutputLabel(Settings.audioOutputDevice)
+                        onClicked: audioOutputMenu.popup(audioOutputButton, 0, audioOutputButton.height + 4)
+                    }
+                    TextButton {
+                        variant: TextButton.Text
+                        symbol: "refresh"
+                        text: qsTr("Refresh")
+                        onClicked: Player.refreshAudioOutputDevices()
+                    }
+                }
+
+                NoteText {
+                    text: qsTr("Choose a connected output for Scarlett. Changing it keeps the current song and position.")
+                }
+
+                StyledMenu {
+                    id: audioOutputMenu
+
+                    Instantiator {
+                        model: [{ id: "", name: qsTr("System Default") }].concat(Player.audioOutputDevices)
+                        delegate: StyledMenuItem {
+                            required property var modelData
+                            text: modelData.name
+                            checkmark: true
+                            checked: modelData.id === Settings.audioOutputDevice
+                            onTriggered: Player.selectAudioOutputDevice(modelData.id)
+                        }
+                        onObjectAdded: (index, object) => audioOutputMenu.insertItem(index, object as StyledMenuItem)
+                        onObjectRemoved: (index, object) => audioOutputMenu.removeItem(object as StyledMenuItem)
+                    }
                 }
             }
 
@@ -626,7 +680,7 @@ Item {
                 }
                 NoteText {
                     text: App.windows
-                        ? qsTr("closing the window keeps Blood Moon running in the tray. choose Quit Blood Moon from the tray menu to exit.")
+                        ? qsTr("closing the window keeps Scarlett running in the tray. choose Quit Scarlett from the tray menu to exit.")
                         : qsTr("window buttons are for desktops that draw none of their own, Hyprland closes and moves windows itself")
                 }
             }
@@ -796,7 +850,7 @@ Item {
                     headline: qsTr("Log Out of Spotify?")
                     symbol: "logout"
                     iconShape: "ghostish"
-                    body: qsTr("Blood Moon forgets your library and playback logins on this computer. you can connect again any time.")
+                    body: qsTr("Scarlett forgets your library and playback logins on this computer. you can connect again any time.")
 
                     buttons: [
                         TextButton {
@@ -850,7 +904,7 @@ Item {
                 }
                 NoteText {
                     text: Session.libraryNeedsAuthorizationUpgrade
-                          ? qsTr("reconnect once to let Blood Moon edit playlists and save songs")
+                          ? qsTr("reconnect once to let Scarlett edit playlists and save songs")
                           : qsTr("your playlists, saved songs and search come through the Spotify app whose Client ID is above.")
                 }
             }
@@ -943,7 +997,7 @@ Item {
                             anchors.centerIn: parent
                             width: 46
                             height: 46
-                            source: "qrc:/qt/qml/Swiftify/resources/swiftify-icon.png"
+                            source: "qrc:/qt/qml/Scarlett/resources/scarlett-icon.png"
                             sourceSize: Qt.size(96, 96)
                             smooth: true
                             mipmap: true
@@ -955,7 +1009,7 @@ Item {
                         spacing: 2
 
                         StyledText {
-                            text: "Blood Moon " + App.version
+                            text: "Scarlett " + App.version
                             font.weight: Font.Medium
 
                             TapHandler {
@@ -966,7 +1020,7 @@ Item {
                             }
                         }
                         StyledText {
-                            text: qsTr("developed by addenator, the best programmer on earth")
+                            text: qsTr("Developed by Basskiller")
                             font.pixelSize: Appearance.fontSize.smaller
                             color: Appearance.colors.onSurfaceVariant
                         }
@@ -1148,7 +1202,7 @@ Item {
                 symbol: "verified_user"
 
                 NoteText {
-                    text: qsTr("Add-ons are QML code with access to Blood Moon's app APIs. Only install packages from people you trust. To install a downloaded package, extract it first and choose the folder containing manifest.json.")
+                    text: qsTr("Add-ons are QML code with access to Scarlett's app APIs. Only install packages from people you trust. To install a downloaded package, extract it first and choose the folder containing manifest.json.")
                 }
                 StyledText {
                     x: 12

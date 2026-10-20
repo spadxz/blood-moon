@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // a navigation drawer row: material 3's pill indicator behind the selected
 // one, opening from the middle and going wavy under the pointer, its
@@ -53,7 +53,7 @@ T.AbstractButton {
             opacity: root.selected ? 1 : 0
             visible: opacity > 0
             radius: height / 2
-            wavy: root.selected && root.hovered && !Appearance.bloodMoon
+            wavy: root.selected && root.hovered && !Appearance.scarlett
             depth: 1.25
             wavelength: 30
 
@@ -68,12 +68,12 @@ T.AbstractButton {
             Rectangle {
                 anchors.fill: parent
                 radius: height / 2
-                color: Appearance.bloodMoon
+                color: Appearance.scarlett
                        ? (root.hovered ? "#17171a" : "#08090b")
                        : root.down ? Appearance.colors.secondaryContainerActive
                        : root.hovered ? Appearance.colors.secondaryContainerHover : Appearance.colors.secondaryContainer
-                border.width: Appearance.bloodMoon ? 1 : 0
-                border.color: Appearance.bloodMoon ? Qt.rgba(0.88, 0.89, 0.95, root.hovered ? 0.34 : 0.20) : "transparent"
+                border.width: Appearance.scarlett ? 1 : 0
+                border.color: Appearance.scarlett ? Qt.rgba(0.88, 0.89, 0.95, root.hovered ? 0.34 : 0.20) : "transparent"
 
                 Behavior on color {
                     ElementMoveFastColor {}
@@ -86,7 +86,7 @@ T.AbstractButton {
             width: pill.width
             height: pill.height
             radius: height / 2
-            active: root.hovered && root.selected && !Appearance.bloodMoon
+            active: root.hovered && root.selected && !Appearance.scarlett
             z: 1
         }
 
@@ -118,15 +118,15 @@ T.AbstractButton {
 
                 MaterialSymbol {
                     anchors.centerIn: parent
-                    Reveal.shown: !root.selected || Appearance.bloodMoon
+                    Reveal.shown: !root.selected || Appearance.scarlett
                     text: root.symbol
                     iconSize: 22
                     weight: root.hovered ? 600 : 400
-                    color: Appearance.bloodMoon && root.selected ? Appearance.colors.primary : Appearance.colors.onSurfaceVariant
+                    color: Appearance.scarlett && root.selected ? Appearance.colors.primary : Appearance.colors.onSurfaceVariant
                 }
                 ShapeIcon {
                     anchors.centerIn: parent
-                    Reveal.shown: root.selected && !Appearance.bloodMoon
+                    Reveal.shown: root.selected && !Appearance.scarlett
                     Reveal.overshoot: 2.4
                     size: 30
                     iconSize: 17
@@ -156,7 +156,7 @@ T.AbstractButton {
                 elide: Text.ElideRight
                 font.pixelSize: Appearance.fontSize.small
                 font.weight: root.selected ? Font.DemiBold : Font.Medium
-                color: root.selected ? (Appearance.bloodMoon ? Appearance.colors.onSurface : Appearance.colors.onSecondaryContainer) : Appearance.colors.onSurface
+                color: root.selected ? (Appearance.scarlett ? Appearance.colors.onSurface : Appearance.colors.onSecondaryContainer) : Appearance.colors.onSurface
             }
         }
 

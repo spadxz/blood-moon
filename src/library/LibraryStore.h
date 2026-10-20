@@ -10,6 +10,7 @@
 #include <QHash>
 #include <QObject>
 #include <QSet>
+#include <QTimer>
 #include <QtQml/qqmlregistration.h>
 
 #include <optional>
@@ -17,7 +18,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 class ErrorCenter;
 class LocalLibrary;
@@ -81,10 +82,10 @@ class LibraryStore : public QObject {
 
     Q_PROPERTY(Page page READ page NOTIFY destinationChanged FINAL)
     Q_PROPERTY(QString selectedPlaylistId READ selectedPlaylistId NOTIFY destinationChanged FINAL)
-    Q_PROPERTY(swiftify::Playlist selectedPlaylist READ selectedPlaylist NOTIFY selectedPlaylistChanged FINAL)
+    Q_PROPERTY(scarlett::Playlist selectedPlaylist READ selectedPlaylist NOTIFY selectedPlaylistChanged FINAL)
     Q_PROPERTY(bool selectedPlaylistEditable READ isSelectedPlaylistEditable NOTIFY selectedPlaylistChanged FINAL)
-    Q_PROPERTY(swiftify::Album currentAlbum READ currentAlbum NOTIFY destinationChanged FINAL)
-    Q_PROPERTY(swiftify::Artist currentArtist READ currentArtist NOTIFY destinationChanged FINAL)
+    Q_PROPERTY(scarlett::Album currentAlbum READ currentAlbum NOTIFY destinationChanged FINAL)
+    Q_PROPERTY(scarlett::Artist currentArtist READ currentArtist NOTIFY destinationChanged FINAL)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY destinationChanged FINAL)
     /// how many destinations back goes through; the page host keeps one
     /// page for each, so going back shows the page as it was left
@@ -94,39 +95,40 @@ class LibraryStore : public QObject {
     Q_PROPERTY(QString profileName READ profileName NOTIFY profileChanged FINAL)
     Q_PROPERTY(QUrl profileArtworkUrl READ profileArtworkUrl NOTIFY profileChanged FINAL)
 
-    Q_PROPERTY(swiftify::PlaylistListModel *playlists READ playlists CONSTANT FINAL)
-    Q_PROPERTY(swiftify::PlaylistListModel *pinnedPlaylists READ pinnedPlaylists CONSTANT FINAL)
+    Q_PROPERTY(scarlett::PlaylistListModel *playlists READ playlists CONSTANT FINAL)
+    Q_PROPERTY(scarlett::PlaylistListModel *pinnedPlaylists READ pinnedPlaylists CONSTANT FINAL)
     Q_PROPERTY(int pinsRevision READ pinsRevision NOTIFY pinsChanged FINAL)
 
     /// the open playlist as stored, and as shown (filtered and sorted)
-    Q_PROPERTY(swiftify::SongListModel *playlistSongs READ playlistSongs CONSTANT FINAL)
-    Q_PROPERTY(swiftify::SongListModel *displayedPlaylistSongs READ displayedPlaylistSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *playlistSongs READ playlistSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *displayedPlaylistSongs READ displayedPlaylistSongs CONSTANT FINAL)
     Q_PROPERTY(QString playlistFilterQuery READ playlistFilterQuery WRITE setPlaylistFilterQuery NOTIFY playlistViewChanged FINAL)
     Q_PROPERTY(SortOrder playlistSortOrder READ playlistSortOrder WRITE setPlaylistSortOrder NOTIFY playlistViewChanged FINAL)
     Q_PROPERTY(bool playlistSortReversed READ playlistSortReversed WRITE setPlaylistSortReversed NOTIFY playlistViewChanged FINAL)
     Q_PROPERTY(bool canReorderPlaylist READ canReorderPlaylist NOTIFY playlistViewChanged FINAL)
 
-    Q_PROPERTY(swiftify::SongListModel *savedSongs READ savedSongs CONSTANT FINAL)
-    Q_PROPERTY(swiftify::SongListModel *recentlyPlayed READ recentlyPlayed CONSTANT FINAL)
-    Q_PROPERTY(swiftify::ArtistListModel *recommendedArtists READ recommendedArtists CONSTANT FINAL)
-    Q_PROPERTY(swiftify::AlbumListModel *recommendedAlbums READ recommendedAlbums CONSTANT FINAL)
-    Q_PROPERTY(swiftify::SongListModel *dailyRecommendationSongs READ dailyRecommendationSongs CONSTANT FINAL)
-    Q_PROPERTY(swiftify::ArtistListModel *dailyRecommendationArtists READ dailyRecommendationArtists CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *savedSongs READ savedSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *recentlyPlayed READ recentlyPlayed CONSTANT FINAL)
+    Q_PROPERTY(scarlett::ArtistListModel *recommendedArtists READ recommendedArtists CONSTANT FINAL)
+    Q_PROPERTY(scarlett::AlbumListModel *recommendedAlbums READ recommendedAlbums CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *dailyRecommendationSongs READ dailyRecommendationSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::ArtistListModel *dailyRecommendationArtists READ dailyRecommendationArtists CONSTANT FINAL)
     Q_PROPERTY(QString dailyRecommendationsDate READ dailyRecommendationsDate NOTIFY dailyRecommendationsChanged FINAL)
-    Q_PROPERTY(swiftify::SongListModel *albumSongs READ albumSongs CONSTANT FINAL)
-    Q_PROPERTY(swiftify::SongListModel *artistTopSongs READ artistTopSongs CONSTANT FINAL)
-    Q_PROPERTY(swiftify::AlbumListModel *artistAlbums READ artistAlbums CONSTANT FINAL)
+    Q_PROPERTY(bool loadingDailyRecommendations READ isLoadingDailyRecommendations NOTIFY loadingChanged FINAL)
+    Q_PROPERTY(scarlett::SongListModel *albumSongs READ albumSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *artistTopSongs READ artistTopSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::AlbumListModel *artistAlbums READ artistAlbums CONSTANT FINAL)
 
     Q_PROPERTY(QString searchQuery READ searchQuery WRITE setSearchQuery NOTIFY searchChanged FINAL)
     Q_PROPERTY(bool searchIsCatchphrase READ searchIsCatchphrase NOTIFY searchChanged FINAL)
-    Q_PROPERTY(swiftify::SongListModel *searchSongs READ searchSongs CONSTANT FINAL)
-    Q_PROPERTY(swiftify::AlbumListModel *searchAlbums READ searchAlbums CONSTANT FINAL)
-    Q_PROPERTY(swiftify::ArtistListModel *searchArtists READ searchArtists CONSTANT FINAL)
-    Q_PROPERTY(swiftify::PlaylistListModel *searchPlaylists READ searchPlaylists CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *searchSongs READ searchSongs CONSTANT FINAL)
+    Q_PROPERTY(scarlett::AlbumListModel *searchAlbums READ searchAlbums CONSTANT FINAL)
+    Q_PROPERTY(scarlett::ArtistListModel *searchArtists READ searchArtists CONSTANT FINAL)
+    Q_PROPERTY(scarlett::PlaylistListModel *searchPlaylists READ searchPlaylists CONSTANT FINAL)
     Q_PROPERTY(bool hasSearchResults READ hasSearchResults NOTIFY searchChanged FINAL)
-    Q_PROPERTY(swiftify::SongListModel *searchHistory READ searchHistory CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *searchHistory READ searchHistory CONSTANT FINAL)
     /// the first eight, which is what the search page shows
-    Q_PROPERTY(swiftify::SongListModel *searchHistoryPreview READ searchHistoryPreview CONSTANT FINAL)
+    Q_PROPERTY(scarlett::SongListModel *searchHistoryPreview READ searchHistoryPreview CONSTANT FINAL)
 
     Q_PROPERTY(int savedRevision READ savedRevision NOTIFY savedChanged FINAL)
     /// how many songs are saved, before their list has loaded too; -1 unknown
@@ -218,6 +220,7 @@ public:
     bool isLoadingSongs() const { return m_loadingSongs; }
     bool isLoadingHome() const { return m_loadingHome; }
     bool isLoadingSavedSongs() const { return m_loadingSavedSongs; }
+    bool isLoadingDailyRecommendations() const { return m_loadingDailyRecommendations; }
     bool isSearching() const { return m_searching; }
     bool isLoadingArtist() const { return m_loadingArtist; }
     bool isSavingPlaylist() const { return m_savingPlaylist; }
@@ -239,30 +242,30 @@ public:
     /// every music file of the person's own, as a list
     Q_INVOKABLE void showLocalTracks();
     Q_INVOKABLE void showListeningHistory();
-    Q_INVOKABLE void selectPlaylist(const swiftify::Playlist &playlist);
+    Q_INVOKABLE void selectPlaylist(const scarlett::Playlist &playlist);
     Q_INVOKABLE void selectPlaylistById(const QString &id);
-    Q_INVOKABLE void selectAlbum(const swiftify::Album &album);
-    Q_INVOKABLE void selectArtist(const swiftify::Artist &artist);
-    Q_INVOKABLE void goToAlbum(const swiftify::Song &song);
-    Q_INVOKABLE void goToArtist(const swiftify::Song &song);
+    Q_INVOKABLE void selectAlbum(const scarlett::Album &album);
+    Q_INVOKABLE void selectArtist(const scarlett::Artist &artist);
+    Q_INVOKABLE void goToAlbum(const scarlett::Song &song);
+    Q_INVOKABLE void goToArtist(const scarlett::Song &song);
     Q_INVOKABLE void goBack();
 
     // --- library ---------------------------------------------------------------------
 
     Q_INVOKABLE bool isPinned(const QString &playlistId) const { return m_pinnedIds.contains(playlistId); }
-    Q_INVOKABLE void togglePinned(const swiftify::Playlist &playlist);
+    Q_INVOKABLE void togglePinned(const scarlett::Playlist &playlist);
     Q_INVOKABLE bool isSaved(const QString &uri) const { return m_savedUris.contains(uri); }
-    Q_INVOKABLE void toggleSaved(const swiftify::Song &song);
+    Q_INVOKABLE void toggleSaved(const scarlett::Song &song);
     Q_INVOKABLE QVariantList editablePlaylists() const;
     Q_INVOKABLE void clearSearchHistory();
     Q_INVOKABLE void retryLoadingPlaylists();
-    Q_INVOKABLE void addToPlaylist(const swiftify::Song &song, const swiftify::Playlist &playlist);
-    Q_INVOKABLE void removeFromPlaylist(const swiftify::Song &song, const swiftify::Playlist &playlist);
-    Q_INVOKABLE void removeFromSelectedPlaylist(const swiftify::Song &song);
+    Q_INVOKABLE void addToPlaylist(const scarlett::Song &song, const scarlett::Playlist &playlist);
+    Q_INVOKABLE void removeFromPlaylist(const scarlett::Song &song, const scarlett::Playlist &playlist);
+    Q_INVOKABLE void removeFromSelectedPlaylist(const scarlett::Song &song);
     /// moves `count` rows starting at `from` to before row `to`, in the open
     /// playlist's own order. contiguous ranges only.
     Q_INVOKABLE void moveSongs(int from, int count, int to);
-    Q_INVOKABLE void deletePlaylist(const swiftify::Playlist &playlist);
+    Q_INVOKABLE void deletePlaylist(const scarlett::Playlist &playlist);
     /// creates a playlist or updates the open one, then uploads `coverJpeg`
     /// when one is given. reports through playlistSaveFinished.
     Q_INVOKABLE void savePlaylist(bool isNew, const QString &name, const QString &description, bool isPublic,
@@ -318,6 +321,8 @@ private:
     void refreshDisplayedSongs();
     void refreshRecommendations();
     void buildDailyRecommendations();
+    QCoro::Task<> runDailyRecommendations();
+    void scheduleDailyRecommendationRefresh();
     void persistSearchHistory();
     void setSearchHistory(const QList<Song> &songs);
     void adjustPlaylistSongCount(const QString &id, int delta);
@@ -382,6 +387,7 @@ private:
     SongListModel *m_dailyRecommendationSongs;
     ArtistListModel *m_dailyRecommendationArtists;
     QString m_dailyRecommendationsDate;
+    QList<Song> m_dailyRecommendationSearchCandidates;
     SongListModel *m_albumSongs;
     SongListModel *m_artistTopSongs;
     AlbumListModel *m_artistAlbums;
@@ -407,6 +413,8 @@ private:
     bool m_loadingSongs = false;
     bool m_loadingHome = false;
     bool m_loadingSavedSongs = false;
+    bool m_loadingDailyRecommendations = false;
+    bool m_refreshDailyRecommendationsWhenFinished = false;
     bool m_searching = false;
     bool m_loadingArtist = false;
     bool m_savingPlaylist = false;
@@ -420,6 +428,7 @@ private:
     TaskSlot m_songLoad;
     TaskSlot m_artistLoad;
     TaskSlot m_search;
+    QTimer m_dailyRecommendationsRefreshTimer;
 };
 
-} // namespace swiftify
+} // namespace scarlett

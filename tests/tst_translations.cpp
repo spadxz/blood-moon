@@ -10,7 +10,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-using namespace swiftify;
+using namespace scarlett;
 
 class TranslationsTest : public QObject {
     Q_OBJECT

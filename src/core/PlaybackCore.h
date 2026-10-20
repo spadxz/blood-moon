@@ -3,14 +3,15 @@
 #include <QList>
 #include <QObject>
 #include <QStringList>
+#include <QVariantList>
 #include <QCoroTask>
 
 #include "spotify/SpotifyTypes.h"
 
-/// audio another program plays, as the rust core takes it (swiftify_core.h)
-struct SwiftifyLiveBuffer;
+/// audio another program plays, as the rust core takes it (scarlett_core.h)
+struct ScarlettLiveBuffer;
 
-namespace swiftify {
+namespace scarlett {
 
 /// what the player asks of the audio core: the rust core in the app, a fake in
 /// tests. calls that can fail throw SpotifyError with the core's own message;
@@ -40,6 +41,10 @@ public:
     /// a music file of the person's own, from anywhere on disk
     virtual QCoro::Task<> playFile(QString path) = 0;
     virtual QCoro::Task<> restartAudioOutput() = 0;
+    /// connected output devices as maps with `id` and `name` keys.
+    virtual QVariantList audioOutputDevices() const { return {}; }
+    /// an empty id chooses the system default.
+    virtual void setAudioOutputDevice(const QString & /*id*/) {}
     virtual QCoro::Task<QString> lyricsJson(QString spotifyUri) = 0;
     /// a playlist's songs read through the session, shaped like the web api's
     /// items page. the web api only gives the songs of the person's own and
@@ -70,7 +75,7 @@ public:
     /// plays what is pushed into `buffer` through the equalizer and the
     /// analyser, in place of whatever played; one already playing carries on.
     /// false if this core can't, or failed to
-    virtual bool playLiveBuffer(SwiftifyLiveBuffer *) { return false; }
+    virtual bool playLiveBuffer(ScarlettLiveBuffer *) { return false; }
     virtual void stopLiveBuffer() {}
     /// the rate live audio plays at without being resampled; 0 if unknown
     virtual quint32 liveOutputRate() const { return 0; }
@@ -87,11 +92,11 @@ public:
     static constexpr int kSpectrumBands = 48;
 
 signals:
-    /// something other than swiftify started `song` here, and what follows
-    /// it is up to that, until swiftify plays something again
-    void remoteTrackStarted(const swiftify::Song &song);
+    /// something other than scarlett started `song` here, and what follows
+    /// it is up to that, until scarlett plays something again
+    void remoteTrackStarted(const scarlett::Song &song);
     /// playback here was paused or resumed from elsewhere
     void remotePlayingChanged(bool playing);
 };
 
-} // namespace swiftify
+} // namespace scarlett

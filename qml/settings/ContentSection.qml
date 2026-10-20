@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a titled group of settings on a tonal card, as end4's settings app lays
 // them out.
@@ -51,16 +51,16 @@ Column {
         width: parent.width
         implicitHeight: rows.implicitHeight + 16
         radius: Appearance.rounding.normal
-        color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.72)
+        color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.72)
                                     : Appearance.colors.layer1
-        border.width: Appearance.bloodMoon ? 1 : 0
-        border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.92, 1, 0.34)
+        border.width: Appearance.scarlett ? 1 : 0
+        border.color: Appearance.scarlett ? Qt.rgba(0.94, 0.92, 1, 0.34)
                                            : "transparent"
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             gradient: Gradient {
                 GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.10) }
                 GradientStop { position: 0.3; color: Qt.rgba(0.8, 0.7, 0.8, 0.035) }
@@ -74,7 +74,7 @@ Column {
             width: parent.width - 2
             height: 1
             radius: 1
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             gradient: Gradient {
                 GradientStop { position: 0; color: "transparent" }
                 GradientStop { position: 0.25; color: Qt.rgba(1, 1, 1, 0.56) }

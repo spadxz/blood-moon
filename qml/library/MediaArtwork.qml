@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a card's artwork (InteractiveMediaArtwork): on hover it lifts a little, its
 // shadow deepens and a round badge fades in. the playing item gets an outline.
@@ -15,7 +15,7 @@ Item {
     property string badgeSymbol: "arrow_forward"
     property bool current: false
     property bool hovered: false
-    /// the cover's edge turns to scallops, springing in
+    /// kept for add-on compatibility; the artwork edge stays still
     property bool wavy: false
 
     readonly property real effectiveRadius: circular ? width / 2 : radius
@@ -46,19 +46,13 @@ Item {
         scale: root.hovered ? 1.015 : 1
         // hidden while a cover flies home to it
         opacity: UiState.heroTarget === art ? 0 : 1
-        waviness: root.wavy ? 2.2 : 0
+        waviness: 0
         borderWidth: root.current ? 2 : 0
         borderColor: Appearance.colors.primary
-        // a round cover's squiggle runs while the card is hovered
-        squiggleTurning: root.hovered
-
-        Behavior on waviness {
-            enabled: !Appearance.performanceMode
-            Bounce {}
-        }
+        squiggleTurning: false
 
         Behavior on scale {
-            NumberAnimation { duration: Appearance.motion(160); easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Appearance.reduceMotion ? 0 : Appearance.motion(160); easing.type: Easing.OutCubic }
         }
     }
 

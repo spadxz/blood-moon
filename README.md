@@ -1,6 +1,8 @@
-# Blood Moon (BM)
+# Scarlett
 
-Blood Moon is a lightweight, customizable desktop music player built with Qt
+Developed by **Basskiller**.
+
+Scarlett is a lightweight, customizable desktop music player built with Qt
 Quick and a Rust playback core around
 [librespot](https://github.com/librespot-org/librespot). It includes Spotify
 library and playback support, local music, synced lyrics, visualizers, an
@@ -13,7 +15,7 @@ status are documented in [Project provenance](docs/PROVENANCE.md).
 
 ![Alt text](/assets/home.png)
 
-Blood Moon runs on Windows, macOS, and Linux. Its optional visualizers and
+Scarlett runs on Windows, macOS, and Linux. Its optional visualizers and
 animated backgrounds are configurable for lower-power systems.
 
 ## previews
@@ -25,9 +27,10 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
   </tr>
 </table>
 
-> Blood Moon is the product name. Existing build targets and the QML module
-> retain legacy identifiers so existing configuration and add-ons continue to
-> work; see the provenance note for the upstream relationship.
+> Scarlett is the product name. Its executable, QML module, build targets, and
+> packaged assets now use the Scarlett name. Existing settings, local data,
+> caches, and Spotify sign-in are migrated from the previous installation on
+> first launch.
 
 - [Before you start](#before-you-start)
 - [Prebuilt builds](#prebuilt-builds)
@@ -45,20 +48,20 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
   web api through your own developer app. the first launch walks u through it:
   make an app in the [spotify developer dashboard](https://developer.spotify.com/dashboard),
   add `http://127.0.0.1:8898/login` as a redirect uri, and paste the apps client id
-  into Blood Moon. you dont need the client secret.
+  into Scarlett. you dont need the client secret.
 
 ## Tutorials
 
 ### Add-ons
 
-Install and manage the Lyrics Mini Player, Blood Moon Liquid Lyrics, Oniko
+Install and manage the Lyrics Mini Player, Scarlett Liquid Lyrics, Oniko
 Cursor Companion, or a downloaded add-on under **Settings → Add-ons**. The
 package format, API, and install steps are in [docs/add-ons.md](docs/add-ons.md).
 
 ### "spotify could not load this track" (soloist)
 
 spotify refuses librespot the keys to decrypt songs on newer accounts (librespot's
-logs say `error audio key 0 1`), so every song fails. on linux Blood Moon can play
+logs say `error audio key 0 1`), so every song fails. on linux Scarlett can play
 spotify's songs through [spotify soloist](https://developer.spotify.com/documentation/soloist)
 instead, spotify's own connect client, which isnt affected.
 
@@ -66,45 +69,45 @@ instead, spotify's own connect client, which isnt affected.
    (`~/.local/bin/soloist` is fine)
 2. make a soloist api key in the [developer dashboard](https://developer.spotify.com/dashboard/soloist)
    and put it in `~/.config/soloist/api-key` (or `SOLOIST_API_KEY`)
-3. start Blood Moon. it starts soloist itself, as a connect device called "Blood Moon".
-   the first time, pick "Blood Moon" once in the devices list of the spotify desktop app on
+3. start Scarlett. it starts soloist itself, as a connect device called "Scarlett".
+   the first time, pick "Scarlett" once in the devices list of the spotify desktop app on
    the same computer (or the phone app), so soloist is signed in
-4. press play in Blood Moon
+4. press play in Scarlett
 
-with soloist, Blood Moon makes a sink called "Blood Moon (Soloist)" for soloist to play into,
+with soloist, Scarlett makes a sink called "Scarlett (Soloist)" for soloist to play into,
 and plays that on through its own output, so the equalizer and the visualizers still work.
 this needs pipewire, under pulseaudio alone soloist plays straight to the speakers.
-`SWIFTIFY_SOLOIST_ROUTE=off` does that on purpose. tempo and pitch only work on your own
+`SCARLETT_SOLOIST_ROUTE=off` does that on purpose. tempo and pitch only work on your own
 music files, and crossfade waits for each song to end. soloist builds expire after 90 days,
 download a new one when it says so.
-`SWIFTIFY_PLAYBACK=librespot swiftify` goes back to librespot alone.
+`SCARLETT_PLAYBACK=librespot scarlett` goes back to librespot alone.
 
-if spotify on your phone doesnt list "Blood Moon" for step 3, a firewall (ufw) is probably
+if spotify on your phone doesnt list "Scarlett" for step 3, a firewall (ufw) is probably
 dropping the pairing connection; pair from the spotify desktop app on the same computer.
 
 ### Discord RPC
 
 Enable under Settings → Account → Discord Rich Presence (disabled by default) to broadcast 
 your current track, artist, public album cover, and playback status to the Discord desktop app.
-This uses a standard listening activity named Blood Moon; pauses freeze progress and display Paused.
+This uses a standard listening activity named Scarlett; pauses freeze progress and display Paused.
 Because this uses custom RPC rather than Spotify's official account integration, Listen Along is not supported.
 Ensure Discord’s own activity privacy settings allow game/activity status.
 To use Discord RPC you need to create an application on [Discord's Developer Portal](https://discord.com/developers/applications)
-and copy it's ID into the settings. Blood Moon connects over local IPC (Unix sockets or Windows named pipes) with zero external
+and copy it's ID into the settings. Scarlett connects over local IPC (Unix sockets or Windows named pipes) with zero external
 SDKs and automatic reconnection.
 It checks standard paths for native, Flatpak, Snap, Canary, PTB, and third-party clients like Vesktop.
-For more verbose logging run swiftify with `QT_LOGGING_RULES="swiftify.discord.debug=true"`
+For more verbose logging run scarlett with `QT_LOGGING_RULES="scarlett.discord.debug=true"`
 
 ## Prebuilt builds
 
-The [Blood Moon Releases](https://github.com/spadxz/blood-moon/releases) page is the stable download source once a version is published. Until then, open [Actions](https://github.com/spadxz/blood-moon/actions/workflows/prebuilt.yml), choose the latest successful `prebuilt` run on `main`, and download the artifact for your computer. Action artifacts are temporary; a versioned release is the better update channel.
+The [Scarlett Releases](https://github.com/spadxz/scarlett/releases) page is the stable download source once a version is published. Until then, open [Actions](https://github.com/spadxz/scarlett/actions/workflows/prebuilt.yml), choose the latest successful `prebuilt` run on `main`, and download the artifact for your computer. Action artifacts are temporary; a versioned release is the better update channel.
 
-- **windows.** unzip it anywhere and run `bin\swiftify.exe`.
-- **linux.** unpack it anywhere and run `bin/swiftify`. it brings its own Qt, but needs
+- **windows.** unzip it anywhere and run `bin\scarlett.exe`.
+- **linux.** unpack it anywhere and run `bin/scarlett`. it brings its own Qt, but needs
   alsa and libsecret, which pretty much every desktop already has.
-- **macos.** needs macos 14.4 or newer. open the dmg and drag Blood Moon into Applications.
+- **macos.** needs macos 14.4 or newer. open the dmg and drag Scarlett into Applications.
   its signed ad hoc, so the first launch gets blocked, open it anyway from system settings ›
-  privacy & security, or run `xattr -dr com.apple.quarantine "/Applications/Blood Moon.app"`.
+  privacy & security, or run `xattr -dr com.apple.quarantine "/Applications/Scarlett.app"`.
 
 ## Building from source
 
@@ -131,11 +134,11 @@ brew install qtbase qtdeclarative qtshadertools qtkeychain qcoro6 cmake ninja
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
 
-git clone https://github.com/spadxz/blood-moon.git
-cd blood-moon
+git clone https://github.com/spadxz/scarlett.git
+cd scarlett
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build
-ditto build/swiftify.app "/Applications/Blood Moon.app"
+ditto build/scarlett.app "/Applications/Scarlett.app"
 ```
 
 it's signed ad hoc, so no developer account needed.
@@ -147,8 +150,8 @@ dark and tinted looks; with just the command line tools it's built from the PNGs
 on arch either build a proper package, which installs to `/usr`:
 
 ```sh
-git clone https://github.com/spadxz/blood-moon.git
-cd blood-moon/packaging/arch
+git clone https://github.com/spadxz/scarlett.git
+cd scarlett/packaging/arch
 makepkg -si
 ```
 or use cmake:
@@ -157,8 +160,8 @@ or use cmake:
 # replace with your package manager if not on arch
 sudo pacman -S --needed git qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-websockets qtkeychain-qt6 qcoro libpulse alsa-lib openssl cmake ninja rust pkgconf
 
-git clone https://github.com/spadxz/blood-moon.git
-cd blood-moon
+git clone https://github.com/spadxz/scarlett.git
+cd scarlett
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="$HOME/.local"
 cmake --build build
 cmake --install build
@@ -173,16 +176,16 @@ sudo apt-get install git qt6-base-dev qt6-declarative-dev qt6-shader-baker \
     libpulse-dev libasound2-dev libssl-dev cmake ninja-build pkg-config
 # install rust from https://rustup.rs if you dont have it
 
-git clone https://github.com/spadxz/blood-moon.git
-cd blood-moon
+git clone https://github.com/spadxz/scarlett.git
+cd scarlett
 ./tools/build-debian.sh
 ```
 
 or with `--install-deps` to install the dependencies automatically:
 
 ```sh
-git clone https://github.com/spadxz/blood-moon.git
-cd blood-moon
+git clone https://github.com/spadxz/scarlett.git
+cd scarlett
 ./tools/build-debian.sh --install-deps
 ```
 
@@ -191,7 +194,7 @@ and QCoro for Qt 6, libpulse, plus the ALSA, OpenSSL and pkg-config dev packages
 run the cmake commands above. if you have Qt 6.8 or 6.9, use `tools/build-debian.sh` which
 applies the necessary compatibility patches.
 
-`cmake --install` drops `swiftify` in `~/.local/bin` (make sure that's on your `PATH`)
+`cmake --install` drops `scarlett` in `~/.local/bin` (make sure that's on your `PATH`)
 and the desktop entry, icons and fonts in `~/.local/share`. 
 
 your login gets saved in the secret service through QtKeychain, so u need something
@@ -199,7 +202,7 @@ providing one: gnome-keyring, kwallet or keepassxc.
 
 on linux it also hooks into MPRIS (media keys, `playerctl`, shell media widgets),
 logind (pauses before the machine sleeps), pipewire/pulseaudio device changes, and
-the tray. `-DSWIFTIFY_DESKTOP_INTEGRATION=OFF` turns those off.
+the tray. `-DSCARLETT_DESKTOP_INTEGRATION=OFF` turns those off.
 
 ### Windows
 
@@ -213,8 +216,8 @@ workload, or Qt for *MinGW 64-bit* with its matching MinGW toolchain.
 then run this in Windows PowerShell:
 
 ```powershell
-git clone https://github.com/spadxz/blood-moon.git
-Set-Location blood-moon
+git clone https://github.com/spadxz/scarlett.git
+Set-Location scarlett
 .\tools\build-windows.ps1
 ```
 
@@ -222,7 +225,7 @@ for a different Qt kit, toolchain location or install directory, pass overrides:
 
 ```powershell
 .\tools\build-windows.ps1 -QtPath 'C:\Qt\6.11.2\msvc2022_64'
-.\tools\build-windows.ps1 -QtPath 'C:\Qt\6.10.3\mingw_64' -MingwPath 'C:\Qt\Tools\mingw1310_64\bin' -InstallPrefix "$env:LOCALAPPDATA\Programs\Blood Moon"
+.\tools\build-windows.ps1 -QtPath 'C:\Qt\6.10.3\mingw_64' -MingwPath 'C:\Qt\Tools\mingw1310_64\bin' -InstallPrefix "$env:LOCALAPPDATA\Programs\Scarlett"
 ```
 
 adjust the example paths to your installed versions, MinGW must match your Qt
@@ -251,7 +254,7 @@ this applies only to that process, not your machine's execution policy.
 start the installed app with:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Blood Moon\bin\swiftify.exe"
+& "$env:LOCALAPPDATA\Programs\Scarlett\bin\scarlett.exe"
 ```
 
 font downloads are hash-checked on every configure; on Windows, a failed CMake
@@ -259,7 +262,7 @@ download is retried with `curl.exe` using the system certificate store.
 
 ## Command line
 
-only one swiftify runs at a time. launching it again just passes the command to the one
+only one scarlett runs at a time. launching it again just passes the command to the one
 that's already running, so these work great as keybinds:
 
 | flag | |
@@ -272,6 +275,6 @@ that's already running, so these work great as keybinds:
 on hyprland for example:
 
 ```ini
-bind = SUPER SHIFT, M, exec, swiftify --immersive
-bind = , XF86AudioPlay, exec, swiftify --play-pause
+bind = SUPER SHIFT, M, exec, scarlett --immersive
+bind = , XF86AudioPlay, exec, scarlett --play-pause
 ```

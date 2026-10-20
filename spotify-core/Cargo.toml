@@ -32,7 +32,7 @@ swift-bridge-build = { version = "=0.1.59", optional = true }
 default = ["swift"]
 # the swift-bridge interface the macos and ios apps link against.
 swift = ["dep:swift-bridge", "dep:swift-bridge-build"]
-# a plain c abi for the linux qt front end (include/swiftify_core.h).
+# a plain c abi for the linux qt front end (include/scarlett_core.h).
 capi = []
 
 [lib]

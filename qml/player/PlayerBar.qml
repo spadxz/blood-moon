@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
-import Swiftify
+import Scarlett
 
 // the floating player (FloatingPlayerBar): transport, what is playing with its
 // seek line, and lyrics, queue and volume. its colours follow the cover.
@@ -40,7 +40,7 @@ Item {
     Item {
         id: glass
         anchors.fill: parent
-        visible: Appearance.bloodMoon && !!root.backdropSource && !Appearance.performanceMode
+        visible: Appearance.scarlett && !!root.backdropSource && !Appearance.performanceMode
 
         Rectangle {
             id: glassMask
@@ -88,16 +88,16 @@ Item {
             onWheel: (wheel) => wheel.accepted = true
         }
         radius: 20
-        color: Appearance.bloodMoon ? Qt.alpha(root.scheme.surfaceContainerHigh, 0.64)
+        color: Appearance.scarlett ? Qt.alpha(root.scheme.surfaceContainerHigh, 0.64)
                                     : root.scheme.surfaceContainerHigh
         border.width: 1
-        border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.92, 1, 0.52)
+        border.color: Appearance.scarlett ? Qt.rgba(0.94, 0.92, 1, 0.52)
                                            : Qt.rgba(root.scheme.outlineVariant.r, root.scheme.outlineVariant.g, root.scheme.outlineVariant.b, 0.4)
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             gradient: Gradient {
                 GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.16) }
                 GradientStop { position: 0.18; color: Qt.rgba(0.82, 0.74, 0.86, 0.055) }
@@ -112,7 +112,7 @@ Item {
             width: parent.width - 4
             height: 1
             radius: 1
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             gradient: Gradient {
                 GradientStop { position: 0; color: "transparent" }
                 GradientStop { position: 0.2; color: Qt.rgba(1, 1, 1, 0.8) }

@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 T.MenuSeparator {
     id: root
@@ -16,13 +16,13 @@ T.MenuSeparator {
         implicitHeight: 1
         Rectangle {
             anchors.fill: parent
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             color: root.scheme.outlineVariant
             opacity: 0.55
         }
         WavyLine {
             anchors.fill: parent
-            visible: !Appearance.bloodMoon
+            visible: !Appearance.scarlett
             color: root.scheme.outlineVariant
             amplitude: 1.4
             wavelength: 12

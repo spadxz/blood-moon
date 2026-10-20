@@ -1,6 +1,6 @@
 #include "soloist/SoloistAudioRoute.h"
 
-#include <swiftify_core.h>
+#include <scarlett_core.h>
 
 #include <QElapsedTimer>
 #include <QLoggingCategory>
@@ -9,11 +9,11 @@
 
 Q_DECLARE_LOGGING_CATEGORY(lcSoloist)
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
-const char *const kSinkName = "swiftify_soloist";
+const char *const kSinkName = "scarlett_soloist";
 
 /// what a pulse callback reports back to the thread waiting on it
 struct Reply {
@@ -33,7 +33,7 @@ void signal(Reply *reply)
 
 } // namespace
 
-SoloistAudioRoute::SoloistAudioRoute(SwiftifyLiveBuffer *buffer, quint32 rate)
+SoloistAudioRoute::SoloistAudioRoute(ScarlettLiveBuffer *buffer, quint32 rate)
     : m_buffer(buffer)
     , m_rate(rate)
 {
@@ -95,7 +95,7 @@ void SoloistAudioRoute::onRead(pa_stream *stream, size_t, void *self)
         }
         // a hole (no data) is skipped; the output pads it with silence
         if (data) {
-            swiftify_live_buffer_push(route->m_buffer, static_cast<const float *>(data), bytes / sizeof(float));
+            scarlett_live_buffer_push(route->m_buffer, static_cast<const float *>(data), bytes / sizeof(float));
         }
         pa_stream_drop(stream);
     }
@@ -109,9 +109,9 @@ bool SoloistAudioRoute::start()
         return false;
     }
     pa_proplist *properties = pa_proplist_new();
-    pa_proplist_sets(properties, PA_PROP_APPLICATION_NAME, "Swiftify");
-    pa_proplist_sets(properties, PA_PROP_APPLICATION_ICON_NAME, "swiftify");
-    m_context = pa_context_new_with_proplist(pa_threaded_mainloop_get_api(m_mainloop), "Swiftify", properties);
+    pa_proplist_sets(properties, PA_PROP_APPLICATION_NAME, "Scarlett");
+    pa_proplist_sets(properties, PA_PROP_APPLICATION_ICON_NAME, "scarlett");
+    m_context = pa_context_new_with_proplist(pa_threaded_mainloop_get_api(m_mainloop), "Scarlett", properties);
     pa_proplist_free(properties);
     pa_context_set_state_callback(m_context, &SoloistAudioRoute::onContextState, this);
     if (pa_context_connect(m_context, nullptr, PA_CONTEXT_NOFLAGS, nullptr) < 0
@@ -158,7 +158,7 @@ bool SoloistAudioRoute::start()
         signal(reply);
     }, &server), server);
     // soloist only plays to a chosen sink through pipewire. under pulseaudio
-    // alone it would play to the speakers while swiftify thought it routed
+    // alone it would play to the speakers while scarlett thought it routed
     if (!server.server.contains("PipeWire")) {
         return fail(QStringLiteral("the sound server isn't PipeWire (%1)").arg(QString::fromUtf8(server.server)));
     }
@@ -175,7 +175,7 @@ bool SoloistAudioRoute::start()
         }
     }, &existing), existing);
 
-    // one left behind by a swiftify that didn't exit cleanly is made again,
+    // one left behind by a scarlett that didn't exit cleanly is made again,
     // so it runs at today's rate and goes when this one exits
     if (existing.found && existing.index != PA_INVALID_INDEX) {
         Reply unloaded{m_mainloop};
@@ -193,10 +193,10 @@ bool SoloistAudioRoute::start()
     if (!existing.found) {
         Reply loaded{m_mainloop};
         // at the output's rate too: spotify's 44.1kHz songs, played to
-        // swiftify's 44.1kHz output, then need no resampling on the way
+        // scarlett's 44.1kHz output, then need no resampling on the way
         const QByteArray arguments = QByteArrayLiteral("sink_name=") + kSinkName + QByteArrayLiteral(" rate=")
             + QByteArray::number(m_rate)
-            + QByteArrayLiteral(" channels=2 sink_properties=device.description=\"Swiftify (Soloist)\"");
+            + QByteArrayLiteral(" channels=2 sink_properties=device.description=\"Scarlett (Soloist)\"");
         const bool ok = run(pa_context_load_module(m_context, "module-null-sink", arguments.constData(),
                                                    [](pa_context *, uint32_t index, void *data) {
             auto *reply = static_cast<Reply *>(data);
@@ -283,4 +283,4 @@ void SoloistAudioRoute::stop()
     m_mainloop = nullptr;
 }
 
-} // namespace swiftify
+} // namespace scarlett

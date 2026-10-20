@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a wavy ring that turns while music plays (material 3 expressive's wavy
 // indicators), drawn by one shader. with `progress` under 1 it is a wavy
@@ -22,7 +22,7 @@ ShaderEffect {
 
     property size itemSize: Qt.size(width, height)
     property real radius: Math.max(1, Math.min(width, height) / 2 - amplitude - thickness / 2 - 0.5)
-    property real waves: Settings.noShapes || Appearance.bloodMoon ? 0 : Math.max(5, Math.round(2 * Math.PI * radius / wavelength))
+    property real waves: Settings.noShapes || Appearance.scarlett ? 0 : Math.max(5, Math.round(2 * Math.PI * radius / wavelength))
     // the spin grows without end in double precision; the shader gets it
     // wrapped, so a long session never loses float precision
     property real phase: visible ? (waves * speed * UiState.spin) % (2 * Math.PI) : 0

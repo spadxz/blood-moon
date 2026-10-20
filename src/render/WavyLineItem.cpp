@@ -9,7 +9,7 @@
 
 #include <cmath>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -248,4 +248,4 @@ QSGNode *WavyLineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     return node;
 }
 
-} // namespace swiftify
+} // namespace scarlett

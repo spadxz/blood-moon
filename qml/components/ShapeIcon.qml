@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a symbol on a material shape (end4's MaterialShapeWrappedMaterialSymbol).
 // a new shape morphs in with a springy overshoot; hovered, it turns a little
@@ -59,7 +59,7 @@ Item {
     MaterialShape {
         id: body
         anchors.fill: parent
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
         keepsShape: root.keepsShape
         shape: root.fromShape
         morphTo: root.target
@@ -83,8 +83,8 @@ Item {
         text: root.symbol
         iconSize: root.iconSize
         fill: root.fill
-        color: Appearance.bloodMoon ? Appearance.colors.onSurfaceVariant : root.iconColor
-        rotation: Appearance.bloodMoon ? 0 : root.hovered ? -10 : 0
+        color: Appearance.scarlett ? Appearance.colors.onSurfaceVariant : root.iconColor
+        rotation: Appearance.scarlett ? 0 : root.hovered ? -10 : 0
 
         Behavior on rotation {
             enabled: !Appearance.performanceMode

@@ -194,12 +194,12 @@ impl PlaybackTimeline {
 }
 
 /// what a play request that a newer one replaced ends with
-/// (SWIFTIFY_CORE_SUPERSEDED in the c header). never shown: the front end has
+/// (SCARLETT_CORE_SUPERSEDED in the c header). never shown: the front end has
 /// withdrawn it already, or asks again for the song it still wants.
 pub const SUPERSEDED: &str = "the request was replaced by a newer one";
 
 /// what a play request ends with when spotify will not give this account the
-/// track (SWIFTIFY_CORE_UNAVAILABLE in the c header). the front end skips it
+/// track (SCARLETT_CORE_UNAVAILABLE in the c header). the front end skips it
 pub const UNAVAILABLE: &str = "Spotify could not load this track.";
 
 pub struct SpotifyCore {
@@ -836,6 +836,18 @@ impl SpotifyCore {
             .unwrap_or(false)
     }
 
+    /// the sound outputs the computer currently makes available to the app.
+    pub fn audio_output_devices_json(&self) -> String {
+        serde_json::to_string(&output::audio_output_devices())
+            .unwrap_or_else(|_| "[]".to_owned())
+    }
+
+    /// chooses an output for Spotify streams, local files and routed audio.
+    /// an empty id returns to the computer's current default output.
+    pub fn set_audio_output_device(&self, id: &str) -> Result<(), String> {
+        output::set_audio_output_device(id)
+    }
+
     pub fn is_playing_local(&self) -> bool {
         self.lock_state()
             .map(|state| state.local_playback.is_some())
@@ -1295,7 +1307,7 @@ impl SpotifyCore {
         };
         let timeline = Arc::clone(&self.timeline);
         std::thread::Builder::new()
-            .name("swiftify-local-end".to_owned())
+            .name("scarlett-local-end".to_owned())
             .spawn(move || {
                 while !cancel.load(Ordering::Relaxed) && !sink.empty() {
                     std::thread::sleep(Duration::from_millis(200));

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // big, faint material shapes scattered behind something, after end4-pC's
 // desktop stickers but kept quiet: tonal, low in contrast, and partly cut off
@@ -11,10 +11,10 @@ import Swiftify
 Item {
     id: root
 
-    visible: !Appearance.bloodMoon
+    visible: !Appearance.scarlett
 
     /// what the layout is drawn from: a page's or a collection's name
-    property string key: "swiftify"
+    property string key: "scarlett"
     property int count: 4
     property real minimumSize: 70
     property real maximumSize: 200
@@ -74,9 +74,9 @@ Item {
     }
 
     Repeater {
-        // Blood Moon keeps the pages quiet so the black backdrop and moon own
+        // Scarlett keeps the pages quiet so the black backdrop and moon own
         // the atmosphere; the other themes retain their expressive stickers.
-        model: Settings.noShapes || Appearance.bloodMoon ? 0 : root.count
+        model: Settings.noShapes || Appearance.scarlett ? 0 : root.count
 
         MaterialShape {
             id: sticker

@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import Swiftify
+import Scarlett
 
 Flickable {
     id: root
@@ -99,11 +99,27 @@ Flickable {
 
         EmptyState {
             width: parent.width
-            height: 220
-            visible: Library.dailyRecommendationSongs.count === 0
+            visible: Library.dailyRecommendationSongs.count === 0 && !Library.loadingDailyRecommendations
+            height: visible ? 220 : 0
             symbol: "auto_awesome"
-            title: qsTr("Your daily mix is still learning")
-            description: qsTr("Play a few songs and open a couple of your playlists, then refresh. Blood Moon will look for tracks you have not played or saved yet.")
+            title: qsTr("Your mix needs a little listening data")
+            description: qsTr("Save a few favorite songs or play some music. Your daily mix will use your favorites and listening history, then adapt as you listen.")
+        }
+
+        Column {
+            width: parent.width
+            height: visible ? 220 : 0
+            spacing: 14
+            visible: Library.dailyRecommendationSongs.count === 0 && Library.loadingDailyRecommendations
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            LoadingSpinner { anchors.horizontalCenter: parent.horizontalCenter }
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Building your mix from favorites and listening history…")
+                color: Appearance.colors.onSurfaceVariant
+                font.pixelSize: Appearance.fontSize.body
+            }
         }
     }
 

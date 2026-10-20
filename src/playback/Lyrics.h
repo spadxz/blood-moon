@@ -6,7 +6,7 @@
 
 #include <optional>
 
-namespace swiftify {
+namespace scarlett {
 
 struct LyricLine {
     quint32 startTimeMs = 0;
@@ -62,4 +62,4 @@ private:
     QList<LyricLine> m_lines;
 };
 
-} // namespace swiftify
+} // namespace scarlett

@@ -22,7 +22,7 @@
 
 #include <utility>
 
-using namespace swiftify;
+using namespace scarlett;
 
 namespace {
 
@@ -122,7 +122,7 @@ private slots:
         notes.write("liner notes");
         notes.close();
 
-        Settings settings(storage.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(storage.filePath(QStringLiteral("scarlett.conf")));
         LocalLibrary library(&settings, nullptr, storage.path());
         QSignalSpy scanned(&library, &LocalLibrary::scanned);
         QCOMPARE(library.addSources({QUrl::fromLocalFile(music.path())}), 1);
@@ -168,7 +168,7 @@ private slots:
         QTemporaryDir music;
         QTemporaryDir storage;
         QTemporaryDir elsewhere;
-        Settings settings(storage.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(storage.filePath(QStringLiteral("scarlett.conf")));
         LocalLibrary library(&settings, nullptr, storage.path());
         const QStringList uris = addThreeSongs(library, music);
         QCOMPARE(uris.size(), 3);
@@ -301,7 +301,7 @@ private slots:
     {
         QTemporaryDir music;
         QTemporaryDir storage;
-        Settings settings(storage.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(storage.filePath(QStringLiteral("scarlett.conf")));
         QStringList uris;
         {
             LocalLibrary library(&settings, nullptr, storage.path());
@@ -349,7 +349,7 @@ private slots:
         QFETCH(QByteArray, unreadable);
         QTemporaryDir music;
         QTemporaryDir storage;
-        Settings settings(storage.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(storage.filePath(QStringLiteral("scarlett.conf")));
         const QString listPath = storage.filePath(QStringLiteral("local-playlists.json"));
         QString id;
         QString copy;
@@ -408,7 +408,7 @@ private slots:
     {
         QTemporaryDir music;
         QTemporaryDir storage;
-        Settings settings(storage.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(storage.filePath(QStringLiteral("scarlett.conf")));
         ErrorCenter errors {nullptr};
         MemoryCredentialStore credentials;
         QNetworkAccessManager network;
@@ -492,7 +492,7 @@ private slots:
     {
         QTemporaryDir music;
         QTemporaryDir storage;
-        Settings settings(storage.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(storage.filePath(QStringLiteral("scarlett.conf")));
         LocalLibrary library(&settings, nullptr, storage.path());
         const QStringList uris = addThreeSongs(library, music);
         QCOMPARE(uris.size(), 3);
@@ -586,7 +586,7 @@ private slots:
     void aFileOfOnesOwnPlaysFromDiskWithItsLyrics()
     {
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         ErrorCenter errors {nullptr};
         MemoryCredentialStore credentials;
         QNetworkAccessManager network;

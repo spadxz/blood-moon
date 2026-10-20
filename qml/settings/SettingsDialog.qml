@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // settings, as a sheet over the window rather than a window of its own, laid
 // out like end4's settings app: a navigation rail on the left, and the chosen
@@ -45,16 +45,16 @@ T.Popup {
 
     background: Rectangle {
         radius: Appearance.rounding.large + 8
-        color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer0, 0.88)
+        color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer0, 0.88)
                                     : Appearance.colors.layer0
         border.width: 1
-        border.color: Appearance.bloodMoon ? Qt.rgba(0.95, 0.92, 1, 0.48)
+        border.color: Appearance.scarlett ? Qt.rgba(0.95, 0.92, 1, 0.48)
                                            : Appearance.colors.layer0Border
 
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             gradient: Gradient {
                 GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.12) }
                 GradientStop { position: 0.22; color: Qt.rgba(0.76, 0.66, 0.78, 0.035) }
@@ -68,7 +68,7 @@ T.Popup {
             width: parent.width - 20
             height: 1
             radius: 1
-            visible: Appearance.bloodMoon
+            visible: Appearance.scarlett
             gradient: Gradient {
                 GradientStop { position: 0; color: "transparent" }
                 GradientStop { position: 0.18; color: Qt.rgba(1, 1, 1, 0.72) }
@@ -182,16 +182,16 @@ T.Popup {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
             radius: Appearance.rounding.large
-            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.68)
+            color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.68)
                                         : Appearance.colors.layer1
-            border.width: Appearance.bloodMoon ? 1 : 0
-            border.color: Appearance.bloodMoon ? Qt.rgba(0.92, 0.89, 0.97, 0.3)
+            border.width: Appearance.scarlett ? 1 : 0
+            border.color: Appearance.scarlett ? Qt.rgba(0.92, 0.89, 0.97, 0.3)
                                                : "transparent"
 
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                visible: Appearance.bloodMoon
+                visible: Appearance.scarlett
                 gradient: Gradient {
                     GradientStop { position: 0; color: Qt.rgba(1, 0.95, 1, 0.08) }
                     GradientStop { position: 0.42; color: Qt.rgba(0.62, 0.05, 0.13, 0.025) }
@@ -209,7 +209,7 @@ T.Popup {
                 minimumSize: 90
                 maximumSize: 220
                 clipRadius: Appearance.rounding.large - 6
-                visible: !Appearance.bloodMoon
+                visible: !Appearance.scarlett
             }
 
             Flickable {

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Prepare the Blood Moon backdrop and app icons from the supplied image.
+"""Prepare the Scarlett backdrop and app icons from the supplied image.
 
-`blood-moon-upscaled.png` is a 4x super-resolution of the exact source photo
-used for the moon-only app icon. `blood-moon-superres-8x.webp` is a second
+`scarlett-upscaled.png` is a 4x super-resolution of the exact source photo
+used for the moon-only app icon. `scarlett-superres-8x.webp` is a second
 super-resolution pass of that same photo for the 4K background. No moon is
 generated or composited. Requires Pillow and NumPy.
 """
@@ -14,10 +14,10 @@ from PIL import Image, ImageFilter, ImageOps
 
 
 ROOT = Path(__file__).resolve().parents[1]
-UPSCALED = ROOT / "resources" / "blood-moon-upscaled.png"
-BACKDROP_SOURCE = ROOT / "resources" / "blood-moon-superres-8x.webp"
-BACKDROP = ROOT / "resources" / "blood-moon-background.png"
-ICON_CUTOUT = ROOT / "resources" / "blood-moon-cutout.png"
+UPSCALED = ROOT / "resources" / "scarlett-upscaled.png"
+BACKDROP_SOURCE = ROOT / "resources" / "scarlett-superres-8x.webp"
+BACKDROP = ROOT / "resources" / "scarlett-background.png"
+ICON_CUTOUT = ROOT / "resources" / "scarlett-cutout.png"
 ICON_SIDE = 360
 ICON_RADIUS = 156
 MASK_SUPERSAMPLE = 4
@@ -61,19 +61,19 @@ def main() -> None:
     moon = cutout()
     moon.save(ICON_CUTOUT, optimize=True)
     icon_art = moon.resize((1024, 1024), Image.Resampling.LANCZOS)
-    icon_art.save(ROOT / "packaging" / "icons" / "swiftify.icon" / "Assets" / "blood-moon.png",
+    icon_art.save(ROOT / "packaging" / "icons" / "scarlett.icon" / "Assets" / "scarlett.png",
                   optimize=True)
     # Keep the area around the disk transparent, including in the Windows ICO.
     icon = icon_art
 
-    targets = [(ROOT / "resources" / "swiftify-icon.png", 1024)]
-    targets.extend((ROOT / "packaging" / "icons" / f"swiftify-{size}.png", size)
+    targets = [(ROOT / "resources" / "scarlett-icon.png", 1024)]
+    targets.extend((ROOT / "packaging" / "icons" / f"scarlett-{size}.png", size)
                    for size in (32, 48, 64, 128, 256, 512))
     for target, size in targets:
         target.parent.mkdir(parents=True, exist_ok=True)
         icon.resize((size, size), Image.Resampling.LANCZOS).save(target, optimize=True)
 
-    icon.save(ROOT / "packaging" / "icons" / "swiftify.ico", format="ICO",
+    icon.save(ROOT / "packaging" / "icons" / "scarlett.ico", format="ICO",
               sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64),
                      (128, 128), (256, 256)])
     print(f"Prepared the 4K backdrop from {BACKDROP_SOURCE} and refreshed {len(targets)} icons from {UPSCALED}.")

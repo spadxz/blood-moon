@@ -1,6 +1,6 @@
-# Blood Moon add-ons
+# Scarlett add-ons
 
-Blood Moon add-ons are small, versioned QML packages. The host supplies the
+Scarlett add-ons are small, versioned QML packages. The host supplies the
 window chrome and app APIs; a package supplies the content for one or more
 extension points. Packages are installed from folders and run only when their
 host is shown.
@@ -11,8 +11,8 @@ Open **Settings → Add-ons**. Under **Get Add-ons**, install the add-ons you
 want, then leave **Enabled** on:
 
 - **Lyrics Mini Player** opens a pinned, floating lyrics and queue player.
-- **Blood Moon Liquid Lyrics** replaces the lyrics inspector with synchronized
-  lyrics, the Blood Moon background, and an optional live spectrum.
+- **Scarlett Liquid Lyrics** replaces the lyrics inspector with synchronized
+  lyrics, the Scarlett background, and an optional live spectrum.
 - **Oniko Cursor Companion** follows the mouse inside the app window. It uses
   vector QML artwork, not an animated image or a background polling loop.
 
@@ -73,14 +73,14 @@ The optional `requires` list currently accepts `spectrum`. Declaring it asks
 the host to enable audio analysis only while the add-on's lyrics panel is
 visible. Add-ons that do not need the spectrum should omit the field.
 
-The current public QML module import remains `Swiftify` for compatibility with
+The current public QML module import remains `Scarlett` for compatibility with
 the existing app and add-ons. This is an internal module identifier; the
-product and user-facing name is Blood Moon (BM).
+product and user-facing name is Scarlett (BM).
 
 ```qml
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 Item {
     // Player.currentSong, Player.lyrics, Player.activeLyricIndex,

@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // a library shortcut on home (HomeLibraryShortcut)
 T.AbstractButton {
@@ -19,14 +19,17 @@ T.AbstractButton {
     scale: down ? 0.98 : 1
 
     Behavior on scale {
-        enabled: !Appearance.performanceMode
-        Bounce {}
+        NumberAnimation {
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(190)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Appearance.curves.expressiveFastSpatial
+        }
     }
 
     // hovered, its edge turns to running scallops
     background: WavyClip {
         radius: 16
-        wavy: root.hovered && !Appearance.bloodMoon
+        wavy: root.hovered && !Appearance.scarlett
         depth: 1.7
         wavelength: 30
 
@@ -34,16 +37,16 @@ T.AbstractButton {
             anchors.fill: parent
             radius: 16
             // two steps up from the page (surfaceContainerLow), so it stands off it
-            color: Appearance.bloodMoon
+            color: Appearance.scarlett
                    ? Qt.alpha(Appearance.colors.layer1, root.hovered ? 0.42 : 0.30)
                    : root.hovered ? Appearance.colors.surfaceContainerHighest : Appearance.colors.surfaceContainerHigh
-            border.width: Appearance.bloodMoon ? 1 : 0
-            border.color: Appearance.bloodMoon ? Qt.rgba(0.88, 0.89, 0.95, root.hovered ? 0.42 : 0.22) : "transparent"
+            border.width: Appearance.scarlett ? 1 : 0
+            border.color: Appearance.scarlett ? Qt.rgba(0.88, 0.89, 0.95, root.hovered ? 0.42 : 0.22) : "transparent"
 
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                visible: Appearance.bloodMoon
+                visible: Appearance.scarlett
                 gradient: Gradient {
                     GradientStop { position: 0; color: Qt.rgba(1, 1, 1, root.hovered ? 0.09 : 0.045) }
                     GradientStop { position: 0.56; color: "transparent" }
@@ -59,7 +62,7 @@ T.AbstractButton {
         HoverSheen {
             anchors.fill: parent
             radius: 16
-            active: root.hovered && !Appearance.bloodMoon
+            active: root.hovered && !Appearance.scarlett
         }
     }
 

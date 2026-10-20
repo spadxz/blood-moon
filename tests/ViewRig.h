@@ -32,12 +32,12 @@
 
 #include <memory>
 
-namespace swiftify::testing {
+namespace scarlett::testing {
 
 /// everything main() builds, around a core that plays nothing
 struct ViewRig {
     QTemporaryDir directory;
-    Settings settings {directory.filePath(QStringLiteral("swiftify.conf"))};
+    Settings settings {directory.filePath(QStringLiteral("scarlett.conf"))};
     Theme theme {&settings};
     ErrorCenter errors {nullptr};
     MemoryCredentialStore credentials;
@@ -169,7 +169,7 @@ struct ViewRig {
     std::unique_ptr<QQuickItem> show(const QString &type)
     {
         QQmlComponent component(&engine);
-        component.loadFromModule("Swiftify", type);
+        component.loadFromModule("Scarlett", type);
         std::unique_ptr<QObject> object(component.create());
         if (!object) {
             qWarning().noquote() << component.errorString();
@@ -196,4 +196,4 @@ struct ViewRig {
     QImage frame;
 };
 
-} // namespace swiftify::testing
+} // namespace scarlett::testing

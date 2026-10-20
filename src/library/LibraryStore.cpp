@@ -21,9 +21,9 @@
 #include <chrono>
 #include <tuple>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcLibrary, "swiftify.library")
+Q_LOGGING_CATEGORY(lcLibrary, "scarlett.library")
 
 namespace {
 
@@ -274,6 +274,11 @@ LibraryStore::LibraryStore(SpotifySession *session, Settings *settings, ErrorCen
     }
 
     connect(m_savedSongs, &SongListModel::countChanged, this, &LibraryStore::savedSongTotalChanged);
+    m_dailyRecommendationsRefreshTimer.setSingleShot(true);
+    m_dailyRecommendationsRefreshTimer.setInterval(12000);
+    connect(&m_dailyRecommendationsRefreshTimer, &QTimer::timeout,
+            this, [this] { loadDailyRecommendations(true); });
+    connect(this, &LibraryStore::savedChanged, this, &LibraryStore::scheduleDailyRecommendationRefresh);
     m_session->setInitialLibraryLoader([this] { return loadInitialLibrary(); });
     connect(m_session, &SpotifySession::loggedOut, this, &LibraryStore::reset);
 }
@@ -303,6 +308,8 @@ void LibraryStore::attachPlayer(PlaybackController *player)
 {
     m_player = player;
     connect(player, &PlaybackController::playedFromSearch, this, &LibraryStore::recordSearchPlayback);
+    connect(player, &PlaybackController::listeningHistoryChanged,
+            this, &LibraryStore::scheduleDailyRecommendationRefresh);
 }
 
 void LibraryStore::attachLocalFiles(LocalLibrary *localFiles)
@@ -630,11 +637,11 @@ void LibraryStore::buildDailyRecommendations()
     const QList<Song> history = m_player->listeningHistory()->songs();
     noteListening(history, 3);
     noteListening(m_recentlyPlayed->songs(), 2);
+    noteListening(m_savedSongs->songs(), 1);
     for (const Song &song : m_savedSongs->songs()) {
         if (!song.uri.isEmpty()) saved.insert(song.uri);
     }
     saved.unite(m_savedUris);
-    if (familiarArtists.isEmpty()) noteListening(m_savedSongs->songs(), 1);
     if (familiarArtists.isEmpty()) {
         m_dailyRecommendationSongs->clear();
         m_dailyRecommendationArtists->setItems({});
@@ -659,6 +666,9 @@ void LibraryStore::buildDailyRecommendations()
         // Reading a very large library's cache is cheap, but keeping the
         // discovery pool bounded makes each daily ranking predictable.
         if (loadedPlaylistIds.size() >= 18) break;
+    }
+    for (const Song &song : std::as_const(m_dailyRecommendationSearchCandidates)) {
+        playlistTracks.append(QList<Song> {song});
     }
 
     struct RankedSong { Song song; int score = 0; };
@@ -855,9 +865,141 @@ void LibraryStore::loadDailyRecommendations(bool forceRefresh)
     const QString today = QDate::currentDate().toString(Qt::ISODate);
     if (!forceRefresh && m_dailyRecommendationsDate == today
         && m_dailyRecommendationSongs->count() > 0 && m_dailyRecommendationArtists->count() > 0) return;
+    if (m_loadingDailyRecommendations) {
+        if (forceRefresh) m_refreshDailyRecommendationsWhenFinished = true;
+        return;
+    }
+    m_dailyRecommendationsRefreshTimer.stop();
+    setLoading(m_loadingDailyRecommendations, true);
+    detach(runDailyRecommendations());
+}
 
-    if (m_player) m_player->syncSpotifyRecentHistory(m_recentlyPlayed);
-    buildDailyRecommendations();
+void LibraryStore::scheduleDailyRecommendationRefresh()
+{
+    if (m_loadingDailyRecommendations) {
+        m_refreshDailyRecommendationsWhenFinished = true;
+        return;
+    }
+    if (m_dailyRecommendationSongs->count() == 0) {
+        if (m_destination.page == Page::Recommendations) loadDailyRecommendations(true);
+        return;
+    }
+    m_dailyRecommendationsDate.clear();
+    m_dailyRecommendationsRefreshTimer.start();
+}
+
+QCoro::Task<> LibraryStore::runDailyRecommendations()
+{
+    const quint64 generation = m_session->generation();
+    try {
+        if (m_session->hasLibraryToken()) {
+            if (m_playlistList.isEmpty() && !m_loadingPlaylists) {
+                co_await loadPlaylists();
+            }
+            if (!m_hasLoadedHome && !m_loadingHome) {
+                co_await loadHome();
+            }
+
+            // Read the saved-song cache immediately for a fast first result,
+            // then refresh it from Spotify before scoring the daily mix.
+            if (m_savedSongs->count() == 0) {
+                if (const std::optional<QList<Song>> cached = m_songListCache.load(kSavedSongsCacheKey)) {
+                    m_savedSongs->setSongs(*cached);
+                    for (const Song &song : *cached) {
+                        if (!song.uri.isEmpty()) m_savedUris.insert(song.uri);
+                    }
+                }
+            }
+            if (!m_hasLoadedSavedSongs && !m_loadingSavedSongs) {
+                co_await loadSavedSongs();
+            }
+            if (m_player) m_player->syncSpotifyRecentHistory(m_recentlyPlayed);
+
+            // Search the strongest artists from recent plays, long-term
+            // listening history and favorites. Playlist caches remain an
+            // extra source for more adventurous recommendations.
+            struct ArtistSeed { QString name; int score = 0; };
+            QHash<QString, ArtistSeed> artistSeeds;
+            const auto addSeeds = [&artistSeeds](const QList<Song> &songs, int weight) {
+                for (const Song &song : songs) {
+                    QStringList names;
+                    for (const Artist &artist : song.artistItems) names.append(artist.name);
+                    if (names.isEmpty()) names = song.artists.split(u',');
+                    for (const QString &name : names) {
+                        const QString displayName = name.trimmed();
+                        const QString key = normalizedSearchText(displayName);
+                        if (key.isEmpty()) continue;
+                        auto found = artistSeeds.find(key);
+                        if (found == artistSeeds.end()) artistSeeds.insert(key, {displayName, weight});
+                        else found->score += weight;
+                    }
+                }
+            };
+            addSeeds(m_player ? m_player->listeningHistory()->songs() : QList<Song> {}, 3);
+            addSeeds(m_recentlyPlayed->songs(), 2);
+            addSeeds(m_savedSongs->songs(), 1);
+
+            QList<ArtistSeed> rankedSeeds = artistSeeds.values();
+            std::stable_sort(rankedSeeds.begin(), rankedSeeds.end(), [](const ArtistSeed &left, const ArtistSeed &right) {
+                if (left.score != right.score) return left.score > right.score;
+                return QString::compare(left.name, right.name, Qt::CaseInsensitive) < 0;
+            });
+
+            m_dailyRecommendationSearchCandidates.clear();
+            QSet<QString> candidateUris;
+            int searchedArtists = 0;
+            for (const ArtistSeed &seed : std::as_const(rankedSeeds)) {
+                if (searchedArtists >= 6) break;
+                ++searchedArtists;
+                const QString query = QStringLiteral("artist:\"%1\"").arg(
+                    QString(seed.name).replace(u'"', u' '));
+                try {
+                    const SearchResults results = co_await m_session->withLibraryAccessToken<SearchResults>(
+                        [this, query](QString accessToken) { return m_session->webApi().search(query, accessToken); });
+                    for (const Song &song : results.songs) {
+                        if (!song.uri.isEmpty() && !candidateUris.contains(song.uri)) {
+                            candidateUris.insert(song.uri);
+                            m_dailyRecommendationSearchCandidates.append(song);
+                        }
+                    }
+                } catch (const Cancelled &) {
+                    throw;
+                } catch (const SpotifyError &error) {
+                    qCInfo(lcLibrary).noquote() << "searching recommendations for" << seed.name << ":" << error.message();
+                }
+            }
+
+            // A small bounded warm-up lets the playlist-based ranker work
+            // from day one without fetching every playlist on a fresh install.
+            int fetchedPlaylists = 0;
+            for (const Playlist &playlist : std::as_const(m_playlistList)) {
+                if (playlist.isLocal() || !playlist.canModify(m_profile.id)) continue;
+                if (m_openedPlaylists.find(playlist.id) || m_songListCache.load(playlist.id)) continue;
+                try {
+                    const QList<Song> tracks = co_await m_session->withLibraryAccessToken<QList<Song>>(
+                        [this, id = playlist.id](QString accessToken) {
+                            return m_session->webApi().playlistSongs(id, accessToken);
+                        });
+                    m_songListCache.save(playlist.id, tracks);
+                    m_openedPlaylists.insert(playlist.id, tracks);
+                } catch (const Cancelled &) {
+                    throw;
+                } catch (const SpotifyError &error) {
+                    qCInfo(lcLibrary).noquote() << "loading a recommendation playlist:" << error.message();
+                }
+                if (++fetchedPlaylists >= 6) break;
+            }
+        }
+        if (generation == m_session->generation()) buildDailyRecommendations();
+    } catch (const Cancelled &) {
+    } catch (const SpotifyError &error) {
+        qCWarning(lcLibrary).noquote() << "building daily recommendations:" << error.message();
+    }
+    setLoading(m_loadingDailyRecommendations, false);
+    if (m_refreshDailyRecommendationsWhenFinished) {
+        m_refreshDailyRecommendationsWhenFinished = false;
+        loadDailyRecommendations(true);
+    }
 }
 
 void LibraryStore::showSavedSongs()
@@ -1374,6 +1516,11 @@ QCoro::Task<> LibraryStore::loadInitialLibrary()
     co_await loadPlaylists();
     if (!m_session->libraryNeedsAuthorizationUpgrade()) {
         co_await loadHome();
+        // Start the first daily mix as soon as the initial library is ready,
+        // rather than waiting for the user to open Recommendations. The
+        // builder reads saved-song and playlist caches immediately, then
+        // refreshes those sources in the background before ranking results.
+        loadDailyRecommendations();
     }
 }
 
@@ -1395,6 +1542,7 @@ QCoro::Task<> LibraryStore::loadPlaylists()
     }
     if (generation == m_session->generation()) {
         setLoading(m_loadingPlaylists, false);
+        if (m_destination.page == Page::Recommendations) scheduleDailyRecommendationRefresh();
     }
 }
 
@@ -1425,6 +1573,7 @@ QCoro::Task<> LibraryStore::loadHome()
     }
     if (generation == m_session->generation()) {
         setLoading(m_loadingHome, false);
+        if (m_destination.page == Page::Recommendations) scheduleDailyRecommendationRefresh();
     }
 }
 
@@ -1471,6 +1620,7 @@ QCoro::Task<> LibraryStore::loadSavedSongs()
     }
     if (generation == m_session->generation()) {
         setLoading(m_loadingSavedSongs, false);
+        if (m_destination.page == Page::Recommendations) scheduleDailyRecommendationRefresh();
     }
 }
 
@@ -1928,6 +2078,9 @@ QCoro::Task<> LibraryStore::refreshCover(Playlist playlist)
 
 void LibraryStore::reset()
 {
+    m_dailyRecommendationsRefreshTimer.stop();
+    m_dailyRecommendationSearchCandidates.clear();
+    m_refreshDailyRecommendationsWhenFinished = false;
     m_pendingSavedUris.clear();
     ++m_savedStatusRevision;
     m_songLoad.cancel();
@@ -1976,6 +2129,7 @@ void LibraryStore::reset()
     m_sortReversed = false;
 
     m_loadingPlaylists = m_loadingSongs = m_loadingHome = m_loadingSavedSongs = false;
+    m_loadingDailyRecommendations = false;
     m_searching = m_loadingArtist = m_savingPlaylist = false;
     emit loadingChanged();
     emit destinationChanged();
@@ -1986,4 +2140,4 @@ void LibraryStore::reset()
     emit dailyRecommendationsChanged();
 }
 
-} // namespace swiftify
+} // namespace scarlett

@@ -6,9 +6,9 @@
 #include <QFontDatabase>
 #include <QLoggingCategory>
 
-namespace swiftify::fonts {
+namespace scarlett::fonts {
 
-Q_LOGGING_CATEGORY(lcFonts, "swiftify.fonts")
+Q_LOGGING_CATEGORY(lcFonts, "scarlett.fonts")
 
 namespace {
 
@@ -27,12 +27,12 @@ bool loadBundled(const char *family, const char *file)
     }
     const QString applicationDirectory = QCoreApplication::applicationDirPath();
     const QStringList candidates {
-        applicationDirectory + QStringLiteral("/../share/swiftify/fonts/"),
+        applicationDirectory + QStringLiteral("/../share/scarlett/fonts/"),
         // inside the macos app bundle
         applicationDirectory + QStringLiteral("/../Resources/fonts/"),
         applicationDirectory + QStringLiteral("/fonts/"),
-#ifdef SWIFTIFY_BUILD_FONT_DIRECTORY
-        QStringLiteral(SWIFTIFY_BUILD_FONT_DIRECTORY "/"),
+#ifdef SCARLETT_BUILD_FONT_DIRECTORY
+        QStringLiteral(SCARLETT_BUILD_FONT_DIRECTORY "/"),
 #endif
     };
     for (const QString &directory : candidates) {
@@ -88,4 +88,4 @@ QString fixedFamily()
     return family;
 }
 
-} // namespace swiftify::fonts
+} // namespace scarlett::fonts

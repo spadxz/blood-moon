@@ -18,9 +18,9 @@
 #include <algorithm>
 #include <functional>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcAddons, "swiftify.addons")
+Q_LOGGING_CATEGORY(lcAddons, "scarlett.addons")
 
 AddonManager *AddonManager::s_instance = nullptr;
 
@@ -71,7 +71,7 @@ AddonManager::AddonManager(QObject *parent)
     : QObject(parent)
     , m_installDirectory(QDir(paths::dataDirectory()).filePath(QStringLiteral("addons")))
     , m_store(std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
-                                          QStringLiteral("Swiftify"), QStringLiteral("Swiftify")))
+                                          QStringLiteral("Scarlett"), QStringLiteral("Scarlett")))
 {
     if (!s_instance) s_instance = this;
     QDir().mkpath(m_installDirectory);
@@ -315,7 +315,7 @@ bool AddonManager::readManifest(const QString &directory, Addon &addon, QString 
         return false;
     }
     if (apiVersion != kApiVersion) {
-        error = tr("This add-on targets API %1; this Blood Moon build supports API %2.").arg(apiVersion).arg(kApiVersion);
+        error = tr("This add-on targets API %1; this Scarlett build supports API %2.").arg(apiVersion).arg(kApiVersion);
         return false;
     }
     if (extensions.isEmpty() || extensions.size() > kExtensionLimit) {
@@ -331,7 +331,7 @@ bool AddonManager::readManifest(const QString &directory, Addon &addon, QString 
     for (const QJsonValue &value : requirements) {
         const QString requirement = value.toString();
         if (!value.isString() || requirement != QLatin1StringView("spectrum")) {
-            error = tr("This Blood Moon build does not support one of the add-on's requirements.");
+            error = tr("This Scarlett build does not support one of the add-on's requirements.");
             return false;
         }
         if (parsedRequirements.contains(requirement)) {
@@ -411,7 +411,7 @@ QString AddonManager::installPackage(const QString &source, bool bundled)
     const QString backup = QDir(m_installDirectory).filePath(QStringLiteral(".%1.backup-%2").arg(incoming.id, suffix));
     const QString sourceRoot = QFileInfo(source).canonicalFilePath();
     if (!isResourcePath(source) && !sourceRoot.isEmpty() && pathIsWithin(sourceRoot, staging)) {
-        return tr("Choose a package folder outside Blood Moon's add-on install folder.");
+        return tr("Choose a package folder outside Scarlett's add-on install folder.");
     }
     if (!copyPackage(source, staging, error)) {
         QDir(staging).removeRecursively();
@@ -506,4 +506,4 @@ void AddonManager::reload()
     emit addonsChanged();
 }
 
-} // namespace swiftify
+} // namespace scarlett

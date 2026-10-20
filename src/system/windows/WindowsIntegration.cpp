@@ -18,7 +18,7 @@
 #include <dwmapi.h>
 #include <shobjidl.h>
 
-#ifdef SWIFTIFY_HAVE_SMTC
+#ifdef SCARLETT_HAVE_SMTC
 // mingw-w64's windows.foundation.h specialises IReference for BYTE and for
 // boolean, which it also makes an unsigned char; nothing here uses either
 #ifdef __MINGW32__
@@ -38,7 +38,7 @@
 #include <cwchar>
 #include <functional>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -56,7 +56,7 @@ COLORREF nativeColor(const QColor &color)
     return RGB(color.red(), color.green(), color.blue());
 }
 
-#ifdef SWIFTIFY_HAVE_SMTC
+#ifdef SCARLETT_HAVE_SMTC
 // the media buttons' handler, written out by hand: wrl's Callback lives in
 // <wrl/event.h>, which only msvc's sdk ships, and mingw has to build this too
 using ButtonPressedHandler = ABI::Windows::Foundation::ITypedEventHandler<
@@ -122,7 +122,7 @@ struct WindowsIntegration::Native {
     HWND handle = nullptr;
     std::array<HICON, 4> icons {};
 
-#ifdef SWIFTIFY_HAVE_SMTC
+#ifdef SCARLETT_HAVE_SMTC
     Microsoft::WRL::ComPtr<ABI::Windows::Media::ISystemMediaTransportControls> controls;
     EventRegistrationToken buttonToken {};
 #endif
@@ -141,7 +141,7 @@ struct WindowsIntegration::Native {
 
     void cleanupMediaControls()
     {
-#ifdef SWIFTIFY_HAVE_SMTC
+#ifdef SCARLETT_HAVE_SMTC
         if (controls) {
             if (buttonToken.value != 0) {
                 controls->remove_ButtonPressed(buttonToken);
@@ -234,7 +234,7 @@ struct WindowsIntegration::Native {
 
 void WindowsIntegration::initializeProcess()
 {
-    SetCurrentProcessExplicitAppUserModelID(L"dev.addenator.BloodMoon.Qt");
+    SetCurrentProcessExplicitAppUserModelID(L"dev.addenator.Scarlett.Qt");
 }
 
 void WindowsIntegration::setNativeTitleBar(QWindow *window, bool enabled)
@@ -457,7 +457,7 @@ void WindowsIntegration::updateButtons()
         m_native->taskbar->ThumbBarUpdateButtons(handle, UINT(buttons.size()), buttons.data());
     }
     const Song song = m_player->currentSong();
-    const QString tooltip = m_player->hasSong() ? song.name + QStringLiteral(" — ") + song.artists : QStringLiteral("Blood Moon");
+    const QString tooltip = m_player->hasSong() ? song.name + QStringLiteral(" — ") + song.artists : QStringLiteral("Scarlett");
     m_native->taskbar->SetThumbnailTooltip(handle, reinterpret_cast<LPCWSTR>(tooltip.utf16()));
     updateProgress();
 }
@@ -508,7 +508,7 @@ bool WindowsIntegration::nativeEventFilter(const QByteArray &eventType, void *me
     return false;
 }
 
-#ifdef SWIFTIFY_HAVE_SMTC
+#ifdef SCARLETT_HAVE_SMTC
 void WindowsIntegration::initializeMediaControls()
 {
     if (!m_window || !m_native || !m_window->handle()) return;
@@ -669,4 +669,4 @@ void WindowsIntegration::updateMediaControls() {}
 void WindowsIntegration::updateMediaMetadata() {}
 #endif
 
-} // namespace swiftify
+} // namespace scarlett

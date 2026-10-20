@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import Qt.labs.platform as Platform
-import Swiftify
+import Scarlett
 
 // the mac's menu bar for the main window. its key equivalents are the app's
 // shortcuts, so on macos the window's own Shortcuts for these stand down
@@ -21,7 +21,7 @@ Platform.MenuBar {
         title: qsTr("File")
 
         Platform.MenuItem {
-            text: qsTr("About Blood Moon")
+            text: qsTr("About Scarlett")
             role: Platform.MenuItem.AboutRole
             onTriggered: UiState.settingsRequested()
         }
@@ -32,7 +32,7 @@ Platform.MenuBar {
             onTriggered: UiState.settingsRequested()
         }
         Platform.MenuItem {
-            text: qsTr("Quit Blood Moon")
+            text: qsTr("Quit Scarlett")
             role: Platform.MenuItem.QuitRole
             shortcut: StandardKey.Quit
             onTriggered: App.quit()
@@ -228,7 +228,7 @@ Platform.MenuBar {
         }
         Platform.MenuSeparator {}
         Platform.MenuItem {
-            text: "Blood Moon"
+            text: "Scarlett"
             onTriggered: root.showWindowRequested()
         }
     }

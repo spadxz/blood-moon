@@ -5,7 +5,7 @@
 #include <QQuickItem>
 #include <QtQml/qqmlregistration.h>
 
-namespace swiftify {
+namespace scarlett {
 
 class AmbientClock;
 
@@ -115,4 +115,4 @@ private:
     QMetaObject::Connection m_parentHeight;
 };
 
-} // namespace swiftify
+} // namespace scarlett

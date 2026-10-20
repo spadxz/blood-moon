@@ -6,7 +6,7 @@
 #include <QQuickItem>
 #include <QtQml/qqmlregistration.h>
 
-namespace swiftify {
+namespace scarlett {
 
 /// `Reveal.shown` on any item, in place of `visible`: the item springs in,
 /// fading up as it grows from a little smaller, past its size and back, and
@@ -64,4 +64,4 @@ public:
     static RevealAttached *qmlAttachedProperties(QObject *object) { return new RevealAttached(object); }
 };
 
-} // namespace swiftify
+} // namespace scarlett

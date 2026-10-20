@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // a material menu, as end4 draws its popup menus: a surface-container card
 // with rounded items.
@@ -27,9 +27,11 @@ T.Menu {
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Appearance.duration(150); easing.type: Easing.OutCubic }
+        NumberAnimation { property: "scale"; from: 0.97; to: 1; duration: Appearance.reduceMotion ? 0 : Appearance.motion(220); easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.curves.expressiveFastSpatial }
     }
     exit: Transition {
         NumberAnimation { property: "opacity"; to: 0; duration: Appearance.duration(100) }
+        NumberAnimation { property: "scale"; to: 0.985; duration: Appearance.reduceMotion ? 0 : Appearance.motion(120); easing.type: Easing.OutCubic }
     }
 
     contentItem: ListView {

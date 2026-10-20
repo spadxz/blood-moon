@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a phase that runs while `active`: it eases up to speed and back down to
 // rest rather than starting and stopping dead, and carries on from wherever

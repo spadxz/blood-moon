@@ -7,7 +7,7 @@
 
 #include <optional>
 
-namespace swiftify {
+namespace scarlett {
 
 /// a saved login. the json the apple apps keep in their keychain, and more
 /// that they ignore.
@@ -46,6 +46,14 @@ public:
     static QString service()
     {
 #ifdef Q_OS_MACOS
+        return QStringLiteral("dev.addenator.Scarlett.spotify.qt-development");
+#else
+        return QStringLiteral("dev.addenator.Scarlett.spotify");
+#endif
+    }
+    static QString legacyService()
+    {
+#ifdef Q_OS_MACOS
         return QStringLiteral("dev.addenator.Swiftify.spotify.qt-development");
 #else
         return QStringLiteral("dev.addenator.Swiftify.spotify");
@@ -72,4 +80,4 @@ public:
     QHash<Account, StoredCredentials> items;
 };
 
-} // namespace swiftify
+} // namespace scarlett

@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // end4's RippleButton: a state-layer background that tints on hover, ripples on
 // press and can be toggled. right and middle clicks are reported separately.
@@ -24,8 +24,7 @@ T.AbstractButton {
     property alias backgroundItem: backgroundRectangle
     /// shown on hover; created only while it is
     property string tooltip
-    /// a press squishes the button and the release springs it back. wide
-    /// rows barely move; a small button gives a proper squash.
+    /// a press contracts the button; a hover adds a barely-there lift.
     property bool bounce: true
 
     signal secondaryClicked(point position)
@@ -34,11 +33,14 @@ T.AbstractButton {
     hoverEnabled: true
     focusPolicy: Qt.TabFocus
     opacity: enabled ? 1 : 0.38
-    scale: bounce && down ? 1 - Math.min(0.1, 5 / Math.max(width, 1)) : 1
+    scale: !bounce ? 1 : down ? 1 - Math.min(0.04, 2 / Math.max(width, 1)) : hovered ? 1.012 : 1
 
     Behavior on scale {
-        enabled: !Appearance.performanceMode
-        Bounce {}
+        NumberAnimation {
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(190)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Appearance.curves.expressiveFastSpatial
+        }
     }
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)

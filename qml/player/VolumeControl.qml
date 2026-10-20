@@ -1,8 +1,8 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
-// The expanded Blood Moon control floats above its button so it never covers
+// The expanded Scarlett control floats above its button so it never covers
 // the queue, lyrics, or other player controls. Other themes keep their pill.
 Item {
     id: root
@@ -26,7 +26,7 @@ Item {
         id: buttonHover
         onHoveredChanged: {
             if (hovered) closeTimer.stop();
-            else if (Appearance.bloodMoon && root.expanded) closeTimer.restart();
+            else if (Appearance.scarlett && root.expanded) closeTimer.restart();
         }
     }
 
@@ -40,7 +40,7 @@ Item {
         radius: Appearance.rounding.normal
         color: Qt.alpha(root.scheme.surfaceContainerHighest, root.expanded ? 1 : 0)
         z: 3
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
 
         Behavior on width { ElementMoveSmall {} }
         Behavior on height { ElementMoveSmall {} }
@@ -94,7 +94,7 @@ Item {
         width: 172
         height: 42
         radius: 18
-        visible: Appearance.bloodMoon && root.expanded
+        visible: Appearance.scarlett && root.expanded
         z: 10
         color: Qt.alpha(root.scheme.layer1, 0.92)
         border.width: 1
@@ -131,7 +131,7 @@ Item {
 
     IconButton {
         id: button
-        visible: Appearance.bloodMoon
+        visible: Appearance.scarlett
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         size: 32

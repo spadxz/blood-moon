@@ -15,7 +15,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 /// Installs and discovers user-authored QML add-ons. Add-ons are ordinary
 /// trusted QML components; the package format is versioned independently of
@@ -92,4 +92,4 @@ private:
     QHash<QString, Addon> m_installed;
 };
 
-} // namespace swiftify
+} // namespace scarlett

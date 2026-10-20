@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace swiftify {
+namespace scarlett {
 
 ImmersiveLayout::ImmersiveLayout(QObject *parent)
     : QObject(parent)
@@ -48,4 +48,4 @@ qreal ImmersiveLayout::chromeHeight() const
     return usesCompactSpacing() ? 274 : 318;
 }
 
-} // namespace swiftify
+} // namespace scarlett

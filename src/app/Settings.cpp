@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <initializer_list>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -33,9 +33,16 @@ T stored(const QSettings &store, const char *key, const T &fallback)
 
 Settings::Settings(QObject *parent)
     : QObject(parent)
-    , m_store(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("Swiftify"),
-              QStringLiteral("Swiftify"))
+    , m_store(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("Scarlett"),
+              QStringLiteral("Scarlett"))
 {
+    QSettings legacy(QSettings::IniFormat, QSettings::UserScope,
+                     QStringLiteral("Swiftify"), QStringLiteral("Swiftify"));
+    legacy.sync();
+    for (const QString &key : legacy.allKeys()) {
+        if (!m_store.contains(key)) m_store.setValue(key, legacy.value(key));
+    }
+    m_store.sync();
     load();
     if (!s_instance) {
         s_instance = this;
@@ -120,6 +127,7 @@ void Settings::load()
         const int cache = stored<int>(m_store, "songCacheMegabytes", m_songCacheMegabytes);
         m_songCacheMegabytes = cache == 500 || cache == 2000 ? cache : 1000;
     }
+    m_audioOutputDevice = stored<QString>(m_store, "audioOutputDevice", {});
     m_crossfadeEnabled = stored<bool>(m_store, "crossfadeEnabled", m_crossfadeEnabled);
     m_crossfadeDurationSeconds = std::clamp(
         stored<int>(m_store, "crossfadeDurationSeconds", m_crossfadeDurationSeconds), 1, 12);
@@ -277,6 +285,16 @@ void Settings::setStreamingQuality(int raw)
     m_streamingQuality = value;
     m_store.setValue(QStringLiteral("streamingQuality"), value);
     emit streamingQualityChanged();
+}
+
+void Settings::setAudioOutputDevice(const QString &value)
+{
+    if (m_audioOutputDevice == value) {
+        return;
+    }
+    m_audioOutputDevice = value;
+    m_store.setValue(QStringLiteral("audioOutputDevice"), value);
+    emit audioOutputDeviceChanged();
 }
 
 void Settings::setSongCacheMegabytes(int megabytes)
@@ -538,4 +556,4 @@ void Settings::setLanguage(const QString &raw)
 
 
 
-} // namespace swiftify
+} // namespace scarlett

@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace swiftify::playbackstate {
+namespace scarlett::playbackstate {
 namespace {
 constexpr qsizetype maximumBytes = 4 * 1024 * 1024;
 
@@ -127,4 +127,4 @@ std::optional<Snapshot> decode(const QByteArray &bytes)
     return state;
 }
 
-} // namespace swiftify::playbackstate
+} // namespace scarlett::playbackstate

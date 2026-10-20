@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace swiftify {
+namespace scarlett {
 
 struct SymbolGlyph;
 
@@ -83,4 +83,4 @@ private:
     bool m_stale = true;
 };
 
-} // namespace swiftify
+} // namespace scarlett

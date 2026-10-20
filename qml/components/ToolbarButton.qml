@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a top-bar button: bigger than an icon button, and lively. it sits on a
 // shape of its own, as the top bar has no background and the pages scroll up
@@ -77,7 +77,7 @@ IconButton {
         width: root.width
         height: root.height
         z: -0.5
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
         shape: root.shape
         spinAngle: root.shapeAngle + drift.value
         color: root.down ? root.shapePressedColor : (root.hovered && root.enabled ? root.shapeHoverColor : root.shapeColor)
@@ -100,7 +100,7 @@ IconButton {
         // wherever it stopped
         Drift {
             id: drift
-            active: !Appearance.bloodMoon && root.turnsOnHover && root.hovered && root.visible
+            active: !Appearance.scarlett && root.turnsOnHover && root.hovered && root.visible
             speed: 40
             period: 360
         }
@@ -112,7 +112,7 @@ IconButton {
         height: root.height
         radius: width / 2
         z: -0.5
-        visible: Appearance.bloodMoon && root.hovered
+        visible: Appearance.scarlett && root.hovered
         color: Qt.alpha(Appearance.colors.layer0, 0.88)
         border.width: 1
         border.color: Qt.rgba(0.9, 0.91, 0.96, 0.32)

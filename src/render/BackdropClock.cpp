@@ -2,7 +2,7 @@
 
 #include "render/SpectrumSource.h"
 
-namespace swiftify {
+namespace scarlett {
 
 BackdropClock::BackdropClock(QObject *parent)
     : QObject(parent)
@@ -73,4 +73,4 @@ void BackdropClock::tick()
     emit frame();
 }
 
-} // namespace swiftify
+} // namespace scarlett

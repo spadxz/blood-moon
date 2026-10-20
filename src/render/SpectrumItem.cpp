@@ -13,7 +13,7 @@
 #include <cmath>
 #include <utility>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -988,4 +988,4 @@ QSGNode *SpectrumItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
     return root;
 }
 
-} // namespace swiftify
+} // namespace scarlett

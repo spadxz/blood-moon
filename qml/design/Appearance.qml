@@ -1,7 +1,7 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // design tokens, after end4's Appearance.qml: rounding, type, motion curves and
 // sizes. colours live in Theme (C++), which follows the system scheme.
@@ -9,7 +9,7 @@ QtObject {
     id: root
 
     final readonly property MaterialScheme colors: Theme.colors
-    final readonly property bool bloodMoon: Settings.themeSource === "blood-moon"
+    final readonly property bool scarlett: Settings.themeSource === "scarlett"
     /// nothing moves of its own accord, over and over: the shapes that turn
     /// with the music, the edges that run while hovered, the seek line's wave
     /// and the backdrop's flow hold still (Settings.reduceMotion). what

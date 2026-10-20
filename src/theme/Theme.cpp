@@ -19,9 +19,9 @@
 
 #include <functional>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcTheme, "swiftify.theme")
+Q_LOGGING_CATEGORY(lcTheme, "scarlett.theme")
 
 namespace {
 
@@ -347,4 +347,4 @@ void Theme::watchSchemeFile()
     }
 }
 
-} // namespace swiftify
+} // namespace scarlett

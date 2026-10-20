@@ -7,7 +7,7 @@
 
 #include <optional>
 
-namespace swiftify {
+namespace scarlett {
 
 /// the songs of a playlist (or the saved songs) as they were last loaded, kept
 /// on disk so a list opened after a restart shows at once rather than after
@@ -31,4 +31,4 @@ private:
     QString m_directory;
 };
 
-} // namespace swiftify
+} // namespace scarlett

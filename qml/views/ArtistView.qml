@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import Swiftify
+import Scarlett
 
 // an artist (ArtistDetailView): top songs, then albums and singles
 Flickable {
@@ -88,9 +88,9 @@ Flickable {
                 width: root.width - 2 * root.margin
                 height: 64
                 radius: 12
-                color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.50)
+                color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.50)
                                             : Qt.alpha(Appearance.colors.surfaceContainerLow, 0.8)
-                border.width: Appearance.bloodMoon ? 1 : 0
+                border.width: Appearance.scarlett ? 1 : 0
                 border.color: Qt.rgba(0.88, 0.89, 0.95, 0.18)
 
                 Row {

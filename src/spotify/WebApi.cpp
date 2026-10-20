@@ -16,7 +16,7 @@
 #include <memory>
 #include <vector>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -428,4 +428,4 @@ QCoro::Task<QHash<QString, bool>> WebApi::savedStatuses(QStringList uris, QStrin
     co_return result;
 }
 
-} // namespace swiftify
+} // namespace scarlett

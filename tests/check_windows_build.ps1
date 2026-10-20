@@ -18,7 +18,7 @@ try {
 }
 Assert-True $failed 'Native command failures must throw with the exit code.'
 
-$fixture = Join-Path ([IO.Path]::GetTempPath()) "swiftify-build-test-$([guid]::NewGuid()) with spaces"
+$fixture = Join-Path ([IO.Path]::GetTempPath()) "scarlett-build-test-$([guid]::NewGuid()) with spaces"
 $originalPath = $env:PATH
 $originalQtRoot = $env:QT_ROOT_DIR
 $originalCargoJobs = $env:CARGO_BUILD_JOBS
@@ -39,7 +39,7 @@ function New-FixtureFile {
 function Find-Application {
     param([string]$Name, [string[]]$Hints = @())
     if ($Name -eq 'cl.exe') {
-        Assert-True ($env:SWIFTIFY_TEST_VS_ENVIRONMENT -eq 'initialized') 'The MSVC developer environment must be initialized before locating cl.exe.'
+        Assert-True ($env:SCARLETT_TEST_VS_ENVIRONMENT -eq 'initialized') 'The MSVC developer environment must be initialized before locating cl.exe.'
         $script:msvcInitializations++
     }
     return Join-Path $fixture $Name
@@ -81,8 +81,8 @@ function Invoke-Native {
                 $build = $Arguments[1]
                 $prefix = $script:configurations[$build]
                 $project = Split-Path -Leaf $build
-                if ($project -eq 'swiftify') {
-                    New-FixtureFile "$prefix\bin\swiftify.exe"
+                if ($project -eq 'scarlett') {
+                    New-FixtureFile "$prefix\bin\scarlett.exe"
                 } else {
                     New-FixtureFile "$prefix\bin\$project.dll"
                 }
@@ -91,7 +91,7 @@ function Invoke-Native {
             }
         }
         'windeployqt.exe' {
-            Assert-True (Test-Path -LiteralPath $Arguments[-1]) 'Swiftify must be installed before deployment.'
+            Assert-True (Test-Path -LiteralPath $Arguments[-1]) 'Scarlett must be installed before deployment.'
             New-FixtureFile (Join-Path (Split-Path -Parent $Arguments[-1]) 'libstdc++-6.dll') 'outdated deployment runtime'
             New-FixtureFile (Join-Path (Split-Path -Parent $Arguments[-1]) 'vc_redist.x64.exe') 'runtime installer'
         }
@@ -115,7 +115,7 @@ try {
     Assert-True ((Find-QtKit '') -eq $qtPath) 'Qt discovery must respect QT_ROOT_DIR.'
     $parameters = @{ QtPath = $qtPath; MingwPath = $mingwPath; BuildRoot = $buildRoot; InstallPrefix = $installPrefix; Jobs = 2 }
     Invoke-WindowsBuild @parameters
-    Assert-True (Test-Path -LiteralPath "$installPrefix\bin\swiftify.exe") 'Swiftify was not installed.'
+    Assert-True (Test-Path -LiteralPath "$installPrefix\bin\scarlett.exe") 'Scarlett was not installed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\qtkeychain.dll") 'QtKeychain runtime was not deployed.'
     Assert-True (Test-Path -LiteralPath "$installPrefix\bin\qcoro.dll") 'QCoro runtime was not deployed.'
     Assert-True ((Get-Content -LiteralPath "$installPrefix\bin\libstdc++-6.dll" -Raw).Trim() -eq 'selected compiler runtime') 'The selected compiler runtime must replace the deployment tool runtime.'
@@ -148,7 +148,7 @@ param([string]$Arch, [string]$HostArch, [switch]$SkipAutomaticLocation)
 if ($Arch -ne 'amd64' -or $HostArch -ne 'amd64' -or -not $SkipAutomaticLocation) {
     throw 'The developer shell must target x64 without changing directories.'
 }
-$env:SWIFTIFY_TEST_VS_ENVIRONMENT = 'initialized'
+$env:SCARLETT_TEST_VS_ENVIRONMENT = 'initialized'
 $env:VCToolsRedistDir = Join-Path $PSScriptRoot '..\..\VC\Redist\MSVC\14.44'
 '@
     New-FixtureFile "$fixture\VS\VC\Redist\MSVC\14.44\x64\Microsoft.VC143.CRT\vcruntime140.dll" 'msvc runtime'
@@ -168,7 +168,7 @@ $env:VCToolsRedistDir = Join-Path $PSScriptRoot '..\..\VC\Redist\MSVC\14.44'
     Assert-True ($script:configurations.Count -eq 6) 'Different Qt/compiler kits must have separate build directories.'
     Assert-True ($env:PATH -eq $originalPath) 'The original PATH must be restored.'
     Assert-True ($env:CARGO_BUILD_JOBS -eq $originalCargoJobs) 'The original Cargo parallelism must be restored.'
-    Assert-True (-not (Test-Path Env:SWIFTIFY_TEST_VS_ENVIRONMENT)) 'Developer shell environment changes must not leak into the caller.'
+    Assert-True (-not (Test-Path Env:SCARLETT_TEST_VS_ENVIRONMENT)) 'Developer shell environment changes must not leak into the caller.'
     Assert-True ((Get-Location).Path -eq $originalLocation) 'The original working directory must be restored.'
     Write-Host 'Windows build script tests passed.'
 } finally {
@@ -177,7 +177,7 @@ $env:VCToolsRedistDir = Join-Path $PSScriptRoot '..\..\VC\Redist\MSVC\14.44'
     $env:CARGO_BUILD_JOBS = $originalCargoJobs
     $resolvedFixture = [IO.Path]::GetFullPath($fixture)
     $temporaryRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\') + '\'
-    if ($resolvedFixture.StartsWith($temporaryRoot, [StringComparison]::OrdinalIgnoreCase) -and (Split-Path -Leaf $resolvedFixture) -like 'swiftify-build-test-*') {
+    if ($resolvedFixture.StartsWith($temporaryRoot, [StringComparison]::OrdinalIgnoreCase) -and (Split-Path -Leaf $resolvedFixture) -like 'scarlett-build-test-*') {
         Remove-Item -LiteralPath $resolvedFixture -Recurse -Force -ErrorAction SilentlyContinue
     }
 }

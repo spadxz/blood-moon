@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // what it holds, cut to a rounded rectangle whose edge turns to running
 // scallops (rounded_image.frag) while `wavy`, springing in and out. at rest
@@ -16,7 +16,7 @@ Item {
     /// how deep the scallops cut while wavy, in pixels
     property real depth: 3.5
     property real wavelength: 22
-    property real waviness: wavy && !Settings.noShapes && !Appearance.bloodMoon ? depth : 0
+    property real waviness: wavy && !Settings.noShapes && !Appearance.scarlett ? depth : 0
     readonly property real phase: drift.value
     readonly property bool waving: Math.abs(waviness) > 0.01
 
@@ -27,7 +27,7 @@ Item {
 
     Drift {
         id: drift
-        active: root.wavy && root.visible && !Settings.noShapes && !Appearance.bloodMoon && !Appearance.reduceMotion
+        active: root.wavy && root.visible && !Settings.noShapes && !Appearance.scarlett && !Appearance.reduceMotion
         speed: 2 * Math.PI / 3.6
     }
 

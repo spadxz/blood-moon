@@ -20,9 +20,9 @@
 #include <utility>
 #include <QCoroSignal>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcArtwork, "swiftify.artwork")
+Q_LOGGING_CATEGORY(lcArtwork, "scarlett.artwork")
 
 namespace {
 
@@ -178,7 +178,7 @@ void ArtworkCache::image(const QUrl &url, int pixels, ImageCallback callback)
     }
     m_decodes.insert(key, {std::move(callback)});
 
-    if (url.scheme() == QStringLiteral("swiftify-cover")) {
+    if (url.scheme() == QStringLiteral("scarlett-cover")) {
         const QString identity = QUrlQuery(url).queryItemValue(QStringLiteral("key"), QUrl::FullyDecoded);
         const bool dark = url.path() == QStringLiteral("/dark");
         QtConcurrent::run(QThreadPool::globalInstance(), covers::fallback, identity, dark, size)
@@ -270,6 +270,6 @@ QQuickImageResponse *ArtworkImageProvider::requestImageResponse(const QString &i
     return new ArtworkResponse(url, pixels);
 }
 
-} // namespace swiftify
+} // namespace scarlett
 
 #include "ArtworkCache.moc"

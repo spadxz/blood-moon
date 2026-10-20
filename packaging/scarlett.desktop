@@ -1,21 +1,21 @@
 [Desktop Entry]
 Type=Application
-Name=Blood Moon
+Name=Scarlett
 GenericName=Music Player
 Comment=Play your Spotify library
-Exec=swiftify
-Icon=swiftify
+Exec=scarlett
+Icon=scarlett
 Terminal=false
 Categories=AudioVideo;Audio;Player;
 Keywords=spotify;music;player;lyrics;
-StartupWMClass=swiftify
+StartupWMClass=scarlett
 SingleMainWindow=true
 Actions=Immersive;PlayPause;
 
 [Desktop Action Immersive]
 Name=Open Immersive Player
-Exec=swiftify --immersive
+Exec=scarlett --immersive
 
 [Desktop Action PlayPause]
 Name=Play or Pause
-Exec=swiftify --play-pause
+Exec=scarlett --play-pause

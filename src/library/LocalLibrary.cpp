@@ -3,7 +3,7 @@
 #include "app/Paths.h"
 #include "app/Settings.h"
 
-#include <swiftify_core.h>
+#include <scarlett_core.h>
 
 #include <QCollator>
 #include <QDir>
@@ -23,9 +23,9 @@
 #include <cstdint>
 #include <utility>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcLocal, "swiftify.local")
+Q_LOGGING_CATEGORY(lcLocal, "scarlett.local")
 
 namespace {
 
@@ -46,16 +46,16 @@ const QSet<QString> kMusicExtensions {
 QJsonObject readTags(const QString &path, const QString &artworkDirectory)
 {
     char *error = nullptr;
-    char *json = swiftify_read_local_tags(path.toUtf8().constData(), artworkDirectory.toUtf8().constData(), &error);
+    char *json = scarlett_read_local_tags(path.toUtf8().constData(), artworkDirectory.toUtf8().constData(), &error);
     if (!json) {
         if (error) {
             qCDebug(lcLocal).noquote() << "skipping" << path << ':' << QString::fromUtf8(error);
-            swiftify_string_free(error);
+            scarlett_string_free(error);
         }
         return {};
     }
     const QByteArray bytes(json);
-    swiftify_string_free(json);
+    scarlett_string_free(json);
     return QJsonDocument::fromJson(bytes).object();
 }
 
@@ -506,14 +506,14 @@ void LocalLibrary::editTags(const QString &uri, const QVariantMap &fields, const
     const QByteArray json = QJsonDocument(edits).toJson(QJsonDocument::Compact);
     // written away from the window: a large file is copied whole
     QtConcurrent::run(QThreadPool::globalInstance(), [path, json, artworkJpeg]() -> QString {
-        char *error = swiftify_write_local_tags(path.toUtf8().constData(), json.constData(),
+        char *error = scarlett_write_local_tags(path.toUtf8().constData(), json.constData(),
                                                 reinterpret_cast<const uint8_t *>(artworkJpeg.constData()),
                                                 size_t(artworkJpeg.size()));
         if (!error) {
             return {};
         }
         const QString message = QString::fromUtf8(error);
-        swiftify_string_free(error);
+        scarlett_string_free(error);
         return message;
     }).then(this, [this, uri, path](const QString &error) {
         if (!error.isEmpty()) {
@@ -1136,4 +1136,4 @@ void LocalLibrary::reorder(const QString &id, const QStringList &uris)
     publishPlaylists();
 }
 
-} // namespace swiftify
+} // namespace scarlett

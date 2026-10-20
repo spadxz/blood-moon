@@ -3,7 +3,7 @@
 #include <QJsonObject>
 #include <QTranslator>
 
-namespace swiftify {
+namespace scarlett {
 
 class Settings;
 
@@ -28,4 +28,4 @@ private:
     bool m_russian = false;
 };
 
-} // namespace swiftify
+} // namespace scarlett

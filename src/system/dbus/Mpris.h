@@ -6,11 +6,11 @@
 #include <QObject>
 #include <QVariantMap>
 
-namespace swiftify {
+namespace scarlett {
 
 class PlaybackController;
 
-/// the player on the session bus as org.mpris.MediaPlayer2.swiftify, so media
+/// the player on the session bus as org.mpris.MediaPlayer2.scarlett, so media
 /// keys, playerctl and shell media widgets (end4's included) can see and drive
 /// it. the job SystemMediaSession.swift does with MPNowPlayingInfoCenter.
 class Mpris : public QObject {
@@ -82,8 +82,8 @@ public:
     bool canQuit() const { return true; }
     bool canRaise() const { return true; }
     bool hasTrackList() const { return false; }
-    QString identity() const { return QStringLiteral("Swiftify"); }
-    QString desktopEntry() const { return QStringLiteral("swiftify"); }
+    QString identity() const { return QStringLiteral("Scarlett"); }
+    QString desktopEntry() const { return QStringLiteral("scarlett"); }
     QStringList supportedUriSchemes() const { return {}; }
     QStringList supportedMimeTypes() const { return {}; }
 
@@ -153,4 +153,4 @@ private:
     Mpris *m_mpris;
 };
 
-} // namespace swiftify
+} // namespace scarlett

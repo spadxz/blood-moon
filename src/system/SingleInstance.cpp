@@ -7,7 +7,7 @@
 #include <windows.h>
 #endif
 
-namespace swiftify {
+namespace scarlett {
 
 QString SingleInstance::commandFrom(const QStringList &arguments)
 {
@@ -37,7 +37,7 @@ SingleInstance::SingleInstance(QObject *parent)
 
 QString SingleInstance::serverName()
 {
-    return QStringLiteral("swiftify-") + QDir::home().dirName();
+    return QStringLiteral("scarlett-") + QDir::home().dirName();
 }
 
 bool SingleInstance::forwardToRunningInstance(const QStringList &arguments)
@@ -70,4 +70,4 @@ void SingleInstance::listen()
     m_server.listen(serverName());
 }
 
-} // namespace swiftify
+} // namespace scarlett

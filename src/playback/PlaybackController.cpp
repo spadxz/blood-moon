@@ -26,9 +26,9 @@
 #include <initializer_list>
 #include <utility>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcPlayer, "swiftify.player")
+Q_LOGGING_CATEGORY(lcPlayer, "scarlett.player")
 
 namespace {
 
@@ -111,8 +111,10 @@ PlaybackController::PlaybackController(PlaybackCore *core, SpotifySession *sessi
         m_settings->value(kVolumeBeforeMuteKey, storedVolume > 0.01 ? storedVolume : 0.75).toDouble(), 0.01, 1.0);
     try {
         m_core->setVolume(float(m_volume));
+        m_core->setAudioOutputDevice(m_settings->audioOutputDevice());
     } catch (const SpotifyError &) {
     }
+    refreshAudioOutputDevices();
 
     const QJsonArray savedHistory = QJsonDocument::fromJson(m_settings->value(kListeningHistoryKey).toByteArray()).array();
     for (const QJsonValue &value : savedHistory) {
@@ -535,7 +537,7 @@ void PlaybackController::adoptRemoteSong(const Song &song)
     // a song restored from the last run, waiting for play, is not what plays
     m_restoredPlayback = false;
     m_resumePositionMs = 0;
-    // what comes next is up to whoever started it; swiftify's own up next
+    // what comes next is up to whoever started it; scarlett's own up next
     // would only be wrong about it
     m_queue = {song};
     m_shuffledQueue = {song};
@@ -871,7 +873,7 @@ void PlaybackController::playLoadingTest()
 {
     Song song;
     song.name = QStringLiteral("Loading Test");
-    song.artists = QStringLiteral("Blood Moon");
+    song.artists = QStringLiteral("Scarlett");
     song.albumName = QStringLiteral("Debugging");
     song.uri = QString::fromLatin1(kLoadingTestUri);
     song.durationMs = 180'000;
@@ -1253,7 +1255,7 @@ void PlaybackController::prepareForSleep()
     m_session->markPlaybackConnectionSuspect();
 }
 
-QCoro::Task<> PlaybackController::restartAudioOutput(CancelToken token)
+QCoro::Task<> PlaybackController::restartAudioOutput(CancelToken token, bool resumeAfter)
 {
     if (!m_currentSong) {
         m_audioOutputNeedsRestart = false;
@@ -1284,8 +1286,14 @@ QCoro::Task<> PlaybackController::restartAudioOutput(CancelToken token)
             m_core->seek(position);
         }
         m_playbackNeedsLoad = false;
-        setStatus(QStringLiteral("Playing"));
-        setPlaying(true);
+        if (resumeAfter) {
+            setStatus(QStringLiteral("Playing"));
+            setPlaying(true);
+        } else {
+            m_core->pause();
+            setStatus(QStringLiteral("Paused"));
+            setPlaying(false);
+        }
         m_errors->clear();
         syncMediaSession();
         co_return;
@@ -1311,6 +1319,12 @@ QCoro::Task<> PlaybackController::restartAudioOutput(CancelToken token)
     setStatus(m_session->isConnected() ? QStringLiteral("Connected") : QStringLiteral("Disconnected"));
     reportError(QStringLiteral("Restarting the audio output"), failure);
     syncMediaSession();
+}
+
+QCoro::Task<> PlaybackController::runRestartAudioOutput(CancelToken token, bool resumeAfter)
+{
+    co_await restartAudioOutput(token, resumeAfter);
+    m_playbackRequest.finish(token);
 }
 
 // --- skipping, seeking, volume ------------------------------------------------------------
@@ -1388,6 +1402,41 @@ void PlaybackController::skipForward()
     if (const auto next = nextQueueSong(m_repeatMode == RepeatMode::All)) {
         startPlayback(*next);
     }
+}
+
+void PlaybackController::refreshAudioOutputDevices()
+{
+    const QVariantList devices = m_core->audioOutputDevices();
+    if (m_audioOutputDevices == devices) {
+        return;
+    }
+    m_audioOutputDevices = devices;
+    emit audioOutputDevicesChanged();
+}
+
+void PlaybackController::selectAudioOutputDevice(const QString &id)
+{
+    if (id == m_settings->audioOutputDevice()) {
+        return;
+    }
+    try {
+        m_core->setAudioOutputDevice(id);
+    } catch (const SpotifyError &error) {
+        refreshAudioOutputDevices();
+        reportError(QStringLiteral("Changing the audio output"), error.message());
+        return;
+    }
+    m_settings->setAudioOutputDevice(id);
+    if (!m_currentSong || m_remote) {
+        return;
+    }
+
+    const bool resumeAfter = m_playing;
+    m_playbackRequest.cancel();
+    m_audioOutputNeedsRestart = true;
+    setPlaying(false);
+    const CancelToken token = m_playbackRequest.renew();
+    detach(runRestartAudioOutput(token, resumeAfter));
 }
 
 void PlaybackController::seek(int requestedMs)
@@ -1868,4 +1917,4 @@ void PlaybackController::reset()
     syncMediaSession();
 }
 
-} // namespace swiftify
+} // namespace scarlett

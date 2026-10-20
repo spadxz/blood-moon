@@ -18,8 +18,8 @@
 #include <unistd.h>
 #endif
 
-namespace swiftify {
-Q_LOGGING_CATEGORY(lcDiscord, "swiftify.discord", QtInfoMsg)
+namespace scarlett {
+Q_LOGGING_CATEGORY(lcDiscord, "scarlett.discord", QtInfoMsg)
 namespace {
 DiscordPresence *s_instance = nullptr;
 
@@ -71,7 +71,7 @@ QByteArray discord::frame(quint32 opcode, const QByteArray &payload)
 QStringList discord::socketCandidates(const QStringList &roots)
 {
     // Apply sandbox layouts to every root, not only XDG_RUNTIME_DIR: Discord
-    // and wrappers may choose different runtime/TMP variables than Swiftify.
+    // and wrappers may choose different runtime/TMP variables than Scarlett.
     static const QStringList suffixes {QString(),
         QStringLiteral("app/com.discordapp.Discord"),
         QStringLiteral("app/com.discordapp.DiscordCanary"),
@@ -324,7 +324,7 @@ void DiscordPresence::update()
     const QString title = fitText(song.name);
     const bool playing = m_player->isPlaying();
     QJsonObject activity {{QStringLiteral("type"), 2},
-                          {QStringLiteral("name"), QStringLiteral("Blood Moon")},
+                          {QStringLiteral("name"), QStringLiteral("Scarlett")},
                           {QStringLiteral("details"), title.isEmpty() ? QStringLiteral("Listening to music") : title},
                           {QStringLiteral("instance"), false}};
     const QString state = fitText(playing ? song.artists
@@ -362,4 +362,4 @@ void DiscordPresence::update()
     m_published = true;
 }
 
-} // namespace swiftify
+} // namespace scarlett

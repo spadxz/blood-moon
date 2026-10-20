@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // cover art: decoded at about the size shown, clipped by a shader rather
 // than a layer, over a procedural record sleeve until it arrives. with
@@ -58,12 +58,12 @@ Item {
     property bool squiggly: true
     /// with no shapes (Settings.noShapes) a round cover's edge is a plain
     /// circle, and no edge waves
-    readonly property bool showsSquiggle: circular && squiggly && !Settings.noShapes && !Appearance.bloodMoon && Math.min(width, height) >= 40
+    readonly property bool showsSquiggle: circular && squiggly && !Settings.noShapes && !Appearance.scarlett && Math.min(width, height) >= 40
     property color squiggleColor: Appearance.colors.primary
     /// the players' covers turn their squiggle with the music; anywhere else
     /// it turns while the pointer is on it, or on what holds the cover
     property bool squiggleFollowsPlayback: false
-    property bool squiggleTurning: hover.hovered
+    property bool squiggleTurning: false
     property real squiggleSpin: 0
     // eases the hovered spin in and out rather than starting it dead
     property real squiggleSpeed: squiggleTurning && !Appearance.reduceMotion && !App.pointerResting ? 1 : 0
@@ -112,7 +112,7 @@ Item {
         property color borderColor
         property size uvScale: imageAspect > itemAspect ? Qt.size(itemAspect / imageAspect, 1) : Qt.size(1, imageAspect / itemAspect)
         property point uvOffset: Qt.point((1 - uvScale.width) / 2, (1 - uvScale.height) / 2)
-        property real waviness: Settings.noShapes || Appearance.bloodMoon ? 0 : root.waviness
+        property real waviness: Settings.noShapes || Appearance.scarlett ? 0 : root.waviness
         property real wavelength: root.wavelength
         property real phase: root.wavePhase
         property real ringWaves: root.showsSquiggle ? root.squiggleWaves : 0
@@ -129,7 +129,7 @@ Item {
     // the scallops run round the edge while it is wavy, easing in and out
     Drift {
         id: waveDrift
-        active: Math.abs(root.waviness) > 0.01 && root.visible && !Settings.noShapes && !Appearance.bloodMoon && !Appearance.reduceMotion
+        active: Math.abs(root.waviness) > 0.01 && root.visible && !Settings.noShapes && !Appearance.scarlett && !Appearance.reduceMotion
         speed: 2 * Math.PI / 3.6
     }
 
@@ -157,7 +157,7 @@ Item {
             anchors.fill: parent
             visible: false
             asynchronous: true
-            source: root.artworkUrl("swiftify-cover:/" + (Theme.dark ? "dark" : "light")
+            source: root.artworkUrl("scarlett-cover:/" + (Theme.dark ? "dark" : "light")
                                     + "?key=" + encodeURIComponent(root.fallbackKey))
             sourceSize: Qt.size(root.pixelSize, root.pixelSize)
         }

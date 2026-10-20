@@ -2,7 +2,7 @@
 # (v0.10.0) builds all three and puts them on a draft release to publish by
 # hand. it also runs from the actions tab, and on pull requests that change how
 # the builds are made
-name: Blood Moon builds
+name: Scarlett builds
 
 on:
   push:
@@ -30,12 +30,12 @@ jobs:
         id: version
         shell: bash
         run: |
-          version="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
+          version="$(sed -n '/^project(Scarlett/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
           if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1
           fi
-          echo "name=blood-moon-$version-windows-x86_64" >> "$GITHUB_OUTPUT"
+          echo "name=scarlett-$version-windows-x86_64" >> "$GITHUB_OUTPUT"
 
       # as ctest runs it. the test runs a failing command on purpose, which a
       # plain pwsh step would report as its own exit code
@@ -63,8 +63,8 @@ jobs:
       - name: check the media controls are in
         shell: pwsh
         run: |
-          $cache = Get-ChildItem "$env:RUNNER_TEMP\build\*\swiftify\CMakeCache.txt"
-          if (-not (Select-String -Path $cache -Pattern '^SWIFTIFY_HAVE_SMTC:INTERNAL=1$' -Quiet)) {
+          $cache = Get-ChildItem "$env:RUNNER_TEMP\build\*\scarlett\CMakeCache.txt"
+          if (-not (Select-String -Path $cache -Pattern '^SCARLETT_HAVE_SMTC:INTERNAL=1$' -Quiet)) {
             throw 'built without the windows media controls'
           }
 
@@ -115,7 +115,7 @@ jobs:
 
       - name: version
         run: |
-          version="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
+          version="$(sed -n '/^project(Scarlett/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
           if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1
@@ -181,7 +181,7 @@ jobs:
 
       - name: version
         run: |
-          version="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
+          version="$(sed -n '/^project(Scarlett/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
           if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1

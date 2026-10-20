@@ -20,7 +20,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 class ErrorCenter;
 class PlaybackCore;
@@ -318,4 +318,4 @@ QCoro::Task<T> SpotifySession::withLibraryAccessToken(std::function<QCoro::Task<
     }
 }
 
-} // namespace swiftify
+} // namespace scarlett

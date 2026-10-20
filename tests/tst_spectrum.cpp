@@ -18,7 +18,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-using namespace swiftify;
+using namespace scarlett;
 
 /// SpectrumRenderingTests.swift: peaks survive reduction, the layout budget
 /// holds at every window size, bars ease and rest, and paused bars stop.
@@ -116,7 +116,7 @@ private slots:
     void barsEaseUpThenRestWhenPaused()
     {
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         ErrorCenter errors {nullptr};
         MemoryCredentialStore credentials;
         QNetworkAccessManager network;
@@ -191,7 +191,7 @@ private slots:
     void theBackdropFlowsOnlyWhilePlayingAndHoldsOnPause()
     {
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         ErrorCenter errors {nullptr};
         MemoryCredentialStore credentials;
         QNetworkAccessManager network;

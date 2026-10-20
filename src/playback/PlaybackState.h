@@ -4,7 +4,7 @@
 #include <QByteArray>
 #include <optional>
 
-namespace swiftify::playbackstate {
+namespace scarlett::playbackstate {
 
 constexpr int maximumQueue = 2000;
 
@@ -25,4 +25,4 @@ QByteArray encode(const QList<Song> &queue, const QList<Song> &shuffled,
                   quint32 positionMs, quint32 durationMs, bool shuffle, int repeat);
 std::optional<Snapshot> decode(const QByteArray &bytes);
 
-} // namespace swiftify::playbackstate
+} // namespace scarlett::playbackstate

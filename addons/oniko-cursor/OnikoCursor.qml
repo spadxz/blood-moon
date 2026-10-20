@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // A lightweight vector companion: no image assets, timers, or mouse polling.
 // HoverHandler passively observes pointer motion and does not take clicks.

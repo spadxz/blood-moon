@@ -19,14 +19,14 @@
 #include "theme/PlayerStyle.h"
 #include "theme/Theme.h"
 
-#ifdef SWIFTIFY_HAS_SOLOIST
+#ifdef SCARLETT_HAS_SOLOIST
 #include "soloist/SoloistCore.h"
 #endif
-#if defined(SWIFTIFY_HAS_DBUS) && defined(Q_OS_LINUX)
+#if defined(SCARLETT_HAS_DBUS) && defined(Q_OS_LINUX)
 #include "system/dbus/Mpris.h"
 #include "system/dbus/SleepMonitor.h"
 #endif
-#if defined(SWIFTIFY_DESKTOP_INTEGRATION) && defined(SWIFTIFY_HAS_DBUS) && defined(Q_OS_LINUX)
+#if defined(SCARLETT_DESKTOP_INTEGRATION) && defined(SCARLETT_HAS_DBUS) && defined(Q_OS_LINUX)
 #include "system/linux/AudioDeviceMonitor.h"
 #endif
 #ifdef Q_OS_MACOS
@@ -69,9 +69,9 @@
 #include <cstdlib>
 #endif
 
-Q_IMPORT_QML_PLUGIN(SwiftifyPlugin)
+Q_IMPORT_QML_PLUGIN(ScarlettPlugin)
 
-using namespace swiftify;
+using namespace scarlett;
 
 namespace {
 
@@ -204,18 +204,18 @@ private:
 
 #ifdef Q_OS_LINUX
 /// alsa audio streams routing through pipewire or pulseaudio default to generic
-/// labels like "PipeWire ALSA [swiftify]" or "PulseAudio ALSA [swiftify]".
-/// these variables tell their alsa plugins to present the stream as Blood Moon
+/// labels like "PipeWire ALSA [scarlett]" or "PulseAudio ALSA [scarlett]".
+/// these variables tell their alsa plugins to present the stream as Scarlett
 /// with its application icon and music media role in pavucontrol and mixers
 void setupAudioEnvironment()
 {
     if (!qEnvironmentVariableIsSet("PIPEWIRE_ALSA")) {
         qputenv("PIPEWIRE_ALSA",
-                "{ application.name=\"Blood Moon\" application.icon-name=\"swiftify\" node.name=\"Blood Moon\" "
-                "node.description=\"Blood Moon\" media.name=\"Playback\" media.role=\"music\" }");
+                "{ application.name=\"Scarlett\" application.icon-name=\"scarlett\" node.name=\"Scarlett\" "
+                "node.description=\"Scarlett\" media.name=\"Playback\" media.role=\"music\" }");
     }
     if (!qEnvironmentVariableIsSet("PULSE_PROP")) {
-        qputenv("PULSE_PROP", "application.name=Blood Moon application.icon_name=swiftify media.role=music");
+        qputenv("PULSE_PROP", "application.name=Scarlett application.icon_name=scarlett media.role=music");
     }
 }
 #endif
@@ -235,12 +235,12 @@ int main(int argc, char *argv[])
     startCompact(argv);
 #endif
     tuneSceneGraph();
-    // Preserve the settings identity; expose Blood Moon as the product name.
-    QGuiApplication::setApplicationName(QStringLiteral("Swiftify"));
-    QGuiApplication::setApplicationDisplayName(QStringLiteral("Blood Moon"));
-    QGuiApplication::setApplicationVersion(QStringLiteral(SWIFTIFY_VERSION));
+    // Use Scarlett as the product and settings identity; Settings migrates the old preferences.
+    QGuiApplication::setApplicationName(QStringLiteral("Scarlett"));
+    QGuiApplication::setApplicationDisplayName(QStringLiteral("Scarlett"));
+    QGuiApplication::setApplicationVersion(QStringLiteral(SCARLETT_VERSION));
     // the wayland app id, which hyprland window rules and the .desktop file match.
-    QGuiApplication::setDesktopFileName(QStringLiteral("swiftify"));
+    QGuiApplication::setDesktopFileName(QStringLiteral("scarlett"));
     // the tray menu can fall back to widgets on linux
 #if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
     QApplication application(argc, argv);
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 #endif
 #ifndef Q_OS_MACOS
     // x11 shows this; wayland goes by the desktop entry, macos by the bundle
-    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/qt/qml/Swiftify/resources/swiftify-icon.png")));
+    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/qt/qml/Scarlett/resources/scarlett-icon.png")));
 #endif
 
     SingleInstance instance;
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
     application.installEventFilter(&windowTuner);
 #endif
 
-    // the plain style: every control swiftify shows is drawn by its own components.
+    // the plain style: every control scarlett shows is drawn by its own components.
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     fonts::loadIconFont();
     fonts::loadInterfaceFont();
@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
     ErrorCenter errors(nullptr);
     QNetworkAccessManager network;
     RustCore rustCore;
-#ifdef SWIFTIFY_HAS_SOLOIST
+#ifdef SCARLETT_HAS_SOLOIST
     // spotify's songs through soloist when it is installed and has a key, with
     // the rust core keeping the login, lyrics and local files
     std::unique_ptr<SoloistCore> soloistCore;
@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
     instance.listen();
 
 // qt finds d-bus on macos too, but mpris and logind only exist on linux
-#if defined(SWIFTIFY_HAS_DBUS) && defined(Q_OS_LINUX)
+#if defined(SCARLETT_HAS_DBUS) && defined(Q_OS_LINUX)
     Mpris mpris(&player);
     QObject::connect(&mpris, &Mpris::raiseRequested, &app, &AppController::raiseRequested);
     QObject::connect(&mpris, &Mpris::quitRequested, &app, &AppController::quit);
@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
     // the media keys, headphone buttons and control centre's now playing
     NowPlaying nowPlaying(&player, &artwork);
 #endif
-#if defined(SWIFTIFY_DESKTOP_INTEGRATION) && defined(SWIFTIFY_HAS_DBUS) && defined(Q_OS_LINUX)
+#if defined(SCARLETT_DESKTOP_INTEGRATION) && defined(SCARLETT_HAS_DBUS) && defined(Q_OS_LINUX)
     AudioDeviceMonitor devices;
     QObject::connect(&devices, &AudioDeviceMonitor::outputLost, &player, &PlaybackController::invalidateAudioOutput);
     QObject::connect(&devices, &AudioDeviceMonitor::outputArrived, &mpris, &Mpris::noteOutputArrived);
@@ -357,7 +357,7 @@ int main(int argc, char *argv[])
     engine.addImageProvider(QStringLiteral("art"), new ArtworkImageProvider);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &application,
                      [] { QCoreApplication::exit(EXIT_FAILURE); }, Qt::QueuedConnection);
-    engine.loadFromModule("Swiftify", "Main");
+    engine.loadFromModule("Scarlett", "Main");
     // the first launch carries out its own command too, once the window exists
     if (const QString command = SingleInstance::commandFrom(QCoreApplication::arguments()); command != QLatin1StringView("raise")) {
         app.handleCommand(command);

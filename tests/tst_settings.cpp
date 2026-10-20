@@ -4,7 +4,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-using swiftify::Settings;
+using scarlett::Settings;
 
 class SettingsTest : public QObject {
     Q_OBJECT
@@ -13,7 +13,7 @@ private slots:
     void discordPreferencesPersist()
     {
         QTemporaryDir directory;
-        const QString path = directory.filePath(QStringLiteral("swiftify.conf"));
+        const QString path = directory.filePath(QStringLiteral("scarlett.conf"));
         {
             Settings settings(path);
             QVERIFY(!settings.discordEnabled());
@@ -38,7 +38,7 @@ private slots:
     void languagePreferencePersists()
     {
         QTemporaryDir directory;
-        const QString path = directory.filePath(QStringLiteral("swiftify.conf"));
+        const QString path = directory.filePath(QStringLiteral("scarlett.conf"));
         {
             Settings settings(path);
             QCOMPARE(settings.language(), QStringLiteral("system"));
@@ -56,7 +56,7 @@ private slots:
     void defaultsMatchTheMacApp()
     {
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         QCOMPARE(settings.visualizersEnabled(), true);
         QCOMPARE(settings.playerBarVisualizer(), true);
         QCOMPARE(settings.trackListVisualizer(), true);
@@ -94,7 +94,7 @@ private slots:
     {
         QFETCH(QString, source);
         QTemporaryDir directory;
-        const QString path = directory.filePath(QStringLiteral("swiftify.conf"));
+        const QString path = directory.filePath(QStringLiteral("scarlett.conf"));
         {
             QSettings store(path, QSettings::IniFormat);
             store.setValue(QStringLiteral("themeSource"), source);
@@ -114,7 +114,7 @@ private slots:
     {
         QFETCH(bool, nativeTitleBar);
         QTemporaryDir directory;
-        const QString path = directory.filePath(QStringLiteral("swiftify.conf"));
+        const QString path = directory.filePath(QStringLiteral("scarlett.conf"));
         {
             Settings settings(path);
             settings.setNativeTitleBar(!nativeTitleBar);
@@ -130,7 +130,7 @@ private slots:
     void valuesAreSanitized()
     {
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         settings.setVisualizerSensitivity(4.0);
         QCOMPARE(settings.visualizerSensitivity(), 1.8);
         settings.setStreamingQuality(128);
@@ -147,7 +147,7 @@ private slots:
     void changesNotifyOnceAndPersistUnderTheMacKeys()
     {
         QTemporaryDir directory;
-        const QString path = directory.filePath(QStringLiteral("swiftify.conf"));
+        const QString path = directory.filePath(QStringLiteral("scarlett.conf"));
         {
             Settings settings(path);
             QSignalSpy spy(&settings, &Settings::visualizerShapeChanged);
@@ -198,7 +198,7 @@ private slots:
     void windowControlsOnRightPersists()
     {
         QTemporaryDir directory;
-        const QString path = directory.filePath(QStringLiteral("swiftify.conf"));
+        const QString path = directory.filePath(QStringLiteral("scarlett.conf"));
         {
             Settings settings(path);
             QSignalSpy spy(&settings, &Settings::windowControlsOnRightChanged);

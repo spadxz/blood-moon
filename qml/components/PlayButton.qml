@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // the play button wherever music starts: a clean circle in both playback
 // states, with a small glyph pop when play/pause changes.

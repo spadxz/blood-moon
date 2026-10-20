@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-using namespace swiftify;
+using namespace scarlett;
 
 class PaletteTest : public QObject {
     Q_OBJECT

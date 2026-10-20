@@ -7,7 +7,7 @@
 #include <QPointer>
 #include <QtConcurrent>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -55,4 +55,4 @@ void ArtworkColors::setSource(const QUrl &source)
     });
 }
 
-} // namespace swiftify
+} // namespace scarlett

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // the seek line: a wave while playing, a slim track at rest, thicker with a
 // handle while hovered or dragged. a drag commits on release, and only for the
@@ -84,7 +84,7 @@ Item {
         property size itemSize: Qt.size(width, height)
         property real progress: root.shownFraction
         // flat with no shapes, and with reduced motion, as the wave would run
-        property real amplitude: root.playing && !Appearance.reduceMotion && !Settings.noShapes && !Appearance.bloodMoon
+        property real amplitude: root.playing && !Appearance.reduceMotion && !Settings.noShapes && !Appearance.scarlett
                                  ? (root.expanded ? 2.4 : 1.6) : 0
         property real wavelength: 34
         // flows along at a wavelength every 1.6 s, on the shared 30 hz clock

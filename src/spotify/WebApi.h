@@ -12,7 +12,7 @@
 
 class QNetworkAccessManager;
 
-namespace swiftify {
+namespace scarlett {
 
 /// the spotify web api calls the library needs, as SpotifyWebAPI.swift makes
 /// them. every call throws SpotifyError on failure; a 401 surfaces as Unauthorized
@@ -73,4 +73,4 @@ private:
     QNetworkAccessManager *m_network;
 };
 
-} // namespace swiftify
+} // namespace scarlett

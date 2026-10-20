@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // text that scrolls horizontally when its contents overflow the available
 // width instead of cutting off or eliding. when it fits, it remains still and

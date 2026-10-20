@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a shelf's heading: a symbol on a shape, the title drawn round, and a
 // squiggle running on to "See All". hovering the heading turns the shape.
@@ -14,7 +14,7 @@ Item {
     signal seeAll()
 
     implicitHeight: 40
-    implicitWidth: Appearance.bloodMoon ? root.width : titleText.x + titleText.implicitWidth
+    implicitWidth: Appearance.scarlett ? root.width : titleText.x + titleText.implicitWidth
 
     HoverHandler {
         id: hover
@@ -24,7 +24,7 @@ Item {
         id: badge
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        visible: root.symbol.length > 0 && !Appearance.bloodMoon
+        visible: root.symbol.length > 0 && !Appearance.scarlett
         size: 34
         iconSize: 18
         shape: root.iconShape
@@ -41,7 +41,7 @@ Item {
         text: root.title
         elide: Text.ElideRight
         font.pixelSize: root.width < 320 ? Appearance.fontSize.larger : Appearance.fontSize.title
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
     }
 
     WavyLine {
@@ -51,7 +51,7 @@ Item {
         anchors.rightMargin: 14
         anchors.verticalCenter: parent.verticalCenter
         height: 8
-        visible: width > 24 && !Appearance.bloodMoon
+        visible: width > 24 && !Appearance.scarlett
         color: Appearance.colors.outlineVariant
     }
 
@@ -60,7 +60,7 @@ Item {
         objectName: "sectionSeeAll"
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        visible: root.showsSeeAll && !Appearance.bloodMoon
+        visible: root.showsSeeAll && !Appearance.scarlett
         variant: TextButton.Tonal
         symbol: "arrow_forward"
         text: qsTr("See All")
@@ -72,7 +72,7 @@ Item {
     Row {
         anchors.centerIn: parent
         spacing: 10
-        visible: Appearance.bloodMoon
+        visible: Appearance.scarlett
 
         TitleText {
             anchors.verticalCenter: parent.verticalCenter

@@ -11,7 +11,7 @@
 #include <memory>
 #include <optional>
 
-namespace swiftify {
+namespace scarlett {
 
 class SoloistAudioRoute;
 
@@ -20,7 +20,7 @@ struct SoloistConfig {
     QString program;
     QString apiKey;
     QString dataDirectory;
-    QString deviceName = QStringLiteral("Swiftify");
+    QString deviceName = QStringLiteral("Scarlett");
 };
 
 /// plays spotify songs through spotify soloist, spotify's own connect client,
@@ -29,10 +29,10 @@ struct SoloistConfig {
 ///
 /// what soloist can't do is left to `fallback`, the rust core: the login,
 /// lyrics, and the person's own music files. where the sound server allows,
-/// soloist plays into a sink of swiftify's own, recorded and played on through
+/// soloist plays into a sink of scarlett's own, recorded and played on through
 /// the rust core, so the equalizer and the visualizers reach it too; tempo
 /// and pitch can't apply to audio that arrives as it plays.
-/// swiftify keeps its own queue, so soloist is handed one song at a time, and
+/// scarlett keeps its own queue, so soloist is handed one song at a time, and
 /// the next one goes in as the last ends, before soloist's autoplay would.
 class SoloistCore : public PlaybackCore {
     Q_OBJECT
@@ -41,9 +41,9 @@ public:
     SoloistCore(PlaybackCore *fallback, SoloistConfig config, QObject *parent = nullptr);
     ~SoloistCore() override;
 
-    /// soloist on the PATH (or SWIFTIFY_SOLOIST) and a key in SOLOIST_API_KEY
+    /// soloist on the PATH (or SCARLETT_SOLOIST) and a key in SOLOIST_API_KEY
     /// or ~/.config/soloist/api-key; nothing if either is missing, or if
-    /// SWIFTIFY_PLAYBACK=librespot asks for the rust core alone
+    /// SCARLETT_PLAYBACK=librespot asks for the rust core alone
     static std::optional<SoloistConfig> detect();
 
     QCoro::Task<QString> connectSession(QString accessToken, QString clientId) override;
@@ -57,6 +57,8 @@ public:
     QCoro::Task<> crossfadeTrack(QString spotifyUri, quint32 durationMs) override;
     QCoro::Task<> playFile(QString path) override;
     QCoro::Task<> restartAudioOutput() override;
+    QVariantList audioOutputDevices() const override;
+    void setAudioOutputDevice(const QString &id) override;
     QCoro::Task<QString> lyricsJson(QString spotifyUri) override;
     QCoro::Task<QString> playlistJson(QString playlistUri) override;
     QCoro::Task<QString> artistTopTracksJson(QString artistUri) override;
@@ -105,18 +107,18 @@ private:
     void throwIfReset(quint64 resets) const;
     /// the position now, from soloist's last anchor
     qint64 estimatedPositionMs() const;
-    /// the song swiftify asked for has played to its end
+    /// the song scarlett asked for has played to its end
     bool endReached() const;
     /// keeps whatever soloist plays between a song's end and the next one's
-    /// start (its autoplay) from being heard, where swiftify plays it on
+    /// start (its autoplay) from being heard, where scarlett plays it on
     void gate(bool closed);
     void stopSoloist();
-    /// notices soloist playing something swiftify didn't ask for (picked in
+    /// notices soloist playing something scarlett didn't ask for (picked in
     /// spotify on a phone), and play or pause pressed elsewhere
     void followRemote();
     /// the song soloist is playing, from what it says of it
     Song songFromItem() const;
-    /// soloist's own volume: all the way up when swiftify plays it on, and
+    /// soloist's own volume: all the way up when scarlett plays it on, and
     /// sets the volume itself
     int soloistVolume() const;
     /// hands what soloist plays to the rust core, if it is routed through it
@@ -124,8 +126,8 @@ private:
 
     PlaybackCore *m_fallback;
     SoloistConfig m_config;
-    std::unique_ptr<SwiftifyLiveBuffer, void (*)(SwiftifyLiveBuffer *)> m_liveBuffer;
-#ifdef SWIFTIFY_DESKTOP_INTEGRATION
+    std::unique_ptr<ScarlettLiveBuffer, void (*)(ScarlettLiveBuffer *)> m_liveBuffer;
+#ifdef SCARLETT_DESKTOP_INTEGRATION
     std::unique_ptr<SoloistAudioRoute> m_route;
 #endif
     /// soloist plays into m_route's sink
@@ -157,7 +159,7 @@ private:
     float m_volume = 0.75f;
     /// a file of the person's own is playing, through the rust core
     bool m_localActive = false;
-    /// the song swiftify last asked soloist for, and whether it has started
+    /// the song scarlett last asked soloist for, and whether it has started
     QString m_expectedUri;
     bool m_expectedStarted = false;
     bool m_endOfTrack = false;
@@ -168,7 +170,7 @@ private:
     qint64 m_gatedAtMs = 0;
     /// something else started what plays, and soloist goes on by its queue
     bool m_remote = false;
-    /// swiftify's own plays still waiting for their song to start: soloist's
+    /// scarlett's own plays still waiting for their song to start: soloist's
     /// state meanwhile is the old song's, and nobody else's doing
     int m_playsInFlight = 0;
     /// the playing state last reported, so a report is made on a change only
@@ -177,4 +179,4 @@ private:
     quint64 m_resets = 0;
 };
 
-} // namespace swiftify
+} // namespace scarlett

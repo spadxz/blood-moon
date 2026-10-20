@@ -2,14 +2,14 @@
 
 #include <QString>
 
-struct SwiftifyLiveBuffer;
+struct ScarlettLiveBuffer;
 struct pa_context;
 struct pa_stream;
 struct pa_threaded_mainloop;
 
-namespace swiftify {
+namespace scarlett {
 
-/// where soloist plays when swiftify should hear it first: a sink of its own,
+/// where soloist plays when scarlett should hear it first: a sink of its own,
 /// whose monitor is recorded into a live buffer for the rust core to play
 /// through the equalizer and the visualizers. the sink goes again with this,
 /// unless it was there before.
@@ -17,9 +17,9 @@ class SoloistAudioRoute {
 public:
     static constexpr quint32 kChannels = 2;
 
-    /// records into `buffer` at `rate`, which should be what swiftify's output
+    /// records into `buffer` at `rate`, which should be what scarlett's output
     /// runs at, so the audio is resampled once, by the sound server, if at all
-    SoloistAudioRoute(SwiftifyLiveBuffer *buffer, quint32 rate);
+    SoloistAudioRoute(ScarlettLiveBuffer *buffer, quint32 rate);
     ~SoloistAudioRoute();
     SoloistAudioRoute(const SoloistAudioRoute &) = delete;
     SoloistAudioRoute &operator=(const SoloistAudioRoute &) = delete;
@@ -40,7 +40,7 @@ private:
     template <typename Done>
     bool waitFor(Done done, int timeoutMs = 3000);
 
-    SwiftifyLiveBuffer *m_buffer;
+    ScarlettLiveBuffer *m_buffer;
     quint32 m_rate;
     pa_threaded_mainloop *m_mainloop = nullptr;
     pa_context *m_context = nullptr;
@@ -49,4 +49,4 @@ private:
     QString m_error;
 };
 
-} // namespace swiftify
+} // namespace scarlett

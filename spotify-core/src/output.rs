@@ -7,8 +7,9 @@
 //! filled a block at a time and stopped while nothing plays.
 
 use std::{
+    collections::HashMap,
     sync::{
-        Arc, Mutex, MutexGuard, PoisonError,
+        Arc, Mutex, MutexGuard, OnceLock, PoisonError,
         atomic::{AtomicBool, AtomicU32, Ordering},
         mpsc,
     },
@@ -23,14 +24,90 @@ use rodio::{
     },
 };
 
-/// a stream on the default device, stopped until it is played, that plays the
+#[derive(serde::Serialize)]
+pub(crate) struct AudioOutputDevice {
+    pub(crate) id: String,
+    pub(crate) name: String,
+}
+
+static PREFERRED_OUTPUT_DEVICE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+
+fn preferred_output_device() -> Option<String> {
+    PREFERRED_OUTPUT_DEVICE
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .ok()
+        .and_then(|device| device.clone())
+}
+
+fn named_output_devices() -> Vec<(AudioOutputDevice, cpal::Device)> {
+    let host = cpal::default_host();
+    let Ok(devices) = host.output_devices() else {
+        return Vec::new();
+    };
+    let mut seen = HashMap::<String, usize>::new();
+    devices
+        .map(|device| {
+            let name = device
+                .name()
+                .unwrap_or_else(|_| "Audio output".to_owned());
+            let occurrence = seen.entry(name.clone()).or_default();
+            *occurrence += 1;
+            let id = if *occurrence == 1 {
+                name.clone()
+            } else {
+                format!("{name}::{}", *occurrence)
+            };
+            let label = if *occurrence == 1 {
+                name
+            } else {
+                format!("{name} ({})", *occurrence)
+            };
+            (AudioOutputDevice { id, name: label }, device)
+        })
+        .collect()
+}
+
+pub(crate) fn audio_output_devices() -> Vec<AudioOutputDevice> {
+    named_output_devices()
+        .into_iter()
+        .map(|(device, _)| device)
+        .collect()
+}
+
+pub(crate) fn set_audio_output_device(id: &str) -> Result<(), String> {
+    let selected = if id.is_empty() {
+        None
+    } else {
+        let devices = named_output_devices();
+        if !devices.iter().any(|(device, _)| device.id == id) {
+            return Err("That audio output is no longer connected. Refresh the device list and choose another output.".to_owned());
+        }
+        Some(id.to_owned())
+    };
+    *PREFERRED_OUTPUT_DEVICE
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .map_err(|_| "the audio output setting could not be updated".to_owned())? = selected;
+    Ok(())
+}
+
+/// a stream on the chosen device, stopped until it is played, that plays the
 /// interleaved stereo `fill` writes. a device not of two channels or not of
 /// floats gets the same stereo, mixed down or padded, in its own format.
 pub(crate) fn open_stereo_stream<F>(fill: F) -> Option<(cpal::Stream, u32)>
 where
     F: FnMut(&mut [f32]) + Clone + Send + 'static,
 {
-    let device = cpal::default_host().default_output_device()?;
+    let host = cpal::default_host();
+    let preferred = preferred_output_device();
+    let device = preferred
+        .and_then(|id| {
+            named_output_devices()
+                .into_iter()
+                .find_map(|(device, handle)| (device.id == id).then_some(handle))
+        })
+        .or_else(|| host.default_output_device())?;
     let supported = device.default_output_config().ok()?;
     let config: cpal::StreamConfig = supported.config();
     let rate = config.sample_rate.0;
@@ -182,7 +259,7 @@ impl LocalOutput {
         let (opened, opening) = mpsc::sync_channel(1);
         let filled = Arc::clone(&shared);
         thread::Builder::new()
-            .name("swiftify-local-output".to_owned())
+            .name("scarlett-local-output".to_owned())
             .spawn(move || {
                 let Some((stream, rate)) = open_stereo_stream(move |out| filled.fill(out)) else {
                     let _ = opened.send(None);

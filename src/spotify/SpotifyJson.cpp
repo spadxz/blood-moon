@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <limits>
 
-namespace swiftify::json {
+namespace scarlett::json {
 
 namespace {
 
@@ -220,4 +220,4 @@ std::optional<Song> wrappedTrack(const QJsonObject &entry)
     return result;
 }
 
-} // namespace swiftify::json
+} // namespace scarlett::json

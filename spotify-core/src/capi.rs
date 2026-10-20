@@ -1,5 +1,5 @@
 //! a plain c abi over `SpotifyCore` for the linux qt front end. the header is
-//! `include/swiftify_core.h`.
+//! `include/scarlett_core.h`.
 //!
 //! swift-bridge ran the async calls on a runtime of its own. here the core owns
 //! one, and an async call returns at once: its result is queued as a completion
@@ -8,7 +8,7 @@
 //! c++ from a tokio worker.
 //!
 //! strings crossing the boundary are nul-terminated utf-8. any string this file
-//! hands out is owned by the caller and released with `swiftify_string_free`.
+//! hands out is owned by the caller and released with `scarlett_string_free`.
 //! a null error string means success.
 
 #[cfg(unix)]
@@ -37,7 +37,7 @@ fn runtime() -> &'static Runtime {
     RUNTIME.get_or_init(|| {
         Builder::new_multi_thread()
             .worker_threads(RUNTIME_WORKER_THREADS)
-            .thread_name("swiftify-core")
+            .thread_name("scarlett-core")
             .enable_all()
             .build()
             .expect("failed to start the spotify core runtime")
@@ -51,7 +51,7 @@ struct Completion {
 }
 
 /// what the front end asked to be called with when a completion is queued,
-/// from whichever thread queued it (`swiftify_core_set_completion_callback`)
+/// from whichever thread queued it (`scarlett_core_set_completion_callback`)
 struct Waker {
     callback: extern "C" fn(*mut c_void),
     context: *mut c_void,
@@ -125,12 +125,12 @@ impl CompletionQueue {
 }
 
 /// the handle the front end holds.
-pub struct SwiftifyCore {
+pub struct ScarlettCore {
     core: Arc<SpotifyCore>,
     completions: Arc<CompletionQueue>,
 }
 
-impl SwiftifyCore {
+impl ScarlettCore {
     fn spawn<F, T>(&self, request_id: u64, operation: impl FnOnce(Arc<SpotifyCore>) -> F)
     where
         F: Future<Output = Result<T, String>> + Send + 'static,
@@ -185,8 +185,8 @@ unsafe fn read_str(value: *const c_char) -> Result<String, String> {
 }
 
 /// # Safety
-/// `handle` is null or a live pointer from `swiftify_core_new`.
-unsafe fn handle<'a>(handle: *const SwiftifyCore) -> Option<&'a SwiftifyCore> {
+/// `handle` is null or a live pointer from `scarlett_core_new`.
+unsafe fn handle<'a>(handle: *const ScarlettCore) -> Option<&'a ScarlettCore> {
     // SAFETY: the caller guarantees the pointer is null or live.
     unsafe { handle.as_ref() }
 }
@@ -195,37 +195,37 @@ const MISSING_CORE: &str = "the spotify core is not available";
 
 /// a new core, or null if its completion socket could not be created.
 #[unsafe(no_mangle)]
-pub extern "C" fn swiftify_core_new() -> *mut SwiftifyCore {
+pub extern "C" fn scarlett_core_new() -> *mut ScarlettCore {
     let Ok(completions) = CompletionQueue::new() else {
         return ptr::null_mut();
     };
-    Box::into_raw(Box::new(SwiftifyCore {
+    Box::into_raw(Box::new(ScarlettCore {
         core: Arc::new(SpotifyCore::new()),
         completions: Arc::new(completions),
     }))
 }
 
 /// # Safety
-/// `core` is null or a pointer from `swiftify_core_new` that is not used again.
+/// `core` is null or a pointer from `scarlett_core_new` that is not used again.
 /// calls still running finish in the background and their results are dropped.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_free(core: *mut SwiftifyCore) {
+pub unsafe extern "C" fn scarlett_core_free(core: *mut ScarlettCore) {
     if core.is_null() {
         return;
     }
-    // SAFETY: the caller hands back ownership of a pointer from `swiftify_core_new`.
+    // SAFETY: the caller hands back ownership of a pointer from `scarlett_core_new`.
     let core = unsafe { Box::from_raw(core) };
     core.core.disconnect();
 }
 
 /// the descriptor that becomes readable when a completion is waiting. the
-/// caller drains it and then calls `swiftify_core_take_completion` until it
-/// returns false. it stays open until `swiftify_core_free`.
+/// caller drains it and then calls `scarlett_core_take_completion` until it
+/// returns false. it stays open until `scarlett_core_free`.
 ///
 /// # Safety
 /// `core` is null or live.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_completion_fd(core: *const SwiftifyCore) -> c_int {
+pub unsafe extern "C" fn scarlett_core_completion_fd(core: *const ScarlettCore) -> c_int {
     #[cfg(unix)]
     {
         // SAFETY: forwarded from the caller.
@@ -233,7 +233,7 @@ pub unsafe extern "C" fn swiftify_core_completion_fd(core: *const SwiftifyCore) 
             .map(|core| core.completions.receiver.as_raw_fd())
             .unwrap_or(-1)
     }
-    // no descriptor to poll here: swiftify_core_set_completion_callback
+    // no descriptor to poll here: scarlett_core_set_completion_callback
     #[cfg(not(unix))]
     {
         let _ = core;
@@ -249,8 +249,8 @@ pub unsafe extern "C" fn swiftify_core_completion_fd(core: *const SwiftifyCore) 
 /// `core` is null or live; `context` stays valid until the callback is taken
 /// back or `core` is freed.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_set_completion_callback(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_set_completion_callback(
+    core: *const ScarlettCore,
     callback: Option<extern "C" fn(*mut c_void)>,
     context: *mut c_void,
 ) {
@@ -265,13 +265,13 @@ pub unsafe extern "C" fn swiftify_core_set_completion_callback(
 
 /// takes the oldest finished async call. `payload` receives the call's value on
 /// success (lyrics json, or an empty string) or its error message, and must be
-/// freed with `swiftify_string_free`.
+/// freed with `scarlett_string_free`.
 ///
 /// # Safety
 /// `core` is null or live; the out pointers are valid for writes.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_take_completion(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_take_completion(
+    core: *const ScarlettCore,
     request_id: *mut u64,
     ok: *mut bool,
     payload: *mut *mut c_char,
@@ -298,7 +298,7 @@ pub unsafe extern "C" fn swiftify_core_take_completion(
 /// # Safety
 /// `value` is null or a string returned by this library, not yet freed.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_string_free(value: *mut c_char) {
+pub unsafe extern "C" fn scarlett_string_free(value: *mut c_char) {
     if !value.is_null() {
         // SAFETY: every string handed out came from `CString::into_raw`.
         drop(unsafe { CString::from_raw(value) });
@@ -315,7 +315,7 @@ macro_rules! async_call {
         /// `core` is null or live; string arguments are null or valid.
         #[unsafe(no_mangle)]
         pub unsafe extern "C" fn $name(
-            core: *const SwiftifyCore,
+            core: *const ScarlettCore,
             request_id: u64,
             $($arg: *const c_char),*
         ) {
@@ -346,15 +346,15 @@ macro_rules! async_call {
 
 async_call!(
     /// opens a session with the access token and builds the player. completes
-    /// with the login to reconnect with (swiftify_core_connect_stored).
-    swiftify_core_connect(access_token, client_id) => |core| {
+    /// with the login to reconnect with (scarlett_core_connect_stored).
+    scarlett_core_connect(access_token, client_id) => |core| {
         core.connect_returning_login(access_token, client_id).await
     }
 );
 async_call!(
     /// opens a session with a login an earlier connection completed with: no
     /// token is spent. completes with the login to keep from then on.
-    swiftify_core_connect_stored(login, client_id) => |core| {
+    scarlett_core_connect_stored(login, client_id) => |core| {
         core.connect_stored(login, client_id).await
     }
 );
@@ -362,7 +362,7 @@ async_call!(
     /// loads a track and waits until it is playing, unavailable or stopped.
     /// a play call made after it replaces it: it then completes with an
     /// error and leaves the newer call's song alone.
-    swiftify_core_play_track(spotify_uri) => |core| prepare {
+    scarlett_core_play_track(spotify_uri) => |core| prepare {
         let ticket = core.begin_playback_request();
     } run {
         core.play_track_as(spotify_uri, ticket).await.map(|()| Unit)
@@ -370,7 +370,7 @@ async_call!(
 );
 async_call!(
     /// rebuilds the audio output and keeps the session.
-    swiftify_core_restart_audio_output() => |core| {
+    scarlett_core_restart_audio_output() => |core| {
         core.restart_audio_output().await.map(|()| Unit)
     }
 );
@@ -380,8 +380,8 @@ async_call!(
 /// # Safety
 /// `core` is null or live; `spotify_uri` is a nul-terminated string.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_crossfade_track(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_crossfade_track(
+    core: *const ScarlettCore,
     request_id: u64,
     spotify_uri: *const c_char,
     duration_ms: u32,
@@ -411,8 +411,8 @@ pub unsafe extern "C" fn swiftify_core_crossfade_track(
 /// # Safety
 /// `core` is null or live; `spotify_uri` is a nul-terminated string.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_preload_track(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_preload_track(
+    core: *const ScarlettCore,
     spotify_uri: *const c_char,
     preload_standby: c_int,
 ) -> *mut c_char {
@@ -431,7 +431,7 @@ pub unsafe extern "C" fn swiftify_core_preload_track(
 async_call!(
     /// plays a music file from anywhere on disk; replaced by a later play
     /// call, as above
-    swiftify_core_play_file(path) => |core| prepare {
+    scarlett_core_play_file(path) => |core| prepare {
         let ticket = core.begin_playback_request();
     } run {
         core.play_file_as(path, ticket).await.map(|()| Unit)
@@ -439,19 +439,19 @@ async_call!(
 );
 async_call!(
     /// completes with the lyrics as json.
-    swiftify_core_lyrics_json(spotify_uri) => |core| {
+    scarlett_core_lyrics_json(spotify_uri) => |core| {
         core.lyrics_json(spotify_uri).await
     }
 );
 async_call!(
     /// completes with a playlist's songs as json, read through the session.
-    swiftify_core_playlist_json(playlist_uri) => |core| {
+    scarlett_core_playlist_json(playlist_uri) => |core| {
         core.playlist_json(playlist_uri).await
     }
 );
 async_call!(
     /// completes with an artist's top songs as json, read through the session.
-    swiftify_core_artist_top_tracks_json(artist_uri) => |core| {
+    scarlett_core_artist_top_tracks_json(artist_uri) => |core| {
         core.artist_top_tracks_json(artist_uri).await
     }
 );
@@ -464,7 +464,7 @@ async_call!(
 /// `path` and `artwork_dir` are null or valid strings; `error` is null or
 /// valid for a write.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_read_local_tags(
+pub unsafe extern "C" fn scarlett_read_local_tags(
     path: *const c_char,
     artwork_dir: *const c_char,
     error: *mut *mut c_char,
@@ -508,7 +508,7 @@ pub unsafe extern "C" fn swiftify_read_local_tags(
 /// `path` and `edits` are null or valid strings; `artwork` is null or valid
 /// for `artwork_len` bytes.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_write_local_tags(
+pub unsafe extern "C" fn scarlett_write_local_tags(
     path: *const c_char,
     edits: *const c_char,
     artwork: *const u8,
@@ -536,7 +536,7 @@ pub unsafe extern "C" fn swiftify_write_local_tags(
 /// # Safety
 /// `core` is null or live.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_disconnect(core: *const SwiftifyCore) {
+pub unsafe extern "C" fn scarlett_core_disconnect(core: *const ScarlettCore) {
     // SAFETY: forwarded from the caller.
     if let Some(core) = unsafe { handle(core) } {
         core.core.disconnect();
@@ -550,7 +550,7 @@ macro_rules! fallible_call {
         /// # Safety
         /// `core` is null or live.
         #[unsafe(no_mangle)]
-        pub unsafe extern "C" fn $name(core: *const SwiftifyCore $(, $arg: $ty)*) -> *mut c_char {
+        pub unsafe extern "C" fn $name(core: *const ScarlettCore $(, $arg: $ty)*) -> *mut c_char {
             // SAFETY: forwarded from the caller.
             match unsafe { handle(core) } {
                 Some(handle) => {
@@ -563,11 +563,45 @@ macro_rules! fallible_call {
     };
 }
 
-fallible_call!(swiftify_core_play() => |core| core.play());
-fallible_call!(swiftify_core_pause() => |core| core.pause());
-fallible_call!(swiftify_core_seek(position_ms: u32) => |core| core.seek(position_ms));
-fallible_call!(swiftify_core_set_volume(volume: f32) => |core| core.set_volume(volume));
-fallible_call!(swiftify_core_set_stream_quality(kbps: u32) => |core| core.set_stream_quality(kbps));
+fallible_call!(scarlett_core_play() => |core| core.play());
+fallible_call!(scarlett_core_pause() => |core| core.pause());
+fallible_call!(scarlett_core_seek(position_ms: u32) => |core| core.seek(position_ms));
+fallible_call!(scarlett_core_set_volume(volume: f32) => |core| core.set_volume(volume));
+fallible_call!(scarlett_core_set_stream_quality(kbps: u32) => |core| core.set_stream_quality(kbps));
+
+/// # Safety
+/// `core` is null or live.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn scarlett_core_audio_output_devices_json(
+    core: *const ScarlettCore,
+) -> *mut c_char {
+    // SAFETY: forwarded from the caller.
+    match unsafe { handle(core) } {
+        Some(handle) => into_raw(handle.core.audio_output_devices_json()),
+        None => into_raw(MISSING_CORE.to_owned()),
+    }
+}
+
+/// returns null on success, or an error message to free.
+///
+/// # Safety
+/// `core` is null or live; `device_id` is a nul-terminated string.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn scarlett_core_set_audio_output_device(
+    core: *const ScarlettCore,
+    device_id: *const c_char,
+) -> *mut c_char {
+    // SAFETY: forwarded from the caller.
+    let Some(handle) = (unsafe { handle(core) }) else {
+        return into_raw(MISSING_CORE.to_owned());
+    };
+    // SAFETY: forwarded from the caller.
+    match unsafe { read_str(device_id) } {
+        Ok(id) => error_string(handle.core.set_audio_output_device(&id)),
+        Err(error) => into_raw(error),
+    }
+}
+
 /// keeps streamed songs in `path`, up to `limit_bytes`; an empty path keeps
 /// none. applies the next time playback connects. returns null on success, or
 /// an error message to free.
@@ -575,8 +609,8 @@ fallible_call!(swiftify_core_set_stream_quality(kbps: u32) => |core| core.set_st
 /// # Safety
 /// `core` is null or live; `path` is a nul-terminated string.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_set_audio_cache(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_set_audio_cache(
+    core: *const ScarlettCore,
     path: *const c_char,
     limit_bytes: u64,
 ) -> *mut c_char {
@@ -590,7 +624,7 @@ pub unsafe extern "C" fn swiftify_core_set_audio_cache(
         Err(error) => into_raw(error),
     }
 }
-fallible_call!(swiftify_core_set_playback_shaping(tempo: f32, pitch_semitones: f32, preserves_pitch: bool)
+fallible_call!(scarlett_core_set_playback_shaping(tempo: f32, pitch_semitones: f32, preserves_pitch: bool)
     => |core| core.set_playback_shaping(tempo, pitch_semitones, preserves_pitch));
 
 /// returns null on success, or an error message to free.
@@ -598,8 +632,8 @@ fallible_call!(swiftify_core_set_playback_shaping(tempo: f32, pitch_semitones: f
 /// # Safety
 /// `core` is null or live; `gains_db` points to `count` floats.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_set_equalizer(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_set_equalizer(
+    core: *const ScarlettCore,
     gains_db: *const f32,
     count: usize,
 ) -> *mut c_char {
@@ -620,7 +654,7 @@ macro_rules! query {
         /// # Safety
         /// `core` is null or live.
         #[unsafe(no_mangle)]
-        pub unsafe extern "C" fn $name(core: *const SwiftifyCore) -> $ty {
+        pub unsafe extern "C" fn $name(core: *const ScarlettCore) -> $ty {
             // SAFETY: forwarded from the caller.
             match unsafe { handle(core) } {
                 Some(handle) => {
@@ -633,19 +667,19 @@ macro_rules! query {
     };
 }
 
-query!(swiftify_core_session_is_valid -> bool, false, |core| core.session_is_valid());
-query!(swiftify_core_audio_output_stalled -> bool, false, |core| core.audio_output_stalled());
-query!(swiftify_core_playback_position_ms -> u32, 0, |core| core.playback_position_ms());
-query!(swiftify_core_playback_duration_ms -> u32, 0, |core| core.playback_duration_ms());
-query!(swiftify_core_take_end_of_track -> bool, false, |core| core.take_end_of_track());
-query!(swiftify_core_volume -> f32, 0.75, |core| core.volume());
-query!(swiftify_core_output_rate -> u32, 0, |core| core.output_rate());
+query!(scarlett_core_session_is_valid -> bool, false, |core| core.session_is_valid());
+query!(scarlett_core_audio_output_stalled -> bool, false, |core| core.audio_output_stalled());
+query!(scarlett_core_playback_position_ms -> u32, 0, |core| core.playback_position_ms());
+query!(scarlett_core_playback_duration_ms -> u32, 0, |core| core.playback_duration_ms());
+query!(scarlett_core_take_end_of_track -> bool, false, |core| core.take_end_of_track());
+query!(scarlett_core_volume -> f32, 0.75, |core| core.volume());
+query!(scarlett_core_output_rate -> u32, 0, |core| core.output_rate());
 
 /// # Safety
 /// `core` is null or live.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_set_spectrum_enabled(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_set_spectrum_enabled(
+    core: *const ScarlettCore,
     enabled: bool,
 ) {
     // SAFETY: forwarded from the caller.
@@ -660,8 +694,8 @@ pub unsafe extern "C" fn swiftify_core_set_spectrum_enabled(
 /// # Safety
 /// `core` is null or live; `out` points to `capacity` writable floats.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_spectrum_levels(
-    core: *const SwiftifyCore,
+pub unsafe extern "C" fn scarlett_core_spectrum_levels(
+    core: *const ScarlettCore,
     out: *mut f32,
     capacity: usize,
 ) -> usize {
@@ -683,7 +717,7 @@ pub unsafe extern "C" fn swiftify_core_spectrum_levels(
 /// # Safety
 /// `out` points to `capacity` writable floats.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_equalizer_frequencies(out: *mut f32, capacity: usize) -> usize {
+pub unsafe extern "C" fn scarlett_equalizer_frequencies(out: *mut f32, capacity: usize) -> usize {
     if out.is_null() {
         return 0;
     }
@@ -700,8 +734,8 @@ mod tests {
 
     use super::*;
 
-    fn wait_for_completion(core: *const SwiftifyCore) -> (u64, bool, String) {
-        let fd = unsafe { swiftify_core_completion_fd(core) };
+    fn wait_for_completion(core: *const ScarlettCore) -> (u64, bool, String) {
+        let fd = unsafe { scarlett_core_completion_fd(core) };
         assert!(fd >= 0);
         let reader = unsafe { &(&*core).completions.receiver };
         for _ in 0..200 {
@@ -711,12 +745,12 @@ mod tests {
             let mut ok = true;
             let mut payload = ptr::null_mut();
             if unsafe {
-                swiftify_core_take_completion(core, &mut request_id, &mut ok, &mut payload)
+                scarlett_core_take_completion(core, &mut request_id, &mut ok, &mut payload)
             } {
                 let text = unsafe { CStr::from_ptr(payload) }
                     .to_string_lossy()
                     .into_owned();
-                unsafe { swiftify_string_free(payload) };
+                unsafe { scarlett_string_free(payload) };
                 return (request_id, ok, text);
             }
             std::thread::sleep(Duration::from_millis(10));
@@ -726,93 +760,93 @@ mod tests {
 
     #[test]
     fn an_async_call_without_a_session_completes_with_its_error() {
-        let core = swiftify_core_new();
+        let core = scarlett_core_new();
         let uri = CString::new("spotify:track:4uLU6hMCjMI75M1A2tKUQC").unwrap();
-        unsafe { swiftify_core_play_track(core, 7, uri.as_ptr()) };
+        unsafe { scarlett_core_play_track(core, 7, uri.as_ptr()) };
 
         let (request_id, ok, payload) = wait_for_completion(core);
         assert_eq!(request_id, 7);
         assert!(!ok);
         assert!(!payload.is_empty());
-        unsafe { swiftify_core_free(core) };
+        unsafe { scarlett_core_free(core) };
     }
 
     #[test]
     fn a_missing_argument_completes_instead_of_crashing() {
-        let core = swiftify_core_new();
-        unsafe { swiftify_core_lyrics_json(core, 3, ptr::null()) };
+        let core = scarlett_core_new();
+        unsafe { scarlett_core_lyrics_json(core, 3, ptr::null()) };
 
         let (request_id, ok, _) = wait_for_completion(core);
         assert_eq!(request_id, 3);
         assert!(!ok);
-        unsafe { swiftify_core_free(core) };
+        unsafe { scarlett_core_free(core) };
     }
 
     #[test]
     fn sync_calls_report_errors_and_values() {
-        let core = swiftify_core_new();
-        let error = unsafe { swiftify_core_play(core) };
+        let core = scarlett_core_new();
+        let error = unsafe { scarlett_core_play(core) };
         assert!(!error.is_null());
-        unsafe { swiftify_string_free(error) };
+        unsafe { scarlett_string_free(error) };
 
-        assert!(unsafe { swiftify_core_set_volume(core, 0.4) }.is_null());
-        assert!((unsafe { swiftify_core_volume(core) } - 0.4).abs() < f32::EPSILON);
+        assert!(unsafe { scarlett_core_set_volume(core, 0.4) }.is_null());
+        assert!((unsafe { scarlett_core_volume(core) } - 0.4).abs() < f32::EPSILON);
 
         let mut levels = [1.0; 64];
         let count =
-            unsafe { swiftify_core_spectrum_levels(core, levels.as_mut_ptr(), levels.len()) };
+            unsafe { scarlett_core_spectrum_levels(core, levels.as_mut_ptr(), levels.len()) };
         assert_eq!(count, 48);
         assert!(levels[..count].iter().all(|level| *level == 0.0));
 
         let mut frequencies = [0.0; 8];
         let count =
-            unsafe { swiftify_equalizer_frequencies(frequencies.as_mut_ptr(), frequencies.len()) };
+            unsafe { scarlett_equalizer_frequencies(frequencies.as_mut_ptr(), frequencies.len()) };
         assert_eq!(
             &frequencies[..count],
             &[60.0, 150.0, 400.0, 1000.0, 2400.0, 15000.0]
         );
-        unsafe { swiftify_core_free(core) };
+        unsafe { scarlett_core_free(core) };
     }
 
     #[test]
     fn the_header_names_the_superseded_message() {
         // the front end tells a replaced request from a failed one by it
-        let header = include_str!("../include/swiftify_core.h");
-        let define = format!("#define SWIFTIFY_CORE_SUPERSEDED \"{}\"", crate::SUPERSEDED);
+        let header = include_str!("../include/scarlett_core.h");
+        let define = format!("#define SCARLETT_CORE_SUPERSEDED \"{}\"", crate::SUPERSEDED);
         assert!(header.contains(&define));
     }
 
     #[test]
     fn the_header_names_the_unavailable_message() {
         // the front end skips a track spotify will not play by it
-        let header = include_str!("../include/swiftify_core.h");
-        let define = format!("#define SWIFTIFY_CORE_UNAVAILABLE \"{}\"", crate::UNAVAILABLE);
+        let header = include_str!("../include/scarlett_core.h");
+        let define = format!("#define SCARLETT_CORE_UNAVAILABLE \"{}\"", crate::UNAVAILABLE);
         assert!(header.contains(&define));
     }
 
     #[test]
     fn null_handles_are_harmless() {
-        assert_eq!(unsafe { swiftify_core_completion_fd(ptr::null()) }, -1);
-        assert!(!unsafe { swiftify_core_session_is_valid(ptr::null()) });
-        let error = unsafe { swiftify_core_pause(ptr::null()) };
+        assert_eq!(unsafe { scarlett_core_completion_fd(ptr::null()) }, -1);
+        assert!(!unsafe { scarlett_core_session_is_valid(ptr::null()) });
+        let error = unsafe { scarlett_core_pause(ptr::null()) };
         assert!(!error.is_null());
-        unsafe { swiftify_string_free(error) };
-        unsafe { swiftify_core_free(ptr::null_mut()) };
+        unsafe { scarlett_string_free(error) };
+        unsafe { scarlett_core_free(ptr::null_mut()) };
     }
 }
 
 /// audio another program plays, handed over as it plays (live_input.rs)
-pub struct SwiftifyLiveBuffer {
+pub struct ScarlettLiveBuffer {
     buffer: Arc<crate::live_input::LiveBuffer>,
     rate: u32,
     channels: u32,
 }
 
 /// a buffer for interleaved f32 audio at `rate` and `channels`. it outlives
-/// any core it plays through; free it with `swiftify_live_buffer_free`.
+/// any core it plays through; free it with `scarlett_live_buffer_free`.
 #[unsafe(no_mangle)]
-pub extern "C" fn swiftify_live_buffer_new(rate: u32, channels: u32) -> *mut SwiftifyLiveBuffer {
-    Box::into_raw(Box::new(SwiftifyLiveBuffer {
+pub extern "C" fn scarlett_live_buffer_new(rate: u32, channels: u32) -> *mut ScarlettLiveBuffer {
+    Box::into_raw(Box::new(ScarlettLiveBuffer {
         buffer: Arc::new(crate::live_input::LiveBuffer::new(rate, channels)),
         rate,
         channels,
@@ -820,10 +854,10 @@ pub extern "C" fn swiftify_live_buffer_new(rate: u32, channels: u32) -> *mut Swi
 }
 
 /// # Safety
-/// `buffer` is null or a pointer from `swiftify_live_buffer_new` that is not
+/// `buffer` is null or a pointer from `scarlett_live_buffer_new` that is not
 /// used again.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_live_buffer_free(buffer: *mut SwiftifyLiveBuffer) {
+pub unsafe extern "C" fn scarlett_live_buffer_free(buffer: *mut ScarlettLiveBuffer) {
     if !buffer.is_null() {
         // SAFETY: the caller hands back ownership.
         drop(unsafe { Box::from_raw(buffer) });
@@ -836,8 +870,8 @@ pub unsafe extern "C" fn swiftify_live_buffer_free(buffer: *mut SwiftifyLiveBuff
 /// # Safety
 /// `buffer` is null or live; `samples` points to `count` floats.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_live_buffer_push(
-    buffer: *const SwiftifyLiveBuffer,
+pub unsafe extern "C" fn scarlett_live_buffer_push(
+    buffer: *const ScarlettLiveBuffer,
     samples: *const f32,
     count: usize,
 ) {
@@ -861,9 +895,9 @@ pub unsafe extern "C" fn swiftify_live_buffer_push(
 /// # Safety
 /// `core` and `buffer` are null or live.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_play_live(
-    core: *const SwiftifyCore,
-    buffer: *const SwiftifyLiveBuffer,
+pub unsafe extern "C" fn scarlett_core_play_live(
+    core: *const ScarlettCore,
+    buffer: *const ScarlettLiveBuffer,
 ) -> *mut c_char {
     // SAFETY: forwarded from the caller.
     let Some(core) = (unsafe { handle(core) }) else {
@@ -879,7 +913,7 @@ pub unsafe extern "C" fn swiftify_core_play_live(
 /// # Safety
 /// `core` is null or live.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn swiftify_core_stop_live(core: *const SwiftifyCore) {
+pub unsafe extern "C" fn scarlett_core_stop_live(core: *const ScarlettCore) {
     // SAFETY: forwarded from the caller.
     if let Some(core) = unsafe { handle(core) } {
         core.core.stop_live();

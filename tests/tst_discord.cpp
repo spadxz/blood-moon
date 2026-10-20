@@ -17,8 +17,8 @@
 #include <QUuid>
 #include <QtEndian>
 
-using namespace swiftify;
-using swiftify::testing::FakeCore;
+using namespace scarlett;
+using scarlett::testing::FakeCore;
 
 class DiscordTest : public QObject {
     Q_OBJECT
@@ -26,10 +26,10 @@ private:
     static QString temporaryTemplate()
     {
 #ifdef Q_OS_WIN
-        return QDir::tempPath() + QStringLiteral("/swiftify-rpc-XXXXXX");
+        return QDir::tempPath() + QStringLiteral("/scarlett-rpc-XXXXXX");
 #else
         // Unix socket addresses have a much shorter limit than normal files.
-        return QStringLiteral("/tmp/swiftify-rpc-XXXXXX");
+        return QStringLiteral("/tmp/scarlett-rpc-XXXXXX");
 #endif
     }
 
@@ -38,7 +38,7 @@ private:
 #ifdef Q_OS_WIN
         Q_UNUSED(directory)
         // QLocalServer/QLocalSocket use Windows named pipes for these names.
-        return QStringLiteral("swiftify-discord-test-%1-%2").arg(QUuid::createUuid().toString(QUuid::WithoutBraces)).arg(slot);
+        return QStringLiteral("scarlett-discord-test-%1-%2").arg(QUuid::createUuid().toString(QUuid::WithoutBraces)).arg(slot);
 #else
         return QDir(directory).filePath(QStringLiteral("discord-ipc-%1").arg(slot));
 #endif
@@ -94,7 +94,7 @@ private slots:
         QSKIP("Unix filesystem socket layouts");
 #else
         QFETCH(QString, suffix);
-        QTemporaryDir directory(QStringLiteral("/tmp/swiftify-rpc-XXXXXX"));
+        QTemporaryDir directory(QStringLiteral("/tmp/scarlett-rpc-XXXXXX"));
         const QString folder = QDir(directory.path()).filePath(suffix);
         QVERIFY(QDir().mkpath(folder));
         QLocalServer server;
@@ -254,7 +254,7 @@ private slots:
         QCOMPARE(message.value(QStringLiteral("cmd")).toString(), QStringLiteral("SET_ACTIVITY"));
         auto activity = message.value(QStringLiteral("args")).toObject().value(QStringLiteral("activity")).toObject();
         QCOMPARE(activity.value(QStringLiteral("type")).toInt(), 2);
-        QCOMPARE(activity.value(QStringLiteral("name")).toString(), QStringLiteral("Swiftify"));
+        QCOMPARE(activity.value(QStringLiteral("name")).toString(), QStringLiteral("Scarlett"));
         QCOMPARE(activity.value(QStringLiteral("details")).toString(), QStringLiteral("Я\u00a0"));
         QCOMPARE(activity.value(QStringLiteral("state")).toString(), song.artists);
         QVERIFY(activity.contains(QStringLiteral("timestamps")));
@@ -265,7 +265,7 @@ private slots:
         message = {};
         QTRY_VERIFY(read());
         activity = message.value(QStringLiteral("args")).toObject().value(QStringLiteral("activity")).toObject();
-        QCOMPARE(activity.value(QStringLiteral("name")).toString(), QStringLiteral("Swiftify"));
+        QCOMPARE(activity.value(QStringLiteral("name")).toString(), QStringLiteral("Scarlett"));
         QCOMPARE(activity.value(QStringLiteral("details")).toString(), QStringLiteral("Я\u00a0"));
         QCOMPARE(activity.value(QStringLiteral("state")).toString(), QStringLiteral("Paused · Исполнитель"));
         QVERIFY(!activity.contains(QStringLiteral("timestamps")));

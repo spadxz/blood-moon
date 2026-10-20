@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# builds a self contained Linux x86_64 tarball of Blood Moon, with Qt and its
+# builds a self contained Linux x86_64 tarball of Scarlett, with Qt and its
 # libraries bundled, against a qt kit from the qt installer or aqtinstall
 #
 # usage
@@ -41,9 +41,9 @@ for tool in cmake ninja git curl cargo; do
 done
 
 SOURCE="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' "$SOURCE/CMakeLists.txt")"
+VERSION="$(sed -n '/^project(Scarlett/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' "$SOURCE/CMakeLists.txt")"
 [[ -n "$VERSION" ]] || fail "could not read the version from CMakeLists.txt"
-NAME="blood-moon-$VERSION-linux-x86_64"
+NAME="scarlett-$VERSION-linux-x86_64"
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 WORK="$SOURCE/build-linux-tarball"
@@ -95,10 +95,10 @@ build_dependency qcoro https://github.com/qcoro/qcoro.git v0.13.0 \
     -DUSE_QT_VERSION=6 -DQCORO_WITH_QTDBUS=OFF -DQCORO_WITH_QTWEBSOCKETS=OFF -DQCORO_WITH_QTQUICK=OFF \
     -DQCORO_WITH_QML=OFF -DQCORO_WITH_QTTEST=OFF -DQCORO_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF
 
-cmake -S "$SOURCE" -B "$WORK/swiftify" "${common[@]}" -DCMAKE_INSTALL_PREFIX=/usr
-cmake --build "$WORK/swiftify" --parallel "$JOBS"
+cmake -S "$SOURCE" -B "$WORK/scarlett" "${common[@]}" -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build "$WORK/scarlett" --parallel "$JOBS"
 rm -rf "${APPDIR:?}"
-DESTDIR="$APPDIR" cmake --install "$WORK/swiftify"
+DESTDIR="$APPDIR" cmake --install "$WORK/scarlett"
 
 # linuxdeploy only brings x11 by itself. wayland needs its platform plugin and
 # the shell, decoration and graphics plugins beside it, or it falls back to
@@ -121,7 +121,7 @@ export LD_LIBRARY_PATH="$DEPS/lib:$QT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 # qtkeychain is named outright, linuxdeploy's own pass does not look in
 # LD_LIBRARY_PATH and drops a library it cannot find without a word
 PATH="$WORK/tools:$PATH" "$WORK/tools/linuxdeploy-x86_64.AppImage" \
-    --appdir "$APPDIR" --executable "$APPDIR/usr/bin/swiftify" \
+    --appdir "$APPDIR" --executable "$APPDIR/usr/bin/scarlett" \
     --library "$DEPS/lib/libqt6keychain.so.1" "${wayland[@]}" --plugin qt
 
 # the tarball is the usr tree: bin, lib, plugins, qml and share. the fonts are

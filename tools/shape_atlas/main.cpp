@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-using namespace swiftify::shapeatlas;
+using namespace scarlett::shapeatlas;
 
 namespace {
 

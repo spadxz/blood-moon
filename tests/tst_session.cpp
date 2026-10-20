@@ -26,8 +26,8 @@
 #include <algorithm>
 #include <utility>
 
-using namespace swiftify;
-using swiftify::testing::FakeCore;
+using namespace scarlett;
+using scarlett::testing::FakeCore;
 
 namespace {
 
@@ -478,7 +478,7 @@ private slots:
     {
         Rig rig;
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         LibraryStore library(&rig.session, &settings, &rig.errors);
         const auto page = [](const char *uri, const char *name) {
             const QJsonObject track {{QStringLiteral("type"), QStringLiteral("track")},
@@ -533,7 +533,7 @@ private slots:
     {
         Rig rig;
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         LibraryStore library(&rig.session, &settings, &rig.errors);
         const auto names = [&library] {
             QStringList result;
@@ -591,7 +591,7 @@ private slots:
     {
         Rig rig;
         QTemporaryDir directory;
-        Settings settings(directory.filePath(QStringLiteral("swiftify.conf")));
+        Settings settings(directory.filePath(QStringLiteral("scarlett.conf")));
         LibraryStore library(&rig.session, &settings, &rig.errors);
         rig.accounts.api.insert(QStringLiteral("/v1/me"), R"({"id":"me","display_name":"Me"})");
         rig.accounts.api.insert(QStringLiteral("/v1/me/library"), {});

@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import Swiftify
+import Scarlett
 
 // the navigation drawer (MusicSidebar): destinations, the two playlist groups
 // and the account. the list of every playlist is virtualized, so a library of
@@ -20,7 +20,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.window
-        visible: Appearance.bloodMoon
+        visible: Appearance.scarlett
         color: Qt.alpha(Appearance.colors.layer1, 0.54)
         border.width: 1
         border.color: Qt.rgba(0.82, 0.84, 0.90, 0.25)

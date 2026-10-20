@@ -16,8 +16,8 @@
 
 #include <memory>
 
-using namespace swiftify;
-using namespace swiftify::testing;
+using namespace scarlett;
+using namespace scarlett::testing;
 
 namespace {
 
@@ -38,8 +38,8 @@ public:
             send({{QStringLiteral("type"), QStringLiteral("auth_state")},
                   {QStringLiteral("logged_in"), loggedIn},
                   {QStringLiteral("is_active"), false},
-                  {QStringLiteral("device_name"), QStringLiteral("Swiftify")}});
-            // left repeating a song, as another app or an older swiftify can
+                  {QStringLiteral("device_name"), QStringLiteral("Scarlett")}});
+            // left repeating a song, as another app or an older scarlett can
             send({{QStringLiteral("type"), QStringLiteral("playback_state")},
                   {QStringLiteral("status"), QStringLiteral("idle")},
                   {QStringLiteral("options"), QJsonObject{{QStringLiteral("repeat"), QStringLiteral("track")}}}});
@@ -183,7 +183,7 @@ private slots:
         m_soloist = std::make_unique<FakeSoloist>();
         qputenv("FAKE_SOLOIST_PORT", QByteArray::number(m_soloist->port()));
         // no sink in the real sound server for a test
-        qputenv("SWIFTIFY_SOLOIST_ROUTE", "off");
+        qputenv("SCARLETT_SOLOIST_ROUTE", "off");
         m_fallback = std::make_unique<FakeCore>();
         m_core = std::make_unique<SoloistCore>(
             m_fallback.get(), SoloistConfig{m_program, QStringLiteral("key"), m_dir->filePath(QStringLiteral("data"))});
@@ -205,7 +205,7 @@ private slots:
         QVERIFY(names.indexOf(QStringLiteral("activate")) >= 0 && names.indexOf(QStringLiteral("activate")) < play);
         QCOMPARE(names.at(play - 1), QStringLiteral("set_volume"));
         QCOMPARE(m_soloist->commands.at(play).value(QStringLiteral("uri")).toString(), QStringLiteral("spotify:track:a"));
-        // swiftify's queue decides what follows, so soloist's repeat goes off
+        // scarlett's queue decides what follows, so soloist's repeat goes off
         const qsizetype repeat = m_soloist->commandNames().indexOf(QStringLiteral("set_repeat_track"));
         QVERIFY(repeat >= 0);
         QCOMPARE(m_soloist->commands.at(repeat).value(QStringLiteral("enabled")).toBool(), false);
@@ -224,7 +224,7 @@ private slots:
             QFAIL("played while unpaired");
         } catch (const SpotifyError &error) {
             QCOMPARE(error.kind(), SpotifyError::Kind::Session);
-            QVERIFY(error.message().contains(QStringLiteral("Swiftify")));
+            QVERIFY(error.message().contains(QStringLiteral("Scarlett")));
         }
         QVERIFY(!m_soloist->commandNames().contains(QStringLiteral("play")));
     }
@@ -300,7 +300,7 @@ private slots:
     {
         QSignalSpy started(m_core.get(), &PlaybackCore::remoteTrackStarted);
         QCoro::waitFor(m_core->playTrack(QStringLiteral("spotify:track:a")));
-        // swiftify's own play is nobody else's doing
+        // scarlett's own play is nobody else's doing
         QCOMPARE(started.count(), 0);
         m_soloist->sendPosition(60'000);
         m_soloist->sendTrack(QStringLiteral("spotify:track:picked"), 180'000, QStringLiteral("Picked"));
@@ -322,7 +322,7 @@ private slots:
         // and the skips go to soloist
         QVERIFY(m_core->skipRemote(true));
         QTRY_VERIFY(m_soloist->commandNames().contains(QStringLiteral("skip_next")));
-        // until swiftify plays something itself
+        // until scarlett plays something itself
         QCoro::waitFor(m_core->playTrack(QStringLiteral("spotify:track:b")));
         QVERIFY(!m_core->skipRemote(true));
     }

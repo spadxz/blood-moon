@@ -7,7 +7,7 @@
 #include <QJsonObject>
 #include <QSaveFile>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -82,4 +82,4 @@ void SongListCache::clear() const
     QDir(m_directory).removeRecursively();
 }
 
-} // namespace swiftify
+} // namespace scarlett

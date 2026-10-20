@@ -1,11 +1,11 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // one song in a list (SongListRow): number or play glyph, artwork, title and
-// artists, the star and more buttons, and the time. hovered, the card grows
-// a little on a spring, and it stays grown while its song is the one playing.
+// artists, the star and more buttons, and the time. hover highlights the row;
+// pressing uses a quick, controlled contraction.
 T.AbstractButton {
     id: root
 
@@ -18,21 +18,20 @@ T.AbstractButton {
 
     readonly property bool isCurrent: Player.hasSong && Player.currentSong.instanceId === song.instanceId
     readonly property bool saved: Library.savedRevision >= 0 && Library.isSaved(song.uri)
-    readonly property bool expanded: hovered || isCurrent
 
     implicitHeight: 58
     hoverEnabled: true
     // click focus would let other mouse buttons grab and press it
     focusPolicy: Qt.TabFocus
-    // a few pixels wider whatever the row's width, over its neighbours. a
-    // list puts its delegates and its header at 1; at rest a row stays
-    // there, or the header's stickers would be drawn over it
-    scale: (expanded ? 1 + Math.min(0.025, 10 / Math.max(width, 1)) : 1) - (down ? 0.012 : 0)
-    z: expanded ? 2 : 1
+    scale: down ? 0.992 : 1
+    z: hovered ? 2 : 1
 
     Behavior on scale {
-        enabled: !Appearance.performanceMode
-        Bounce {}
+        NumberAnimation {
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(170)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Appearance.curves.expressiveEffects
+        }
     }
     // the row's card starts at the page margin and keeps its content clear
     // of its rounded edge
@@ -94,7 +93,7 @@ T.AbstractButton {
 
                     width: 24
                     height: 24
-                    visible: !Appearance.bloodMoon
+                    visible: !Appearance.scarlett
                     Reveal.shown: arrived && root.isCurrent && !root.hovered
                     shape: "cookie6"
                     color: Appearance.colors.primaryContainer
@@ -280,8 +279,8 @@ T.AbstractButton {
                 iconColor: root.saved ? Appearance.colors.primary : Appearance.colors.onSurfaceVariant
                 onClicked: {
                     if (!root.saved) {
-                        if (!Appearance.bloodMoon) UiState.burst(star, "hearts")
-                        if (!Appearance.bloodMoon && !Appearance.performanceMode) {
+                        if (!Appearance.scarlett) UiState.burst(star, "hearts")
+                        if (!Appearance.scarlett && !Appearance.performanceMode) {
                             starPop.restart()
                         }
                     }
@@ -295,7 +294,7 @@ T.AbstractButton {
                     width: 40
                     height: 40
                     z: -2
-                    visible: !Appearance.bloodMoon
+                    visible: !Appearance.scarlett
                     opacity: 0
                     shape: "sunny"
                     color: Appearance.colors.primaryContainer

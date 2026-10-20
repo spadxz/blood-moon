@@ -12,7 +12,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 /// app-wide requests that come from outside the windows: the media session,
 /// a second launch, the tray, the dock. the qml shell carries them out.
@@ -43,7 +43,7 @@ class AppController : public QObject {
     /// close first, and a window that hides instead would cancel the quit
     Q_PROPERTY(bool quitting READ isQuitting NOTIFY quittingChanged FINAL)
     /// the clock what turns with the music follows (UiState sets its speed)
-    Q_PROPERTY(swiftify::AmbientClock *spinClock READ spinClock CONSTANT FINAL)
+    Q_PROPERTY(scarlett::AmbientClock *spinClock READ spinClock CONSTANT FINAL)
 
 public:
     /// no default argument: qml builds a singleton with a default constructor
@@ -130,4 +130,4 @@ private:
     bool m_quitting = false;
 };
 
-} // namespace swiftify
+} // namespace scarlett

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // the immersive player's backdrop (ArtworkBackdrop): the cover's palette
 // poured into a slow fluid that swells with the bass. the field is drawn
@@ -16,7 +16,7 @@ Item {
     /// the bass as the field swells with it, 0 to about 1; 0 while it holds
     readonly property real bass: flows ? clock.energy.y : 0
 
-    readonly property bool flows: !Appearance.bloodMoon && Settings.livingBackdrop && !Appearance.reduceMotion
+    readonly property bool flows: !Appearance.scarlett && Settings.livingBackdrop && !Appearance.reduceMotion
     // the blur radius is the standard deviation, in points; the field is drawn
     // at the scale that makes it about two texels, where a 13-tap blur covers it
     readonly property real sigma: Settings.backdropBlur
@@ -38,18 +38,18 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Appearance.bloodMoon ? "#000000" : "#020203"
+        color: Appearance.scarlett ? "#000000" : "#020203"
     }
 
-    BloodMoonBackdrop {
+    ScarlettBackdrop {
         anchors.fill: parent
-        visible: Appearance.bloodMoon
+        visible: Appearance.scarlett
     }
 
     ShaderEffect {
         id: field
         anchors.fill: parent
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
 
         property size itemSize: Qt.size(width, height)
         // the still field is the moment the mac app picked for it
@@ -78,7 +78,7 @@ Item {
     ShaderEffect {
         id: across
         anchors.fill: parent
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
 
         property variant source: fieldTexture
         property vector2d texelStep: Qt.vector2d(1 / root.textureSize.width, 0)
@@ -100,7 +100,7 @@ Item {
     ShaderEffect {
         id: down
         anchors.fill: parent
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
 
         property variant source: acrossTexture
         property vector2d texelStep: Qt.vector2d(0, 1 / root.textureSize.height)
@@ -121,7 +121,7 @@ Item {
 
     ShaderEffect {
         anchors.fill: parent
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
 
         property variant source: blurred
 

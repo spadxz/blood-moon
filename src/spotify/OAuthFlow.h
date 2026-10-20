@@ -10,7 +10,7 @@
 class QNetworkAccessManager;
 class QTcpSocket;
 
-namespace swiftify {
+namespace scarlett {
 
 struct OAuthToken {
     QString accessToken;
@@ -70,4 +70,4 @@ private:
     bool m_receivedCallback = false;
 };
 
-} // namespace swiftify
+} // namespace scarlett

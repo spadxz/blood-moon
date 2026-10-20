@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -334,4 +334,4 @@ void AudioShaping::applyShaping()
     }
 }
 
-} // namespace swiftify
+} // namespace scarlett

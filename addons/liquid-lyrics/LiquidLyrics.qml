@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // Loaded only while the lyrics inspector is open. The app's spectrum renderer
 // already sleeps when inactive, so this panel adds no permanent audio work.
@@ -14,7 +14,7 @@ Item {
 
     Image {
         anchors.fill: parent
-        source: "qrc:/images/blood-moon-background.png"
+        source: "qrc:/images/scarlett-background.png"
         sourceSize: Qt.size(520, 980)
         fillMode: Image.PreserveAspectCrop
         asynchronous: true

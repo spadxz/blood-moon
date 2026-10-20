@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // what a page shows with nothing in it: end4's page placeholder, a symbol on a
 // tonal cookie over a title and a line of explanation. the cookie springs in
@@ -38,7 +38,7 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         width: 80
         height: 80
-        shape: Appearance.bloodMoon ? "circle" : root.shape
+        shape: Appearance.scarlett ? "circle" : root.shape
         color: root.scheme.secondaryContainer
 
         // little shapes about the badge, behind it
@@ -53,7 +53,7 @@ Column {
             maximumSize: 30
             strength: 1.8
             scheme: root.scheme
-            visible: !Appearance.bloodMoon
+            visible: !Appearance.scarlett
         }
 
         ParallelAnimation {

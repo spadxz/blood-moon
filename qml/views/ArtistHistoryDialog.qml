@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 StyledDialog {
     id: root

@@ -1,5 +1,5 @@
 #version 440
-// A clean, code-drawn blood moon for the Blood Moon theme. The surface is
+// A clean, code-drawn scarlett for the Scarlett theme. The surface is
 // procedural, so it has no embedded stock artwork or background image.
 
 layout(location = 0) in vec2 qt_TexCoord0;

@@ -3,8 +3,8 @@
 #include <QQmlComponent>
 #include <QLineF>
 #include <QtQml/qqmlextensionplugin.h>
-Q_IMPORT_QML_PLUGIN(SwiftifyPlugin)
-using namespace swiftify;
+Q_IMPORT_QML_PLUGIN(ScarlettPlugin)
+using namespace scarlett;
 class MenuTest : public QObject {
     Q_OBJECT
 private slots:
@@ -19,7 +19,7 @@ private slots:
         testing::ViewRig rig;
         rig.window->resize(1280, windowHeight);
         QQmlComponent component(&rig.engine);
-        component.setData("import QtQuick\nimport Swiftify\nItem { width: 1280; height: 400; property alias loader: loader; ToolbarButton { id: anchor; x: 1220; y: 24; size: 40; effect: ToolbarButton.Spin; onClicked: loader.popupAt(anchor, 0, height) } function openMenu() { anchor.clicked() } MenuLoader { id: loader; sourceComponent: PlaybackMenu {} } }", QUrl());
+        component.setData("import QtQuick\nimport Scarlett\nItem { width: 1280; height: 400; property alias loader: loader; ToolbarButton { id: anchor; x: 1220; y: 24; size: 40; effect: ToolbarButton.Spin; onClicked: loader.popupAt(anchor, 0, height) } function openMenu() { anchor.clicked() } MenuLoader { id: loader; sourceComponent: PlaybackMenu {} } }", QUrl());
         std::unique_ptr<QObject> root(component.create());
         QVERIFY2(root, qPrintable(component.errorString()));
         qobject_cast<QQuickItem *>(root.get())->setParentItem(rig.window->contentItem());
@@ -44,7 +44,7 @@ private slots:
                 QVERIFY2(qAbs(menu->property("y").toReal() - initialY) < 1, "Menu jumps vertically while entering");
             }
             QVERIFY(menu->property("opened").toBool());
-            const QString preview = qEnvironmentVariable("SWIFTIFY_MENU_PREVIEW");
+            const QString preview = qEnvironmentVariable("SCARLETT_MENU_PREVIEW");
             if (!preview.isEmpty()) QVERIFY(rig.render().save(preview));
             QVERIFY(QMetaObject::invokeMethod(root.get(), "openMenu"));
             QTRY_VERIFY(!menu->property("visible").toBool());

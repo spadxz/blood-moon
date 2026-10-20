@@ -10,9 +10,9 @@
 
 #include <cstdint>
 
-namespace swiftify {
+namespace scarlett {
 
-Q_LOGGING_CATEGORY(lcDevices, "swiftify.devices")
+Q_LOGGING_CATEGORY(lcDevices, "scarlett.devices")
 
 namespace {
 
@@ -42,7 +42,7 @@ AudioDeviceMonitor::AudioDeviceMonitor(QObject *parent)
     if (!m_mainloop) {
         return;
     }
-    m_context = pa_context_new(pa_threaded_mainloop_get_api(m_mainloop), "Swiftify");
+    m_context = pa_context_new(pa_threaded_mainloop_get_api(m_mainloop), "Scarlett");
     if (!m_context) {
         return;
     }
@@ -212,4 +212,4 @@ void AudioDeviceMonitor::notifyArrived()
     QMetaObject::invokeMethod(this, &AudioDeviceMonitor::outputArrived, Qt::QueuedConnection);
 }
 
-} // namespace swiftify
+} // namespace scarlett

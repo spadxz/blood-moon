@@ -1,9 +1,10 @@
 # Project provenance and licensing
 
-The product is named **Blood Moon (BM)**. This repository is a public fork of
-[`shredos67/swiftify`](https://github.com/shredos67/swiftify). GitHub retains
-the fork relationship. Blood Moon-specific changes are made in this fork; the
-upstream project remains separately maintained by its author.
+The product is named **Scarlett**. This repository is a public fork of the
+original [Swiftify project](https://github.com/shredos67/swiftify), and GitHub
+retains that fork relationship after the repository rename. Scarlett-specific
+changes are maintained here; the upstream project remains separately
+maintained by its author.
 
 ## License status
 
@@ -20,9 +21,9 @@ open-source project.
 This note is a project-status disclosure, not legal advice. Do not assume that
 the absence of a license grants reuse rights.
 
-## Legacy identifiers
+## Rename and existing data
 
-Some source-level identifiers, the registered QML module URI, CMake targets,
-and user configuration paths retain the old project name. They are preserved
-to keep existing builds, settings, and add-ons working. User-facing branding is
-Blood Moon (BM).
+The executable, QML module URI, build targets, and packaged resources use
+Scarlett identifiers. On first launch, Scarlett copies settings, migrates the
+existing data and cache folders, and transfers saved Spotify credentials to
+the new app identity. The original settings and credential records are kept.

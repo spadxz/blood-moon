@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // QML add-ons are loaded from their installed package folder. The host gives
 // them the same app API as built-in QML, including playback, queue and lyrics.
@@ -46,7 +46,7 @@ Item {
                 }
                 StyledText {
                     width: parent.width
-                    text: Player.hasSong ? Player.currentSong.artists : qsTr("Choose a song in Blood Moon")
+                    text: Player.hasSong ? Player.currentSong.artists : qsTr("Choose a song in Scarlett")
                     color: Appearance.colors.onSurfaceVariant
                     elide: Text.ElideRight
                 }

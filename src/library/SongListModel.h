@@ -7,7 +7,7 @@
 
 #include <functional>
 
-namespace swiftify {
+namespace scarlett {
 
 /// songs for a list view. holds plain c++ songs, so a playlist of thousands
 /// costs a vector and the view only builds the rows it shows.
@@ -56,7 +56,7 @@ public:
     void removeAll(const std::function<bool(const Song &)> &predicate);
     void append(const Song &song);
 
-    Q_INVOKABLE swiftify::Song at(int row) const;
+    Q_INVOKABLE scarlett::Song at(int row) const;
     Q_INVOKABLE int indexOfInstance(quint64 instanceId) const;
 
 signals:
@@ -68,4 +68,4 @@ private:
     QList<Song> m_songs;
 };
 
-} // namespace swiftify
+} // namespace scarlett

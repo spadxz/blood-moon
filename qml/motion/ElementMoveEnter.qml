@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // end4's elementMoveEnter: something arriving.
 NumberAnimation {

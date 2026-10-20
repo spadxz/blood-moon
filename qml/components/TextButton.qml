@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a material 3 common button: filled, tonal, outlined, text or elevated, with
 // an optional leading symbol. Buttons keep their pill shape while pressing;
@@ -38,8 +38,8 @@ RippleButton {
     leftPadding: iconOnly ? 0 : (symbol.length > 0 ? 16 : 24)
     rightPadding: iconOnly ? 0 : 24
     buttonRadius: Appearance.rounding.full
-    rippleEnabled: !wavy || iconOnly
-    backgroundItem.visible: !wavy || iconOnly
+    rippleEnabled: !wavy || iconOnly || Appearance.scarlett
+    backgroundItem.visible: !wavy || iconOnly || Appearance.scarlett
     colBackground: {
         switch (variant) {
         case TextButton.Filled: return scheme.primary
@@ -69,7 +69,7 @@ RippleButton {
     WavyPill {
         anchors.fill: parent
         z: -1
-        visible: root.wavy && !root.iconOnly
+        visible: root.wavy && !root.iconOnly && !Appearance.scarlett
         hovered: root.hovered
         pressed: root.down
         color: root.down ? root.colRipple : (root.hovered ? root.colBackgroundHover : root.colBackground)

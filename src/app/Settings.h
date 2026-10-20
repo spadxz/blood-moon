@@ -9,7 +9,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 /// the app's preferences, under the macos app's key names and defaults
 /// (AppDesign.swift) so the two read the same way. stores that keep their own
@@ -31,6 +31,7 @@ class Settings : public QObject {
     Q_PROPERTY(QString visualizerShape READ visualizerShape WRITE setVisualizerShape NOTIFY visualizerShapeChanged FINAL)
     Q_PROPERTY(double visualizerSensitivity READ visualizerSensitivity WRITE setVisualizerSensitivity NOTIFY visualizerSensitivityChanged FINAL)
     Q_PROPERTY(int streamingQuality READ streamingQuality WRITE setStreamingQuality NOTIFY streamingQualityChanged FINAL)
+    Q_PROPERTY(QString audioOutputDevice READ audioOutputDevice WRITE setAudioOutputDevice NOTIFY audioOutputDeviceChanged FINAL)
     Q_PROPERTY(bool crossfadeEnabled READ crossfadeEnabled WRITE setCrossfadeEnabled NOTIFY crossfadeEnabledChanged FINAL)
     Q_PROPERTY(int crossfadeDurationSeconds READ crossfadeDurationSeconds WRITE setCrossfadeDurationSeconds NOTIFY crossfadeDurationSecondsChanged FINAL)
     /// how much of the songs streamed is kept, so playing one again needs no
@@ -65,7 +66,7 @@ class Settings : public QObject {
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged FINAL)
 
 public:
-    /// the default file, ~/.config/Swiftify/Swiftify.conf. no default argument:
+    /// the default file, ~/.config/Scarlett/Scarlett.conf. no default argument:
     /// qml builds a singleton with a default constructor in preference to
     /// create(), and would end up with an instance of its own
     explicit Settings(QObject *parent);
@@ -110,6 +111,8 @@ public:
     void setVisualizerSensitivity(double value);
     /// kbps: 96, 160 or 320
     int streamingQuality() const { return m_streamingQuality; }
+    QString audioOutputDevice() const { return m_audioOutputDevice; }
+    void setAudioOutputDevice(const QString &value);
     int songCacheMegabytes() const { return m_songCacheMegabytes; }
     void setSongCacheMegabytes(int megabytes);
     void setStreamingQuality(int value);
@@ -182,6 +185,7 @@ signals:
     void visualizerShapeChanged();
     void visualizerSensitivityChanged();
     void streamingQualityChanged();
+    void audioOutputDeviceChanged();
     void crossfadeEnabledChanged();
     void crossfadeDurationSecondsChanged();
     void songCacheMegabytesChanged();
@@ -223,6 +227,7 @@ private:
     QString m_visualizerShape = QStringLiteral("bars");
     double m_visualizerSensitivity = 1.0;
     int m_streamingQuality = 160;
+    QString m_audioOutputDevice;
     bool m_crossfadeEnabled = false;
     int m_crossfadeDurationSeconds = 5;
     int m_songCacheMegabytes = 1000;
@@ -237,7 +242,7 @@ private:
     bool m_reduceMotion = false;
     bool m_performanceMode = false;
     bool m_noShapes = false;
-    QString m_themeSource = QStringLiteral("blood-moon");
+    QString m_themeSource = QStringLiteral("scarlett");
     QString m_themeMode = QStringLiteral("system");
     QString m_matugenColorsPath = QString();
     bool m_showWindowControls = true;
@@ -254,4 +259,4 @@ private:
     QString m_language = QStringLiteral("system");
 };
 
-} // namespace swiftify
+} // namespace scarlett

@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a pill with a scalloped edge (wavy_pill.frag), for the buttons that play
 // things: its scallops deepen and start running round the edge while hovered.
@@ -14,7 +14,7 @@ ShaderEffect {
 
     property size itemSize: Qt.size(width, height)
     property real cornerRadius: Math.min(width, height) / 2
-    property real amplitude: Settings.noShapes || Appearance.bloodMoon ? 0 : (pressed ? 4 : (hovered ? 3.2 : 2.2))
+    property real amplitude: Settings.noShapes || Appearance.scarlett ? 0 : (pressed ? 4 : (hovered ? 3.2 : 2.2))
     property real wavelength: 15
     readonly property real phase: drift.value
 
@@ -27,7 +27,7 @@ ShaderEffect {
     // they are when the pointer leaves
     Drift {
         id: drift
-        active: root.hovered && root.visible && !Settings.noShapes && !Appearance.bloodMoon
+        active: root.hovered && root.visible && !Settings.noShapes && !Appearance.scarlett
         speed: 2 * Math.PI / 1.6
     }
 

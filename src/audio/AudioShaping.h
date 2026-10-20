@@ -8,7 +8,7 @@
 class QQmlEngine;
 class QJSEngine;
 
-namespace swiftify {
+namespace scarlett {
 
 class PlaybackCore;
 class Settings;
@@ -103,4 +103,4 @@ private:
     QList<EqualizerPreset> m_savedPresets;
 };
 
-} // namespace swiftify
+} // namespace scarlett

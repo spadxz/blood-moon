@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a transport icon with the swift app's one-shot symbol effects: previous and
 // next nudge in their direction, shuffle and repeat bounce. performance mode
@@ -26,9 +26,9 @@ IconButton {
     readonly property bool hasShape: toggledShape.length > 0 || hoverShape.length > 0
     readonly property bool showsShape: (toggled && toggledShape.length > 0) || (hovered && enabled && hasShape)
 
-    colBackgroundHover: Appearance.bloodMoon ? scheme.layer1Hover : hasShape ? "transparent" : scheme.layer1Hover
-    colBackgroundToggledHover: Appearance.bloodMoon ? scheme.layer1Hover : hasShape ? "transparent" : scheme.layer1Hover
-    rippleEnabled: !Appearance.bloodMoon && !hasShape
+    colBackgroundHover: Appearance.scarlett ? scheme.layer1Hover : hasShape ? "transparent" : scheme.layer1Hover
+    colBackgroundToggledHover: Appearance.scarlett ? scheme.layer1Hover : hasShape ? "transparent" : scheme.layer1Hover
+    rippleEnabled: !Appearance.scarlett && !hasShape
 
     onClicked: {
         if (Appearance.performanceMode) {
@@ -50,7 +50,7 @@ IconButton {
         width: root.width + 8
         height: root.height + 8
         z: -2
-        visible: !Appearance.bloodMoon && opacity > 0
+        visible: !Appearance.scarlett && opacity > 0
         opacity: root.showsShape ? 1 : 0
         scale: root.showsShape ? 1 : 0.35
         extent: 0.9

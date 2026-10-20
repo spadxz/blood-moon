@@ -21,7 +21,7 @@
 #include <optional>
 #include <utility>
 
-namespace swiftify {
+namespace scarlett {
 
 /// a name filled at one size, for one screen's pixels
 struct SymbolGlyph {
@@ -622,4 +622,4 @@ QSGNode *MaterialSymbolItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeDa
     return node;
 }
 
-} // namespace swiftify
+} // namespace scarlett

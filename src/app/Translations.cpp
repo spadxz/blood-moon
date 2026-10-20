@@ -7,7 +7,7 @@
 #include <QJsonArray>
 #include <QLocale>
 
-namespace swiftify {
+namespace scarlett {
 
 Translations::Translations(Settings *settings, QObject *parent)
     : QTranslator(parent), m_settings(settings)
@@ -47,4 +47,4 @@ QString Translations::translate(const char *, const char *sourceText, const char
     return value.isString() ? value.toString() : QString();
 }
 
-} // namespace swiftify
+} // namespace scarlett

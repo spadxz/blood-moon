@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace swiftify {
+namespace scarlett {
 
 /// how a visualizer lays out and moves its bars (SpectrumLayerStyle)
 struct SpectrumStyle {
@@ -119,4 +119,4 @@ struct SpectrumStyle {
 
 };
 
-} // namespace swiftify
+} // namespace scarlett

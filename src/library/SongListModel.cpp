@@ -4,7 +4,7 @@
 
 #include <functional>
 
-namespace swiftify {
+namespace scarlett {
 
 SongListModel::SongListModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -189,4 +189,4 @@ int SongListModel::indexOfInstance(quint64 instanceId) const
     return -1;
 }
 
-} // namespace swiftify
+} // namespace scarlett

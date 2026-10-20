@@ -8,7 +8,7 @@
 #include <qt6keychain/keychain.h>
 #include <QCoroSignal>
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -70,7 +70,19 @@ QCoro::Task<std::optional<StoredCredentials>> KeychainCredentialStore::load(Acco
     co_await qCoro(&job, &QKeychain::Job::finished);
 
     if (job.error() == QKeychain::EntryNotFound) {
-        co_return std::nullopt;
+        QKeychain::ReadPasswordJob legacy(CredentialStore::legacyService());
+        legacy.setAutoDelete(false);
+        legacy.setKey(accountName(account));
+        legacy.start();
+        co_await qCoro(&legacy, &QKeychain::Job::finished);
+        if (legacy.error() == QKeychain::EntryNotFound) co_return std::nullopt;
+        if (legacy.error() != QKeychain::NoError) {
+            throw storeError(QStringLiteral("load"), legacy.errorString());
+        }
+        const auto credentials = StoredCredentials::fromJson(legacy.binaryData());
+        if (!credentials) throw storeError(QStringLiteral("load"), QStringLiteral("it is damaged."));
+        co_await save(account, *credentials);
+        co_return credentials;
     }
     if (job.error() != QKeychain::NoError) {
         throw storeError(QStringLiteral("load"), job.errorString());
@@ -98,13 +110,15 @@ QCoro::Task<> KeychainCredentialStore::save(Account account, StoredCredentials c
 QCoro::Task<> KeychainCredentialStore::removeAll()
 {
     for (const Account account : {Account::Playback, Account::Library}) {
-        QKeychain::DeletePasswordJob job(service());
-        job.setAutoDelete(false);
-        job.setKey(accountName(account));
-        job.start();
-        co_await qCoro(&job, &QKeychain::Job::finished);
-        if (job.error() != QKeychain::NoError && job.error() != QKeychain::EntryNotFound) {
-            throw storeError(QStringLiteral("delete"), job.errorString());
+        for (const QString &serviceName : {service(), legacyService()}) {
+            QKeychain::DeletePasswordJob job(serviceName);
+            job.setAutoDelete(false);
+            job.setKey(accountName(account));
+            job.start();
+            co_await qCoro(&job, &QKeychain::Job::finished);
+            if (job.error() != QKeychain::NoError && job.error() != QKeychain::EntryNotFound) {
+                throw storeError(QStringLiteral("delete"), job.errorString());
+            }
         }
     }
 }
@@ -127,4 +141,4 @@ QCoro::Task<> MemoryCredentialStore::removeAll()
     co_return;
 }
 
-} // namespace swiftify
+} // namespace scarlett

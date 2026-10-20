@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // while the saved login is checked (SpotifyStartupLoadingView)
 Item {
@@ -43,7 +43,7 @@ Item {
 
             Image {
                 anchors.fill: parent
-                source: "qrc:/qt/qml/Swiftify/resources/swiftify-icon.png"
+                source: "qrc:/qt/qml/Scarlett/resources/scarlett-icon.png"
                 sourceSize: Qt.size(128, 128)
                 smooth: true
             }
@@ -51,7 +51,7 @@ Item {
 
         TitleText {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Blood Moon"
+            text: "Scarlett"
             font.pixelSize: Appearance.fontSize.headline
             font.weight: Font.Bold
         }

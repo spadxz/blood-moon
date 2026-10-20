@@ -3,7 +3,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Window
 import Qt.labs.platform as Platform
-import Swiftify
+import Scarlett
 
 // the main window: drawer, a content sheet with the top bar and the page, the
 // inspector beside it, and the player floating over the bottom.
@@ -46,7 +46,7 @@ ApplicationWindow {
         target: Player
         function onPanelsChanged() { window.closeCrowdedPanels() }
     }
-    title: "Blood Moon"
+    title: "Scarlett"
     // on linux the app draws its whole frame. on macos the content runs under
     // a transparent title bar that keeps the traffic lights and nothing else.
     flags: App.macOS ? Qt.Window | Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint
@@ -60,7 +60,7 @@ ApplicationWindow {
     leftPadding: 0
     rightPadding: 0
     bottomPadding: 0
-    color: Appearance.bloodMoon ? Appearance.colors.layer0
+    color: Appearance.scarlett ? Appearance.colors.layer0
           : App.windows && immersiveReveal > 0 ? PlayerStyle.darkScheme.layer0 : Appearance.colors.layer0
     // shown and hidden by hand: closing hides it to the tray
     visible: true
@@ -245,9 +245,9 @@ ApplicationWindow {
         fitAllZoomed()
     }
 
-    BloodMoonBackdrop {
+    ScarlettBackdrop {
         anchors.fill: parent
-        visible: Appearance.bloodMoon && !UiState.immersiveOpen
+        visible: Appearance.scarlett && !UiState.immersiveOpen
     }
 
     Item {
@@ -313,16 +313,16 @@ ApplicationWindow {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
             radius: Appearance.rounding.window
-            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.50)
+            color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.50)
                                         : Appearance.colors.layer1
-            border.width: Appearance.bloodMoon ? 1 : 0
-            border.color: Appearance.bloodMoon ? Qt.rgba(0.82, 0.84, 0.90, 0.24)
+            border.width: Appearance.scarlett ? 1 : 0
+            border.color: Appearance.scarlett ? Qt.rgba(0.82, 0.84, 0.90, 0.24)
                                                : "transparent"
 
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                visible: Appearance.bloodMoon
+                visible: Appearance.scarlett
                 gradient: Gradient {
                     GradientStop { position: 0; color: Qt.rgba(1, 0.97, 1, 0.065) }
                     GradientStop { position: 0.24; color: Qt.rgba(0.56, 0.035, 0.09, 0.022) }
@@ -336,7 +336,7 @@ ApplicationWindow {
                 width: parent.width - 2
                 height: 1
                 radius: 1
-                visible: Appearance.bloodMoon
+                visible: Appearance.scarlett
                 gradient: Gradient {
                     GradientStop { position: 0; color: "transparent" }
                     GradientStop { position: 0.22; color: Qt.rgba(0.96, 0.97, 1, 0.36) }
@@ -370,7 +370,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 radius: sheet.radius
                 color: window.color
-                visible: !Appearance.bloodMoon
+                visible: !Appearance.scarlett
             }
 
             TopBar {
@@ -434,16 +434,16 @@ ApplicationWindow {
                 width: Appearance.sizes.sideSheetWidth
                 height: parent.height
                 radius: Appearance.rounding.large
-                color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.56)
+                color: Appearance.scarlett ? Qt.alpha(Appearance.colors.layer1, 0.56)
                                             : Appearance.colors.layer1
-                border.width: Appearance.bloodMoon ? 1 : 0
-                border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.91, 0.96, 0.3)
+                border.width: Appearance.scarlett ? 1 : 0
+                border.color: Appearance.scarlett ? Qt.rgba(0.94, 0.91, 0.96, 0.3)
                                                    : "transparent"
 
                 Rectangle {
                     anchors.fill: parent
                     radius: parent.radius
-                    visible: Appearance.bloodMoon
+                    visible: Appearance.scarlett
                     gradient: Gradient {
                         GradientStop { position: 0; color: Qt.rgba(1, 0.94, 0.97, 0.08) }
                         GradientStop { position: 0.45; color: Qt.rgba(0.68, 0.06, 0.15, 0.025) }
@@ -849,10 +849,10 @@ ApplicationWindow {
     Loader {
         active: App.trayAvailable && (Settings.trayIcon || (App.windows && !window.visible))
         sourceComponent: Platform.SystemTrayIcon {
-            objectName: "swiftifyTrayIcon"
+            objectName: "scarlettTrayIcon"
             visible: true
-            icon.source: "qrc:/qt/qml/Swiftify/resources/swiftify-icon.png"
-            tooltip: Player.hasSong ? Player.currentSong.name + " — " + Player.currentSong.artists : "Blood Moon"
+            icon.source: "qrc:/qt/qml/Scarlett/resources/scarlett-icon.png"
+            tooltip: Player.hasSong ? Player.currentSong.name + " — " + Player.currentSong.artists : "Scarlett"
             onActivated: (reason) => {
                 if (reason === Platform.SystemTrayIcon.Trigger || reason === Platform.SystemTrayIcon.DoubleClick) {
                     window.reveal()
@@ -861,7 +861,7 @@ ApplicationWindow {
 
             menu: Platform.Menu {
                 Platform.MenuItem {
-                    text: qsTr("Show Blood Moon")
+                    text: qsTr("Show Scarlett")
                     onTriggered: window.reveal()
                 }
                 Platform.MenuItem {
@@ -871,7 +871,7 @@ ApplicationWindow {
                 }
                 Platform.MenuSeparator {}
                 Platform.MenuItem {
-                    text: qsTr("Quit Blood Moon")
+                    text: qsTr("Quit Scarlett")
                     onTriggered: App.quit()
                 }
             }
@@ -1055,7 +1055,7 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: 176
                     height: 176
-                    source: "qrc:/qt/qml/Swiftify/resources/swiftify-icon.png"
+                    source: "qrc:/qt/qml/Scarlett/resources/scarlett-icon.png"
                     sourceSize: Qt.size(512, 512)
                     fillMode: Image.PreserveAspectFit
                     smooth: true
@@ -1072,7 +1072,7 @@ ApplicationWindow {
 
                 TitleText {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "Blood Moon"
+                    text: "Scarlett"
                     font.pixelSize: Appearance.fontSize.headline
                     font.weight: Font.Bold
                 }

@@ -2,11 +2,11 @@
 
 #include "app/Paths.h"
 #include "spotify/SpotifyError.h"
-#ifdef SWIFTIFY_DESKTOP_INTEGRATION
+#ifdef SCARLETT_DESKTOP_INTEGRATION
 #include "soloist/SoloistAudioRoute.h"
 #endif
 
-#include <swiftify_core.h>
+#include <scarlett_core.h>
 
 #include <QCoroSignal>
 #include <QDateTime>
@@ -27,9 +27,9 @@
 #include <sys/prctl.h>
 #endif
 
-Q_LOGGING_CATEGORY(lcSoloist, "swiftify.soloist")
+Q_LOGGING_CATEGORY(lcSoloist, "scarlett.soloist")
 
-namespace swiftify {
+namespace scarlett {
 
 namespace {
 
@@ -39,7 +39,7 @@ constexpr int kStartTimeoutMs = 15'000;
 constexpr int kLoadTimeoutMs = 30'000;
 /// a song whose clock has run this close to its end has ended
 constexpr qint64 kEndSlackMs = 30;
-/// what is still on its way through swiftify's output when soloist is done
+/// what is still on its way through scarlett's output when soloist is done
 /// with a song, when it plays soloist on; the end waits for it
 constexpr qint64 kRouteDelayMs = 80;
 /// a song that has not started this long after it was asked for is asked
@@ -65,11 +65,11 @@ SoloistCore::SoloistCore(PlaybackCore *fallback, SoloistConfig config, QObject *
     : PlaybackCore(parent)
     , m_fallback(fallback)
     , m_config(std::move(config))
-    , m_liveBuffer(nullptr, &swiftify_live_buffer_free)
+    , m_liveBuffer(nullptr, &scarlett_live_buffer_free)
 {
     m_process.setProcessChannelMode(QProcess::MergedChannels);
 #ifdef Q_OS_LINUX
-    // soloist goes with a swiftify that crashes or is killed too. one left
+    // soloist goes with a scarlett that crashes or is killed too. one left
     // behind holds the data directory, and the next soloist will not start
     m_process.setChildProcessModifier([] { ::prctl(PR_SET_PDEATHSIG, SIGTERM); });
 #endif
@@ -154,12 +154,12 @@ SoloistCore::~SoloistCore()
 
 std::optional<SoloistConfig> SoloistCore::detect()
 {
-    if (qEnvironmentVariable("SWIFTIFY_PLAYBACK") == QLatin1StringView("librespot")) {
+    if (qEnvironmentVariable("SCARLETT_PLAYBACK") == QLatin1StringView("librespot")) {
         return std::nullopt;
     }
 
     SoloistConfig config;
-    config.program = qEnvironmentVariable("SWIFTIFY_SOLOIST");
+    config.program = qEnvironmentVariable("SCARLETT_SOLOIST");
     if (config.program.isEmpty()) {
         config.program = QStandardPaths::findExecutable(QStringLiteral("soloist"));
     }
@@ -202,16 +202,16 @@ void SoloistCore::startDaemon()
     m_failure.clear();
     m_processOutput.clear();
     QDir().mkpath(m_config.dataDirectory);
-#ifdef SWIFTIFY_DESKTOP_INTEGRATION
-    if (!m_route && qEnvironmentVariable("SWIFTIFY_SOLOIST_ROUTE") != QLatin1StringView("off")) {
-        // recorded at the rate swiftify's output plays at, so it is played
+#ifdef SCARLETT_DESKTOP_INTEGRATION
+    if (!m_route && qEnvironmentVariable("SCARLETT_SOLOIST_ROUTE") != QLatin1StringView("off")) {
+        // recorded at the rate scarlett's output plays at, so it is played
         // on as it is rather than resampled again
         const quint32 rate = m_fallback->liveOutputRate() ? m_fallback->liveOutputRate() : 48000;
-        m_liveBuffer.reset(swiftify_live_buffer_new(rate, SoloistAudioRoute::kChannels));
+        m_liveBuffer.reset(scarlett_live_buffer_new(rate, SoloistAudioRoute::kChannels));
         m_route = std::make_unique<SoloistAudioRoute>(m_liveBuffer.get(), rate);
         m_routed = m_route->start();
         if (m_routed) {
-            qCInfo(lcSoloist) << "Soloist plays through Swiftify, for the equalizer and the visualizers";
+            qCInfo(lcSoloist) << "Soloist plays through Scarlett, for the equalizer and the visualizers";
         } else {
             qCWarning(lcSoloist).noquote() << "Soloist plays straight to the speakers:" << m_route->error();
             m_route.reset();
@@ -230,7 +230,7 @@ void SoloistCore::startDaemon()
         QStringLiteral("--ws"), QStringLiteral("127.0.0.1:0"),
         QStringLiteral("--initial-volume"), QString::number(soloistVolume()),
     };
-#ifdef SWIFTIFY_DESKTOP_INTEGRATION
+#ifdef SCARLETT_DESKTOP_INTEGRATION
     if (m_routed) {
         arguments << QStringLiteral("--pipewire-device") << SoloistAudioRoute::sinkName();
     }
@@ -317,9 +317,9 @@ void SoloistCore::handleMessage(const QString &text)
 
 void SoloistCore::followRemote()
 {
-    // a play of swiftify's own is under way, or a song's end is being handed
+    // a play of scarlett's own is under way, or a song's end is being handed
     // over: what soloist says now is not someone else's doing
-    // (a gate stays shut after swiftify's queue has run out; only just after
+    // (a gate stays shut after scarlett's queue has run out; only just after
     // a song's end is what plays soloist's own doing)
     if (m_playsInFlight > 0 || (m_gated && nowMs() - m_gatedAtMs < 2'000) || m_endOfTrack || !m_loggedIn) {
         return;
@@ -429,7 +429,7 @@ void SoloistCore::applyPlaybackState(const QJsonObject &state)
 void SoloistCore::applyItem(const QJsonObject &item)
 {
     const QString uri = item.value(QStringLiteral("uri")).toString();
-    // something else taking over at the end of the song swiftify asked for
+    // something else taking over at the end of the song scarlett asked for
     // (soloist's autoplay) means that song has ended
     if (m_expectedStarted && m_itemUri == m_expectedUri && uri != m_expectedUri && m_durationMs > 0
         && (m_endAtMs > 0 || std::max(m_anchorPositionMs, estimatedPositionMs()) >= m_durationMs - kNearEndMs)) {
@@ -562,7 +562,7 @@ int SoloistCore::soloistVolume() const
 void SoloistCore::playRouted()
 {
     if (m_routed && !m_fallback->playLiveBuffer(m_liveBuffer.get())) {
-        qCWarning(lcSoloist) << "Swiftify's output would not take Soloist's audio";
+        qCWarning(lcSoloist) << "Scarlett's output would not take Soloist's audio";
     }
 }
 
@@ -602,12 +602,12 @@ QCoro::Task<> SoloistCore::playTrack(QString spotifyUri)
     if (!m_active) {
         send(QStringLiteral("activate"));
     }
-    // swiftify's queue decides what follows, not soloist's repeat
+    // scarlett's queue decides what follows, not soloist's repeat
     if (!m_repeat.isEmpty() && m_repeat != QLatin1StringView("off")) {
         send(QStringLiteral("set_repeat_track"), {{QStringLiteral("enabled"), false}});
         send(QStringLiteral("set_repeat_context"), {{QStringLiteral("enabled"), false}});
     }
-    // swiftify's output takes soloist's sink over again: after a file, the
+    // scarlett's output takes soloist's sink over again: after a file, the
     // file output played that instead
     playRouted();
     send(QStringLiteral("set_volume"), {{QStringLiteral("volume"), soloistVolume()}});
@@ -697,6 +697,16 @@ QCoro::Task<> SoloistCore::restartAudioOutput()
     if (m_routed && !m_localActive) {
         playRouted();
     }
+}
+
+QVariantList SoloistCore::audioOutputDevices() const
+{
+    return m_fallback->audioOutputDevices();
+}
+
+void SoloistCore::setAudioOutputDevice(const QString &id)
+{
+    m_fallback->setAudioOutputDevice(id);
 }
 
 void SoloistCore::play()
@@ -886,4 +896,4 @@ int SoloistCore::spectrumLevels(float *out, int capacity) const
     return m_localActive || m_routed ? m_fallback->spectrumLevels(out, capacity) : 0;
 }
 
-} // namespace swiftify
+} // namespace scarlett

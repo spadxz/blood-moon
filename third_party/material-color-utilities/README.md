@@ -3,7 +3,7 @@
 From https://github.com/material-foundation/material-color-utilities at
 `5b3618b16fdc3825e21d5679bafd144662088ea1`, Apache-2.0 (see `LICENSE`).
 
-Swiftify uses it to build Material 3 schemes from a seed colour: the built-in
+Scarlett uses it to build Material 3 schemes from a seed colour: the built-in
 fallback scheme and the artwork-tinted player scheme.
 
 Changes from upstream:

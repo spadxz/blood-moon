@@ -3,8 +3,8 @@
 #include <QQmlComponent>
 #include <QLineF>
 #include <QtQml/qqmlextensionplugin.h>
-Q_IMPORT_QML_PLUGIN(SwiftifyPlugin)
-using namespace swiftify;
+Q_IMPORT_QML_PLUGIN(ScarlettPlugin)
+using namespace scarlett;
 class SegmentedControlTest : public QObject {
     Q_OBJECT
 private slots:
@@ -13,7 +13,7 @@ private slots:
         testing::ViewRig rig;
         rig.settings.setReduceMotion(true);
         QQmlComponent component(&rig.engine);
-        component.setData("import QtQuick\nimport Swiftify\nSegmentedControl { currentIndex: 1; segments: [Segment { text: 'Normal' }, Segment { text: 'Circular' }] }", QUrl());
+        component.setData("import QtQuick\nimport Scarlett\nSegmentedControl { currentIndex: 1; segments: [Segment { text: 'Normal' }, Segment { text: 'Circular' }] }", QUrl());
         std::unique_ptr<QObject> root(component.create());
         QVERIFY2(root, qPrintable(component.errorString()));
         auto *item = qobject_cast<QQuickItem *>(root.get());
@@ -61,7 +61,7 @@ private slots:
                 }
             }
         }
-        const QString preview = qEnvironmentVariable("SWIFTIFY_SEGMENTS_PREVIEW");
+        const QString preview = qEnvironmentVariable("SCARLETT_SEGMENTS_PREVIEW");
         if (!preview.isEmpty()) QVERIFY(rig.render().save(preview));
     }
 

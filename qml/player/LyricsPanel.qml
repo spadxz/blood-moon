@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import Swiftify
+import Scarlett
 
 // the lyrics column (LyricsPanel): the current line full size and bright, the
 // rest smaller and faded, kept in the middle as the song moves. a line seeks
@@ -143,7 +143,9 @@ Item {
                 property real springing: line.active ? 1 : 19 / 22
                 property real eased: line.active ? 1 : 19 / 22
                 scale: Appearance.reduceMotion ? eased : springing
-                opacity: line.active ? 1 : 0.34
+                // Keep upcoming and previous lines readable against the
+                // dark glass panel while still giving the sung line focus.
+                opacity: line.active ? 1 : 0.72
 
                 Behavior on springing {
                     enabled: !root.suspended && !Appearance.reduceMotion

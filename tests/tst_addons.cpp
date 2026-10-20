@@ -9,7 +9,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-using swiftify::AddonManager;
+using scarlett::AddonManager;
 
 namespace {
 

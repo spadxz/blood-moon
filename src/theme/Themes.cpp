@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-namespace swiftify::themes {
+namespace scarlett::themes {
 
 namespace {
 
@@ -36,9 +36,9 @@ const QList<Family> kFamilies {
       0xff1b1b1d, 0xff5c5c61, 0xff6f6f75, 0xffc62828},
      {0xff0c0c0d, 0xff111113, 0xff19191b, 0xff232326, 0xff2e2e31, 0xff3b3b3f, 0xffececee, 0xffa9a9ae, 0xff7c7c82,
       0xffececee, 0xffb4b4b9, 0xff9a9aa0, 0xffef5350}},
-    // blood moon: smoked black-chrome grounds and a restrained, sinister
+    // scarlett: smoked black-chrome grounds and a restrained, sinister
     // oxblood accent. the light half keeps the same identity on pale glass.
-    {QStringLiteral("blood-moon"), QStringLiteral("Blood Moon"),
+    {QStringLiteral("scarlett"), QStringLiteral("Scarlett"),
      {0xfffff9fa, 0xfff5e9ed, 0xfffff7f8, 0xffeedde2, 0xffe1cbd1, 0xffcfb0b8, 0xff32161d, 0xff68454d, 0xff8e7077,
       0xff851125, 0xff71303b, 0xff65424c, 0xff971329},
      {0xff040507, 0xff090a0d, 0xff101115, 0xff191a1f, 0xff222329, 0xff34353c, 0xffe4e2e6, 0xffb5b1b7, 0xff827d85,
@@ -261,4 +261,4 @@ MaterialScheme::Roles roles(const Variant &variant, bool dark)
     return roles;
 }
 
-} // namespace swiftify::themes
+} // namespace scarlett::themes

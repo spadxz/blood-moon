@@ -1,10 +1,10 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Templates as T
-import Swiftify
+import Scarlett
 
 // a genre to explore: a two-colour gradient with a big faint shape of its
-// own cut off by the corner, its symbol on it, turning when hovered.
+// own cut off by the corner, with a restrained highlight on hover.
 T.AbstractButton {
     id: root
 
@@ -29,11 +29,14 @@ T.AbstractButton {
     hoverEnabled: true
     // click focus would let other mouse buttons grab and press it
     focusPolicy: Qt.TabFocus
-    scale: down ? 0.95 : (hovered ? 1.03 : 1)
+    scale: down ? 0.985 : (hovered ? 1.012 : 1)
 
     Behavior on scale {
-        enabled: !Appearance.performanceMode
-        Bounce {}
+        NumberAnimation {
+            duration: Appearance.reduceMotion ? 0 : Appearance.motion(210)
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Appearance.curves.expressiveFastSpatial
+        }
     }
 
     background: Item {
@@ -49,7 +52,7 @@ T.AbstractButton {
         WavyClip {
             anchors.fill: parent
             radius: Appearance.sizes.artworkRadius
-            wavy: root.hovered
+            wavy: false
 
             Rectangle {
                 anchors.fill: parent
@@ -69,7 +72,7 @@ T.AbstractButton {
                     color: Qt.rgba(1, 1, 1, 0.16)
                     // cut off by the card's edge, round corner and all
                     parentClipRadius: Appearance.sizes.artworkRadius
-                    spinAngle: root.hovered ? 34 : 8
+                    spinAngle: 8
 
                     Behavior on spinAngle {
                         enabled: !Appearance.performanceMode
@@ -104,36 +107,7 @@ T.AbstractButton {
         }
     }
 
-    // leans a few degrees toward the pointer while hovered, on a spring
-    property real tiltAcross: pointer.hovered && !Appearance.performanceMode
-                              ? (pointer.point.position.x / Math.max(1, width) - 0.5) * 12 : 0
-    property real tiltDown: pointer.hovered && !Appearance.performanceMode
-                            ? (0.5 - pointer.point.position.y / Math.max(1, root.height)) * 10 : 0
-
-    Behavior on tiltAcross {
-        SpringAnimation { spring: 4; damping: 0.3; epsilon: 0.01 }
-    }
-    Behavior on tiltDown {
-        SpringAnimation { spring: 4; damping: 0.3; epsilon: 0.01 }
-    }
-
-    transform: [
-        Rotation {
-            origin.x: root.width / 2
-            origin.y: root.height / 2
-            axis { x: 0; y: 1; z: 0 }
-            angle: root.tiltAcross
-        },
-        Rotation {
-            origin.x: root.width / 2
-            origin.y: root.height / 2
-            axis { x: 1; y: 0; z: 0 }
-            angle: root.tiltDown
-        }
-    ]
-
     HoverHandler {
-        id: pointer
         cursorShape: Qt.PointingHandCursor
     }
 }

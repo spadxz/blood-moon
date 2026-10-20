@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
-import Swiftify
+import Scarlett
 
 // connecting the library and playback for the first time (SpotifySetupView)
 Flickable {
@@ -93,7 +93,7 @@ Flickable {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
-            text: qsTr("Blood Moon needs a Client ID from your own Spotify developer app. You only have to set this up once.")
+            text: qsTr("Scarlett needs a Client ID from your own Spotify developer app. You only have to set this up once.")
             color: Appearance.colors.onSurfaceVariant
         }
 
@@ -117,7 +117,7 @@ Flickable {
 
             Step {
                 number: 2
-                title: qsTr("Add Blood Moon's redirect URI")
+                title: qsTr("Add Scarlett's redirect URI")
                 detail: qsTr("In the app settings, add this exact address under Redirect URIs, then save:")
             }
 
@@ -186,10 +186,10 @@ Flickable {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             text: Session.libraryConnected && !Session.connected
-                  ? qsTr("Your library is connected. Now connect playback so Blood Moon can play music.")
+                  ? qsTr("Your library is connected. Now connect playback so Scarlett can play music.")
                   : Session.connected && !Session.libraryConnected
                     ? qsTr("Playback is connected. Now connect your library to see your music.")
-                    : qsTr("Connect Library first, then Connect Playback so Blood Moon can play music.")
+                    : qsTr("Connect Library first, then Connect Playback so Scarlett can play music.")
             font.pixelSize: Appearance.fontSize.smaller
             color: Session.libraryConnected !== Session.connected ? Appearance.colors.primary
                                                                   : Appearance.colors.onSurfaceVariant

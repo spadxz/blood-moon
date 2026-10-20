@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // a group's heading in the drawer: its name, and a squiggle running on to
 // whatever sits at the end of the row.
@@ -31,7 +31,7 @@ Item {
         anchors.rightMargin: trailingSlot.width > 0 ? 6 : 12
         anchors.verticalCenter: parent.verticalCenter
         color: Appearance.colors.outlineVariant
-        visible: !Appearance.bloodMoon
+        visible: !Appearance.scarlett
     }
 
     Row {

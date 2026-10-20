@@ -1,6 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Swiftify
+import Scarlett
 
 // end4's elementMoveSmall: short moves, a snappier overshoot.
 NumberAnimation {

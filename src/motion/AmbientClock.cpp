@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace swiftify {
+namespace scarlett {
 
 AmbientClock::AmbientClock(QObject *parent)
     : QObject(parent)
@@ -71,4 +71,4 @@ void AmbientClock::tick()
     emit valueChanged();
 }
 
-} // namespace swiftify
+} // namespace scarlett
