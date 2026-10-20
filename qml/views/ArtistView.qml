@@ -14,6 +14,9 @@ Flickable {
     /// the artist it opened on. a page kept behind a newer one (PageHost)
     /// holds on to its own rather than following the library elsewhere
     property artist artist
+    property int historyRevision: 0
+    readonly property var recentArtistPlays: root.historyRevision >= 0
+        ? Player.recentHistoryForArtist(root.artist.name, 8) : []
 
     Binding {
         target: root
@@ -43,7 +46,8 @@ Flickable {
         CollectionHero {
             width: root.width
             artworkUrl: root.artist.artworkUrl
-            circular: true
+            circular: false
+            portrait: true
             kind: "ARTIST"
             title: root.artist.name
             titleSize: 38
@@ -61,6 +65,78 @@ Flickable {
                     onClicked: Player.playFromModel(Library.artistTopSongs, 0)
                 }
             ]
+        }
+
+        TitleText {
+            x: root.margin
+            Reveal.shown: root.recentArtistPlays.length > 0
+            topPadding: 10
+            bottomPadding: 8
+            text: qsTr("Recently Played by You")
+            font.pixelSize: Appearance.fontSize.title
+            font.weight: Font.Bold
+        }
+
+        Repeater {
+            model: root.recentArtistPlays
+
+            delegate: Rectangle {
+                id: recentRow
+                required property var modelData
+
+                x: root.margin
+                width: root.width - 2 * root.margin
+                height: 64
+                radius: 12
+                color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.50)
+                                            : Qt.alpha(Appearance.colors.surfaceContainerLow, 0.8)
+                border.width: Appearance.bloodMoon ? 1 : 0
+                border.color: Qt.rgba(0.88, 0.89, 0.95, 0.18)
+
+                Row {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 12
+                    spacing: 12
+
+                    ArtworkImage {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 44
+                        height: 44
+                        source: recentRow.modelData.artworkUrl
+                        radius: 7
+                    }
+
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.max(0, parent.width - 128)
+                        spacing: 3
+
+                        StyledText {
+                            width: parent.width
+                            text: recentRow.modelData.name
+                            elide: Text.ElideRight
+                            font.weight: Font.DemiBold
+                        }
+                        StyledText {
+                            width: parent.width
+                            text: recentRow.modelData.artists + "  ·  " + recentRow.modelData.albumName
+                            elide: Text.ElideRight
+                            font.pixelSize: Appearance.fontSize.smaller
+                            color: Appearance.colors.onSurfaceVariant
+                        }
+                    }
+
+                    StyledText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: recentRow.modelData.playedAtMs > 0
+                              ? Qt.formatDateTime(new Date(recentRow.modelData.playedAtMs), "ddd, MMM d · h:mm AP")
+                              : ""
+                        font.pixelSize: Appearance.fontSize.smaller
+                        color: Appearance.colors.onSurfaceVariant
+                    }
+                }
+            }
         }
 
         Item {
@@ -155,4 +231,16 @@ Flickable {
             }
         }
     }
+
+    Connections {
+        target: Player
+        function onListeningHistoryChanged() { root.historyRevision++ }
+    }
+
+    Connections {
+        target: Library.recentlyPlayed
+        function onCountChanged() { Player.syncSpotifyRecentHistory(Library.recentlyPlayed) }
+    }
+
+    Component.onCompleted: Player.syncSpotifyRecentHistory(Library.recentlyPlayed)
 }

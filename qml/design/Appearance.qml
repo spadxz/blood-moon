@@ -10,11 +10,6 @@ QtObject {
 
     final readonly property MaterialScheme colors: Theme.colors
     final readonly property bool bloodMoon: Settings.themeSource === "blood-moon"
-    // Use OPPO Sans 4.0 when it is installed locally; Google Sans Flex's
-    // variable axes keep a similar clean, rounded feel as the fallback.
-    final readonly property var roundedFontAxes: bloodMoon
-        ? ({ "ROND": 18, "wdth": 100, "wght": 600 })
-        : ({ "ROND": 100, "wdth": 110, "wght": 720 })
     /// nothing moves of its own accord, over and over: the shapes that turn
     /// with the music, the edges that run while hovered, the seek line's wave
     /// and the backdrop's flow hold still (Settings.reduceMotion). what

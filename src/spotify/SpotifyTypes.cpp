@@ -83,6 +83,10 @@ QJsonObject Song::toJson() const
     if (!albumName.isEmpty()) object.insert(QStringLiteral("albumName"), albumName);
     if (artworkUrl.isValid()) object.insert(QStringLiteral("artworkURL"), artworkUrl.toString());
     if (durationMs > 0) object.insert(QStringLiteral("durationMs"), durationMs);
+    if (addedAtMs >= 0) object.insert(QStringLiteral("addedAtMs"), addedAtMs);
+    if (playedAtMs > 0) object.insert(QStringLiteral("playedAtMs"), playedAtMs);
+    if (playedDurationMs > 0) object.insert(QStringLiteral("playedDurationMs"), playedDurationMs);
+    if (!playedContext.isEmpty()) object.insert(QStringLiteral("playedContext"), playedContext);
     if (!albumId.isEmpty()) object.insert(QStringLiteral("albumID"), albumId);
     if (!albumUri.isEmpty()) object.insert(QStringLiteral("albumURI"), albumUri);
     if (!artistArray.isEmpty()) object.insert(QStringLiteral("artistItems"), artistArray);
@@ -99,6 +103,11 @@ Song Song::fromJson(const QJsonObject &object)
     song.artworkUrl = QUrl(object.value(QStringLiteral("artworkURL")).toString());
     song.uri = object.value(QStringLiteral("uri")).toString();
     song.durationMs = object.value(QStringLiteral("durationMs")).toInt();
+    song.addedAtMs = object.value(QStringLiteral("addedAtMs")).toVariant().toLongLong();
+    if (!object.contains(QStringLiteral("addedAtMs"))) song.addedAtMs = -1;
+    song.playedAtMs = object.value(QStringLiteral("playedAtMs")).toVariant().toLongLong();
+    song.playedDurationMs = object.value(QStringLiteral("playedDurationMs")).toVariant().toLongLong();
+    song.playedContext = object.value(QStringLiteral("playedContext")).toString();
     song.isExplicit = object.value(QStringLiteral("isExplicit")).toBool();
     song.albumId = object.value(QStringLiteral("albumID")).toString();
     song.albumUri = object.value(QStringLiteral("albumURI")).toString();

@@ -31,6 +31,9 @@ public:
         DurationMsRole,
         ExplicitRole,
         AlbumIdRole,
+        PlayedAtMsRole,
+        PlayedDurationMsRole,
+        PlayedContextRole,
     };
     Q_ENUM(Role)
 

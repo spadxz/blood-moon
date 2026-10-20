@@ -77,6 +77,7 @@ IconButton {
         width: root.width
         height: root.height
         z: -0.5
+        visible: !Appearance.bloodMoon
         shape: root.shape
         spinAngle: root.shapeAngle + drift.value
         color: root.down ? root.shapePressedColor : (root.hovered && root.enabled ? root.shapeHoverColor : root.shapeColor)
@@ -99,10 +100,22 @@ IconButton {
         // wherever it stopped
         Drift {
             id: drift
-            active: root.turnsOnHover && root.hovered && root.visible
+            active: !Appearance.bloodMoon && root.turnsOnHover && root.hovered && root.visible
             speed: 40
             period: 360
         }
+    }
+
+    Rectangle {
+        anchors.centerIn: parent
+        width: root.width
+        height: root.height
+        radius: width / 2
+        z: -0.5
+        visible: Appearance.bloodMoon && root.hovered
+        color: Qt.alpha(Appearance.colors.layer0, 0.88)
+        border.width: 1
+        border.color: Qt.rgba(0.9, 0.91, 0.96, 0.32)
     }
 
     SequentialAnimation {

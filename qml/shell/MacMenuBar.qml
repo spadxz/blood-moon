@@ -100,6 +100,13 @@ Platform.MenuBar {
             checked: Library.page === Library.Page.LocalFiles || Library.page === Library.Page.LocalTracks
             onTriggered: Library.showLocalFiles()
         }
+        Platform.MenuItem {
+            text: qsTr("Listening History")
+            shortcut: "Ctrl+6"
+            checkable: true
+            checked: Library.page === Library.Page.ListeningHistory
+            onTriggered: Library.showListeningHistory()
+        }
         Platform.MenuSeparator {}
         Platform.MenuItem {
             text: qsTr("Back")

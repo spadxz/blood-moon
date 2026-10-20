@@ -41,8 +41,8 @@ const QList<Family> kFamilies {
     {QStringLiteral("blood-moon"), QStringLiteral("Blood Moon"),
      {0xfffff9fa, 0xfff5e9ed, 0xfffff7f8, 0xffeedde2, 0xffe1cbd1, 0xffcfb0b8, 0xff32161d, 0xff68454d, 0xff8e7077,
       0xff851125, 0xff71303b, 0xff65424c, 0xff971329},
-     {0xff040507, 0xff090a0d, 0xff101115, 0xff191a1f, 0xff222329, 0xff34353c, 0xfff4f1f2, 0xffc5bdc0, 0xff8f888c,
-      0xffa90d28, 0xff791525, 0xffa34c59, 0xffc62139}},
+     {0xff040507, 0xff090a0d, 0xff101115, 0xff191a1f, 0xff222329, 0xff34353c, 0xffe4e2e6, 0xffb5b1b7, 0xff827d85,
+      0xff9d1024, 0xff69101d, 0xffa54856, 0xff3a252a}},
     // spotify's own: black and its greys in the dark, white in the light,
     // and its green for the highlights. the light green is a shade deeper,
     // so it still reads on white

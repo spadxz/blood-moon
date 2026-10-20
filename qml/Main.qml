@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls.Basic
+import QtQuick.Window
 import Qt.labs.platform as Platform
 import Swiftify
 
@@ -52,7 +53,7 @@ ApplicationWindow {
     leftPadding: 0
     rightPadding: 0
     bottomPadding: 0
-    color: Appearance.bloodMoon ? "#000000"
+    color: Appearance.bloodMoon ? Appearance.colors.layer0
           : App.windows && immersiveReveal > 0 ? PlayerStyle.darkScheme.layer0 : Appearance.colors.layer0
     // shown and hidden by hand: closing hides it to the tray
     visible: true
@@ -351,6 +352,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 radius: sheet.radius
                 color: window.color
+                visible: !Appearance.bloodMoon
             }
 
             TopBar {
@@ -957,5 +959,113 @@ ApplicationWindow {
 
     MiniPlayerWindow {
         transientParentWindow: window
+    }
+
+    Window {
+        id: startupSplash
+
+        width: 390
+        height: 390
+        x: Screen.virtualX + Math.round((Screen.width - width) / 2)
+        y: Screen.virtualY + Math.round((Screen.height - height) / 2)
+        color: "transparent"
+        flags: Qt.SplashScreen | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        modality: Qt.NonModal
+        transientParent: window
+        visible: App.windows
+        opacity: 0
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 28
+            color: "#08080a"
+            border.width: 1
+            border.color: Qt.rgba(0.86, 0.87, 0.93, 0.34)
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#19191d" }
+                GradientStop { position: 0.54; color: "#0d0d10" }
+                GradientStop { position: 1; color: "#100609" }
+            }
+
+            Rectangle {
+                anchors.centerIn: moon
+                width: 250
+                height: 250
+                radius: width / 2
+                color: "#42a20b18"
+            }
+
+            SoftShadow {
+                anchors.centerIn: moon
+                width: 186
+                height: 186
+                radius: width / 2
+                blur: 44
+                offset: Qt.vector2d(0, 0)
+                color: "#9ae73343"
+            }
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 17
+
+                Image {
+                    id: moon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: 176
+                    height: 176
+                    source: "qrc:/qt/qml/Swiftify/resources/swiftify-icon.png"
+                    sourceSize: Qt.size(512, 512)
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                }
+
+                StyledText {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: qsTr("WELCOME BACK")
+                    font.pixelSize: Appearance.fontSize.small
+                    font.letterSpacing: 2.4
+                    font.weight: Font.DemiBold
+                    color: "#c5c4ca"
+                }
+
+                TitleText {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Blood Moon"
+                    font.pixelSize: Appearance.fontSize.headline
+                    font.weight: Font.Bold
+                }
+            }
+        }
+
+        NumberAnimation {
+            id: splashFadeIn
+            target: startupSplash
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 300
+            running: App.windows
+            onFinished: splashHold.start()
+        }
+
+        Timer {
+            id: splashHold
+            interval: 1050
+            onTriggered: splashFadeOut.start()
+        }
+
+        NumberAnimation {
+            id: splashFadeOut
+            target: startupSplash
+            property: "opacity"
+            from: 1
+            to: 0
+            duration: 180
+            onFinished: {
+                startupSplash.close()
+                window.reveal()
+            }
+        }
     }
 }

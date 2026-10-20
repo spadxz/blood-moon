@@ -73,6 +73,7 @@ Flickable {
                 spacing: 10
 
                 ShapeIcon {
+                    visible: !Appearance.bloodMoon
                     anchors.verticalCenter: parent.verticalCenter
                     size: 30
                     iconSize: 17
@@ -81,6 +82,13 @@ Flickable {
                     color: Appearance.colors.tertiaryContainer
                     iconColor: Appearance.colors.onTertiaryContainer
                     hovered: greetingHover.hovered
+                }
+                MaterialSymbol {
+                    visible: Appearance.bloodMoon
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: ["wb_sunny", "light_mode", "wb_twilight", "dark_mode"][greeting.part]
+                    iconSize: 20
+                    color: Appearance.colors.onSurfaceVariant
                 }
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
@@ -122,10 +130,21 @@ Flickable {
                             : Math.max(spotlightArt.height, spotlightDetails.implicitHeight) + 2 * inset
             Reveal.shown: root.hasSpotlight && !(Library.loadingHome && Library.recentlyPlayed.count === 0)
             radius: 22
-            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.42)
+            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.30)
                                         : Appearance.colors.surfaceContainerLow
             border.width: 0.75
-            border.color: Qt.rgba(1, 1, 1, 0.09)
+            border.color: Appearance.bloodMoon ? Qt.rgba(0.91, 0.92, 0.98, 0.32) : Qt.rgba(1, 1, 1, 0.09)
+
+            Rectangle {
+                anchors.fill: parent
+                radius: parent.radius
+                visible: Appearance.bloodMoon
+                gradient: Gradient {
+                    GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0.07) }
+                    GradientStop { position: 0.48; color: Qt.rgba(0.07, 0.07, 0.09, 0.03) }
+                    GradientStop { position: 1; color: Qt.rgba(0.20, 0.004, 0.026, 0.10) }
+                }
+            }
 
             TapHandler {
                 acceptedButtons: Qt.RightButton
@@ -174,7 +193,7 @@ Flickable {
                 saturation: 0.2
                 maskEnabled: true
                 maskSource: spotlightMask
-                opacity: Appearance.bloodMoon ? 0.2
+                opacity: Appearance.bloodMoon ? 0.10
                          : Appearance.colors.dark ? 0.42 : 0.3
             }
 
@@ -187,6 +206,7 @@ Flickable {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 12
                 height: 10
+                visible: !Appearance.bloodMoon
                 color: Qt.alpha(Appearance.colors.primary, 0.45)
                 phaseRate: root.spotlightIsCurrent ? 4 : 0
             }

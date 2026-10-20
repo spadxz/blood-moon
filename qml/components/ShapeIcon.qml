@@ -30,6 +30,7 @@ Item {
 
     implicitWidth: size
     implicitHeight: size
+    opacity: enabled ? 1 : 0.45
 
     Component.onCompleted: settled = true
 
@@ -58,6 +59,7 @@ Item {
     MaterialShape {
         id: body
         anchors.fill: parent
+        visible: !Appearance.bloodMoon
         keepsShape: root.keepsShape
         shape: root.fromShape
         morphTo: root.target
@@ -81,8 +83,8 @@ Item {
         text: root.symbol
         iconSize: root.iconSize
         fill: root.fill
-        color: root.iconColor
-        rotation: root.hovered ? -10 : 0
+        color: Appearance.bloodMoon ? Appearance.colors.onSurfaceVariant : root.iconColor
+        rotation: Appearance.bloodMoon ? 0 : root.hovered ? -10 : 0
 
         Behavior on rotation {
             enabled: !Appearance.performanceMode

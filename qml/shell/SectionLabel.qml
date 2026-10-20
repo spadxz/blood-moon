@@ -31,6 +31,7 @@ Item {
         anchors.rightMargin: trailingSlot.width > 0 ? 6 : 12
         anchors.verticalCenter: parent.verticalCenter
         color: Appearance.colors.outlineVariant
+        visible: !Appearance.bloodMoon
     }
 
     Row {

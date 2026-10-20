@@ -263,7 +263,7 @@ QCoro::Task<int> WebApi::savedSongTotal(QString accessToken)
 
 QCoro::Task<QList<Song>> WebApi::recentlyPlayed(QString accessToken)
 {
-    const QUrlQuery requestQuery = QUrlQuery {{QStringLiteral("limit"), QStringLiteral("20")}};
+    const QUrlQuery requestQuery = QUrlQuery {{QStringLiteral("limit"), QStringLiteral("50")}};
     const QJsonDocument document = co_await requestJson(
         apiUrl(QStringLiteral("/v1/me/player/recently-played"), requestQuery),
         "GET", accessToken);

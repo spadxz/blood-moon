@@ -351,8 +351,6 @@ int main(int argc, char *argv[])
                      [&windowsIntegration](QObject *object, const QUrl &) {
         if (auto *window = qobject_cast<QWindow *>(object)) {
             windowsIntegration.setWindow(window);
-            window->show();
-            QTimer::singleShot(0, &windowsIntegration, &WindowsIntegration::activateWindow);
         }
     });
 #endif

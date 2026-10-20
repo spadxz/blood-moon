@@ -110,6 +110,9 @@ class LibraryStore : public QObject {
     Q_PROPERTY(swiftify::SongListModel *recentlyPlayed READ recentlyPlayed CONSTANT FINAL)
     Q_PROPERTY(swiftify::ArtistListModel *recommendedArtists READ recommendedArtists CONSTANT FINAL)
     Q_PROPERTY(swiftify::AlbumListModel *recommendedAlbums READ recommendedAlbums CONSTANT FINAL)
+    Q_PROPERTY(swiftify::SongListModel *dailyRecommendationSongs READ dailyRecommendationSongs CONSTANT FINAL)
+    Q_PROPERTY(swiftify::ArtistListModel *dailyRecommendationArtists READ dailyRecommendationArtists CONSTANT FINAL)
+    Q_PROPERTY(QString dailyRecommendationsDate READ dailyRecommendationsDate NOTIFY dailyRecommendationsChanged FINAL)
     Q_PROPERTY(swiftify::SongListModel *albumSongs READ albumSongs CONSTANT FINAL)
     Q_PROPERTY(swiftify::SongListModel *artistTopSongs READ artistTopSongs CONSTANT FINAL)
     Q_PROPERTY(swiftify::AlbumListModel *artistAlbums READ artistAlbums CONSTANT FINAL)
@@ -140,9 +143,9 @@ class LibraryStore : public QObject {
 public:
     /// LocalFiles is the grid of playlists made on this computer, opening on
     /// LocalTracks, every music file of the person's own as a list
-    enum class Page { Home, Search, Songs, Playlists, PinnedPlaylists, Playlist, Album, Artist, LocalFiles, LocalTracks };
+    enum class Page { Home, Search, Recommendations, Songs, Playlists, PinnedPlaylists, Playlist, Album, Artist, LocalFiles, LocalTracks, ListeningHistory };
     Q_ENUM(Page)
-    enum class SortOrder { Playlist, Title, Artist, Album, Duration };
+    enum class SortOrder { Playlist, Title, Artist, Album, Duration, DateAdded };
     Q_ENUM(SortOrder)
 
     LibraryStore(SpotifySession *session, Settings *settings, ErrorCenter *errors, QObject *parent = nullptr);
@@ -190,6 +193,9 @@ public:
     SongListModel *recentlyPlayed() const { return m_recentlyPlayed; }
     ArtistListModel *recommendedArtists() const { return m_recommendedArtists; }
     AlbumListModel *recommendedAlbums() const { return m_recommendedAlbums; }
+    SongListModel *dailyRecommendationSongs() const { return m_dailyRecommendationSongs; }
+    ArtistListModel *dailyRecommendationArtists() const { return m_dailyRecommendationArtists; }
+    QString dailyRecommendationsDate() const { return m_dailyRecommendationsDate; }
     SongListModel *albumSongs() const { return m_albumSongs; }
     SongListModel *artistTopSongs() const { return m_artistTopSongs; }
     AlbumListModel *artistAlbums() const { return m_artistAlbums; }
@@ -222,6 +228,8 @@ public:
 
     Q_INVOKABLE void showHome();
     Q_INVOKABLE void showSearch();
+    Q_INVOKABLE void showRecommendations();
+    Q_INVOKABLE void loadDailyRecommendations(bool forceRefresh = false);
     Q_INVOKABLE void showSavedSongs();
     Q_INVOKABLE void showPlaylists();
     Q_INVOKABLE void showPinnedPlaylists();
@@ -230,6 +238,7 @@ public:
     Q_INVOKABLE void showLocalFiles();
     /// every music file of the person's own, as a list
     Q_INVOKABLE void showLocalTracks();
+    Q_INVOKABLE void showListeningHistory();
     Q_INVOKABLE void selectPlaylist(const swiftify::Playlist &playlist);
     Q_INVOKABLE void selectPlaylistById(const QString &id);
     Q_INVOKABLE void selectAlbum(const swiftify::Album &album);
@@ -280,6 +289,7 @@ signals:
     void loadingChanged();
     void playlistSaveFinished(bool ok);
     void playlistDeleted(const QString &id);
+    void dailyRecommendationsChanged();
 
 private:
     struct Destination {
@@ -307,6 +317,7 @@ private:
     void setSongs(const QList<Song> &songs);
     void refreshDisplayedSongs();
     void refreshRecommendations();
+    void buildDailyRecommendations();
     void persistSearchHistory();
     void setSearchHistory(const QList<Song> &songs);
     void adjustPlaylistSongCount(const QString &id, int delta);
@@ -344,6 +355,7 @@ private:
     Settings *m_settings;
     ErrorCenter *m_errors;
     LocalLibrary *m_localFiles = nullptr;
+    PlaybackController *m_player = nullptr;
 
     Destination m_destination;
     QList<Destination> m_history;
@@ -367,6 +379,9 @@ private:
     SongListModel *m_recentlyPlayed;
     ArtistListModel *m_recommendedArtists;
     AlbumListModel *m_recommendedAlbums;
+    SongListModel *m_dailyRecommendationSongs;
+    ArtistListModel *m_dailyRecommendationArtists;
+    QString m_dailyRecommendationsDate;
     SongListModel *m_albumSongs;
     SongListModel *m_artistTopSongs;
     AlbumListModel *m_artistAlbums;

@@ -1,6 +1,7 @@
 #include "spotify/SpotifyJson.h"
 
 #include <QHash>
+#include <QDateTime>
 #include <QRegularExpression>
 #include <QStringList>
 
@@ -198,10 +199,25 @@ std::optional<Song> wrappedTrack(const QJsonObject &entry)
 {
     const QJsonValue item = entry.value(QStringLiteral("item"));
     if (item.isObject()) {
-        return track(item.toObject());
+        auto result = track(item.toObject());
+        if (result) {
+            const QDateTime addedAt = QDateTime::fromString(string(entry, "added_at"), Qt::ISODateWithMs);
+            if (addedAt.isValid()) result->addedAtMs = addedAt.toMSecsSinceEpoch();
+            const QDateTime playedAt = QDateTime::fromString(string(entry, "played_at"), Qt::ISODateWithMs);
+            if (playedAt.isValid()) result->playedAtMs = playedAt.toMSecsSinceEpoch();
+        }
+        return result;
     }
     const QJsonValue legacy = entry.value(QStringLiteral("track"));
-    return legacy.isObject() ? track(legacy.toObject()) : std::nullopt;
+    if (!legacy.isObject()) return std::nullopt;
+    auto result = track(legacy.toObject());
+    if (result) {
+        const QDateTime addedAt = QDateTime::fromString(string(entry, "added_at"), Qt::ISODateWithMs);
+        if (addedAt.isValid()) result->addedAtMs = addedAt.toMSecsSinceEpoch();
+        const QDateTime playedAt = QDateTime::fromString(string(entry, "played_at"), Qt::ISODateWithMs);
+        if (playedAt.isValid()) result->playedAtMs = playedAt.toMSecsSinceEpoch();
+    }
+    return result;
 }
 
 } // namespace swiftify::json

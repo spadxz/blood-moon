@@ -38,7 +38,7 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         width: 80
         height: 80
-        shape: root.shape
+        shape: Appearance.bloodMoon ? "circle" : root.shape
         color: root.scheme.secondaryContainer
 
         // little shapes about the badge, behind it
@@ -53,6 +53,7 @@ Column {
             maximumSize: 30
             strength: 1.8
             scheme: root.scheme
+            visible: !Appearance.bloodMoon
         }
 
         ParallelAnimation {

@@ -26,9 +26,9 @@ IconButton {
     readonly property bool hasShape: toggledShape.length > 0 || hoverShape.length > 0
     readonly property bool showsShape: (toggled && toggledShape.length > 0) || (hovered && enabled && hasShape)
 
-    colBackgroundHover: hasShape ? "transparent" : scheme.layer1Hover
-    colBackgroundToggledHover: hasShape ? "transparent" : scheme.layer1Hover
-    rippleEnabled: !hasShape
+    colBackgroundHover: Appearance.bloodMoon ? scheme.layer1Hover : hasShape ? "transparent" : scheme.layer1Hover
+    colBackgroundToggledHover: Appearance.bloodMoon ? scheme.layer1Hover : hasShape ? "transparent" : scheme.layer1Hover
+    rippleEnabled: !Appearance.bloodMoon && !hasShape
 
     onClicked: {
         if (Appearance.performanceMode) {
@@ -50,7 +50,7 @@ IconButton {
         width: root.width + 8
         height: root.height + 8
         z: -2
-        visible: opacity > 0
+        visible: !Appearance.bloodMoon && opacity > 0
         opacity: root.showsShape ? 1 : 0
         scale: root.showsShape ? 1 : 0.35
         extent: 0.9

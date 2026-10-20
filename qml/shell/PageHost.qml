@@ -26,6 +26,7 @@ Item {
         }
         switch (page) {
         case Library.Page.Search: return searchPage
+        case Library.Page.Recommendations: return recommendationsPage
         case Library.Page.Songs: return savedPage
         case Library.Page.Playlists: return playlistsPage
         case Library.Page.PinnedPlaylists: return pinnedPage
@@ -34,6 +35,7 @@ Item {
         case Library.Page.Artist: return artistPage
         case Library.Page.LocalFiles: return localFilesPage
         case Library.Page.LocalTracks: return localTracksPage
+        case Library.Page.ListeningHistory: return historyPage
         default: return homePage
         }
     }
@@ -198,6 +200,7 @@ Item {
     Component { id: setupPage; SetupView {} }
     Component { id: homePage; HomeView {} }
     Component { id: searchPage; SearchView {} }
+    Component { id: recommendationsPage; RecommendedView {} }
     Component { id: savedPage; SavedSongsView {} }
     Component { id: playlistsPage; PlaylistsView {} }
     Component { id: pinnedPage; PlaylistsView { pinnedOnly: true } }
@@ -206,4 +209,5 @@ Item {
     Component { id: artistPage; ArtistView {} }
     Component { id: localFilesPage; LocalFilesView {} }
     Component { id: localTracksPage; LocalTracksView {} }
+    Component { id: historyPage; HistoryView {} }
 }

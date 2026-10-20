@@ -10,6 +10,8 @@ Item {
 
     property url artworkUrl
     property bool circular: false
+    /// artist portraits stand taller than a square album or playlist cover
+    property bool portrait: false
     property string kind
     property string title
     property string fallbackKey: title
@@ -41,8 +43,8 @@ Item {
         objectName: "heroArtwork"
         x: Appearance.sizes.pageMargin
         y: 40
-        width: root.artworkSize
-        height: width
+        width: root.portrait ? root.artworkSize * 0.78 : root.artworkSize
+        height: root.artworkSize
 
         /// a clicked cover is flying in to land here; until it does, the
         /// page's own stays hidden under it
@@ -81,6 +83,7 @@ Item {
             source: root.artworkUrl
             fallbackKey: root.fallbackKey
             circular: root.circular
+            radius: root.portrait ? Appearance.rounding.normal : Appearance.sizes.artworkRadius
         }
 
         Item {

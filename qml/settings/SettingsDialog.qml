@@ -209,6 +209,7 @@ T.Popup {
                 minimumSize: 90
                 maximumSize: 220
                 clipRadius: Appearance.rounding.large - 6
+                visible: !Appearance.bloodMoon
             }
 
             Flickable {

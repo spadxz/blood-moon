@@ -33,6 +33,9 @@ QVariant SongListModel::data(const QModelIndex &index, int role) const
     case DurationMsRole: return song.durationMs;
     case ExplicitRole: return song.isExplicit;
     case AlbumIdRole: return song.albumId;
+    case PlayedAtMsRole: return song.playedAtMs;
+    case PlayedDurationMsRole: return song.playedDurationMs;
+    case PlayedContextRole: return song.playedContext;
     default: return {};
     }
 }
@@ -50,6 +53,9 @@ QHash<int, QByteArray> SongListModel::roleNames() const
         {DurationMsRole, "durationMs"},
         {ExplicitRole, "isExplicit"},
         {AlbumIdRole, "albumId"},
+        {PlayedAtMsRole, "playedAtMs"},
+        {PlayedDurationMsRole, "playedDurationMs"},
+        {PlayedContextRole, "playedContext"},
     };
 }
 

@@ -155,7 +155,7 @@ Item {
                 shape: "flower"
                 symbol: "sort"
                 onClicked: sortMenu.popupAt(sort, 0, sort.height)
-                tooltip: qsTr("Sort Options")
+                tooltip: qsTr("Sort Playlist")
             }
         }
     }
@@ -329,6 +329,10 @@ Item {
                     {
                         label: qsTr("Playlist Order"),
                         order: Library.SortOrder.Playlist
+                    },
+                    {
+                        label: qsTr("Date Added"),
+                        order: Library.SortOrder.DateAdded
                     },
                     {
                         label: qsTr("Title"),

@@ -10,6 +10,8 @@
 #include <QDeadlineTimer>
 #include <QObject>
 #include <QTimer>
+#include <QStringList>
+#include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 
 #include <limits>
@@ -52,6 +54,9 @@ class PlaybackController : public QObject {
     Q_PROPERTY(bool canSkipForward READ canSkipForward NOTIFY queueChanged FINAL)
     Q_PROPERTY(swiftify::SongListModel *upNext READ upNext CONSTANT FINAL)
     Q_PROPERTY(swiftify::SongListModel *previouslyPlayed READ previouslyPlayed CONSTANT FINAL)
+    Q_PROPERTY(swiftify::SongListModel *listeningHistory READ listeningHistory CONSTANT FINAL)
+    Q_PROPERTY(QStringList listeningHistoryYears READ listeningHistoryYears NOTIFY listeningHistoryChanged FINAL)
+    Q_PROPERTY(QStringList listeningHistoryArtists READ listeningHistoryArtists NOTIFY listeningHistoryChanged FINAL)
 
     Q_PROPERTY(swiftify::LyricsModel *lyrics READ lyrics CONSTANT FINAL)
     Q_PROPERTY(bool hasLyrics READ hasLyrics NOTIFY lyricsChanged FINAL)
@@ -106,6 +111,15 @@ public:
     bool canSkipForward() const;
     SongListModel *upNext() const { return m_upNext; }
     SongListModel *previouslyPlayed() const { return m_previouslyPlayed; }
+    SongListModel *listeningHistory() const { return m_listeningHistoryModel; }
+    QStringList listeningHistoryYears() const { return m_listeningHistoryYears; }
+    QStringList listeningHistoryArtists() const;
+    Q_INVOKABLE QVariantMap historySummary(const QString &period, int year = 0,
+                                           const QString &artist = {}) const;
+    Q_INVOKABLE QVariantList recentHistoryForArtist(const QString &artist, int limit = 8) const;
+    Q_INVOKABLE int syncSpotifyRecentHistory(swiftify::SongListModel *recent);
+    Q_INVOKABLE int importSpotifyHistory(const QStringList &paths);
+    Q_INVOKABLE void clearListeningHistory();
     QList<Song> upNextSongs() const;
     QList<Song> previouslyPlayedSongs() const;
     std::optional<Song> upcomingSong() const;
@@ -199,6 +213,7 @@ signals:
     void shuffleChanged();
     void repeatModeChanged();
     void queueChanged();
+    void listeningHistoryChanged();
     void lyricsChanged();
     void activeLyricIndexChanged();
     void panelsChanged();
@@ -247,6 +262,9 @@ private:
     void reset();
     void restorePlaybackState();
     void savePlaybackState();
+    void recordListeningHistory();
+    void persistListeningHistory();
+    void refreshListeningHistoryYears();
     void schedulePlaybackSave();
     bool isCurrent(const Song &song) const { return m_currentSong && m_currentSong->isSameInstance(song); }
     void setCurrentSong(const std::optional<Song> &song, quint32 crossfadeMs = 0);
@@ -273,6 +291,9 @@ private:
     std::optional<Song> m_currentSong;
     SongListModel *m_upNext;
     SongListModel *m_previouslyPlayed;
+    SongListModel *m_listeningHistoryModel;
+    QList<Song> m_listeningHistory;
+    QStringList m_listeningHistoryYears;
 
     /// whatever is asking the core to make sound right now: a song loading, a
     /// resume, an output rebuild. empty once it finished or was withdrawn.
@@ -292,6 +313,11 @@ private:
     quint32 m_livePositionMs = 0;
     quint32 m_publishedPositionMs = 0;
     quint32 m_durationMs = 0;
+    quint32 m_historyLastPositionMs = 0;
+    quint64 m_historyListenedMs = 0;
+    qint64 m_historyStartedAtMs = 0;
+    bool m_historyRecordedCurrentSong = false;
+    QString m_historyContext;
     quint32 m_lastSyncedMediaPosition = std::numeric_limits<quint32>::max();
     quint64 m_crossfadeSerial = 0;
     bool m_crossfadeStarted = false;

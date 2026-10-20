@@ -262,6 +262,35 @@ Item {
                     text: qsTr("both cache and quality apply the next time playback connects")
                 }
             }
+
+            ContentSection {
+                title: qsTr("Equalizer")
+                symbol: "equalizer"
+
+                ConfigSwitch {
+                    text: qsTr("Enable equalizer")
+                    checked: Sound.equalizerEnabled
+                    onToggledTo: (checked) => Sound.equalizerEnabled = checked
+                }
+                Repeater {
+                    model: Sound.bandLabels.length
+
+                    ConfigSlider {
+                        required property int index
+                        text: Sound.bandLabels[index]
+                        enabled: Sound.equalizerEnabled
+                        from: -12
+                        to: 12
+                        stepSize: 0.5
+                        value: Sound.gains[index] ?? 0
+                        valueText: (value > 0 ? "+" : "") + value.toFixed(1) + " dB"
+                        onMoved: (gain) => Sound.setGain(index, gain)
+                    }
+                }
+                NoteText {
+                    text: qsTr("Adjust each frequency band; changes apply to Blood Moon playback.")
+                }
+            }
         }
 
         Page {
@@ -451,6 +480,10 @@ Item {
                             : Settings.matugenColorsPath.length > 0
                               ? qsTr("no valid Matugen scheme found at ") + Theme.systemSchemePath
                               : qsTr("automatically looks for Matugen JSON in common config and cache folders. an optional path overrides discovery."))
+                }
+                NoteText {
+                    visible: Theme.fontFamily === "OPPO Sans 4.0"
+                    text: qsTr("Typography: OPPO Sans 4.0 by Guangdong OPPO Mobile Telecommunications Corp., Ltd., used under license. The font license is included with this installation.")
                 }
             }
 

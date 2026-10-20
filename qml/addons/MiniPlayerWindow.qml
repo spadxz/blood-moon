@@ -24,7 +24,7 @@ Window {
     minimumWidth: 320
     minimumHeight: 400
     visible: Addons.activeMiniPlayerId.length > 0 && extension !== null
-    title: addon ? addon.name : qsTr("Blood Moon Mini Player")
+    title: addon && addon.name ? addon.name : qsTr("Blood Moon Mini Player")
     color: Appearance.colors.background
     flags: pinned ? Qt.Window | Qt.WindowStaysOnTopHint : Qt.Window
 
@@ -66,7 +66,7 @@ Window {
                     StyledText {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 96
-                        text: root.addon ? root.addon.name : qsTr("Mini Player")
+                        text: root.addon && root.addon.name ? root.addon.name : qsTr("Mini Player")
                         font.weight: Font.DemiBold
                         elide: Text.ElideRight
                     }

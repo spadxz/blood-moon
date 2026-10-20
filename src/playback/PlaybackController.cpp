@@ -3,13 +3,19 @@
 #include "app/ErrorCenter.h"
 #include "app/Settings.h"
 #include "core/PlaybackCore.h"
+#include "library/LibraryStore.h"
 #include "spotify/SpotifySession.h"
 #include "playback/PlaybackState.h"
 
 #include <QCoreApplication>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLoggingCategory>
 #include <QQmlEngine>
 #include <QRandomGenerator>
+#include <QSet>
 
 #include <QCoroTimer>
 
@@ -17,6 +23,7 @@
 #include <chrono>
 #include <cmath>
 #include <iterator>
+#include <initializer_list>
 #include <utility>
 
 namespace swiftify {
@@ -31,9 +38,49 @@ const QString kCatchphrase = QStringLiteral("i mean i guess bro");
 const QString kVolumeKey = QStringLiteral("playerVolume");
 const QString kVolumeBeforeMuteKey = QStringLiteral("playerVolumeBeforeMute");
 const QString kPlaybackStateKey = QStringLiteral("lastPlaybackState");
+const QString kListeningHistoryKey = QStringLiteral("listeningHistory");
 
 /// a restart is offered after this much of a song has played
 constexpr quint32 kRestartThresholdMs = 3'000;
+constexpr qsizetype kListeningHistoryLimit = 50'000;
+
+QString historyString(const QJsonObject &object, std::initializer_list<const char *> keys)
+{
+    for (const char *key : keys) {
+        const QString value = object.value(QString::fromLatin1(key)).toString();
+        if (!value.isEmpty()) return value;
+    }
+    return {};
+}
+
+qint64 historyTimestamp(const QJsonObject &object)
+{
+    const QString value = historyString(object, {"endTime", "ts", "played_at"});
+    if (value.isEmpty()) return 0;
+    QString iso = value;
+    if (iso.endsWith(QStringLiteral(" UTC"))) {
+        iso.chop(4);
+        iso.append(u'Z');
+    }
+    QDateTime date = QDateTime::fromString(iso, Qt::ISODateWithMs);
+    if (!date.isValid()) date = QDateTime::fromString(iso, Qt::ISODate);
+    return date.isValid() ? date.toMSecsSinceEpoch() : 0;
+}
+
+QString historyIdentity(const Song &song)
+{
+    return song.uri + u'|' + QString::number(song.playedAtMs);
+}
+
+QStringList historyArtistNames(const QString &artists)
+{
+    QStringList names;
+    for (const QString &artist : artists.split(u',', Qt::SkipEmptyParts)) {
+        const QString trimmed = artist.trimmed();
+        if (!trimmed.isEmpty()) names.append(trimmed);
+    }
+    return names;
+}
 
 } // namespace
 
@@ -46,6 +93,7 @@ PlaybackController::PlaybackController(PlaybackCore *core, SpotifySession *sessi
     , m_errors(errors)
     , m_upNext(new SongListModel(this))
     , m_previouslyPlayed(new SongListModel(this))
+    , m_listeningHistoryModel(new SongListModel(this))
     , m_lyricsModel(new LyricsModel(this))
 {
     if (!s_instance) {
@@ -65,6 +113,17 @@ PlaybackController::PlaybackController(PlaybackCore *core, SpotifySession *sessi
         m_core->setVolume(float(m_volume));
     } catch (const SpotifyError &) {
     }
+
+    const QJsonArray savedHistory = QJsonDocument::fromJson(m_settings->value(kListeningHistoryKey).toByteArray()).array();
+    for (const QJsonValue &value : savedHistory) {
+        Song song = Song::fromJson(value.toObject());
+        if (song.isValid() && song.playedAtMs > 0) m_listeningHistory.append(song);
+    }
+    if (m_listeningHistory.size() > kListeningHistoryLimit) {
+        m_listeningHistory.erase(m_listeningHistory.begin() + kListeningHistoryLimit, m_listeningHistory.end());
+    }
+    m_listeningHistoryModel->setSongs(m_listeningHistory);
+    refreshListeningHistoryYears();
 
     const auto updateVisualizers = [this] {
         m_visualizersEnabled = m_settings->anyVisualizerEnabled();
@@ -156,6 +215,291 @@ void PlaybackController::savePlaybackState()
     m_settings->sync();
 }
 
+QStringList PlaybackController::listeningHistoryArtists() const
+{
+    QHash<QString, int> counts;
+    for (const Song &song : std::as_const(m_listeningHistory)) {
+        for (const QString &artist : historyArtistNames(song.artists)) ++counts[artist];
+    }
+    QList<QPair<QString, int>> ranked;
+    ranked.reserve(counts.size());
+    for (auto it = counts.cbegin(); it != counts.cend(); ++it) ranked.append({it.key(), it.value()});
+    std::sort(ranked.begin(), ranked.end(), [](const auto &left, const auto &right) {
+        if (left.second != right.second) return left.second > right.second;
+        return QString::compare(left.first, right.first, Qt::CaseInsensitive) < 0;
+    });
+    QStringList artists;
+    artists.reserve(ranked.size());
+    for (const auto &item : std::as_const(ranked)) artists.append(item.first);
+    return artists;
+}
+
+QVariantMap PlaybackController::historySummary(const QString &period, int year, const QString &artist) const
+{
+    const QDate today = QDate::currentDate();
+    QDate firstDay;
+    QDate lastDay;
+    if (period == QLatin1StringView("week")) {
+        firstDay = today.addDays(1 - today.dayOfWeek());
+        lastDay = firstDay.addDays(6);
+    } else if (period == QLatin1StringView("month")) {
+        firstDay = QDate(today.year(), today.month(), 1);
+        lastDay = firstDay.addMonths(1).addDays(-1);
+    } else if (period == QLatin1StringView("year")) {
+        const int requestedYear = year > 0 ? year : today.year();
+        firstDay = QDate(requestedYear, 1, 1);
+        lastDay = firstDay.addYears(1).addDays(-1);
+    }
+
+    QHash<QString, int> tracks;
+    QHash<QString, int> artists;
+    QHash<QString, int> playlists;
+    QSet<QDate> activeDays;
+    qint64 listenedMs = 0;
+    int plays = 0;
+    int playsWithDuration = 0;
+    const QString artistQuery = artist.trimmed();
+    bool hasExactArtist = false;
+    if (!artistQuery.isEmpty()) {
+        for (const Song &song : m_listeningHistory) {
+            for (const QString &candidate : historyArtistNames(song.artists)) {
+                if (candidate.compare(artistQuery, Qt::CaseInsensitive) == 0) {
+                    hasExactArtist = true;
+                    break;
+                }
+            }
+            if (hasExactArtist) break;
+        }
+    }
+    for (const Song &song : m_listeningHistory) {
+        const QDateTime when = QDateTime::fromMSecsSinceEpoch(song.playedAtMs);
+        const QDate date = when.date();
+        if (period != QLatin1StringView("all") && (!firstDay.isValid() || date < firstDay || date > lastDay)) {
+            continue;
+        }
+        if (!artistQuery.isEmpty()) {
+            bool matchesArtist = false;
+            for (const QString &candidate : historyArtistNames(song.artists)) {
+                const bool match = hasExactArtist
+                    ? candidate.compare(artistQuery, Qt::CaseInsensitive) == 0
+                    : candidate.contains(artistQuery, Qt::CaseInsensitive);
+                if (match) {
+                    matchesArtist = true;
+                    break;
+                }
+            }
+            if (!matchesArtist) continue;
+        }
+        ++plays;
+        if (song.playedDurationMs > 0) {
+            listenedMs += song.playedDurationMs;
+            ++playsWithDuration;
+        }
+        activeDays.insert(date);
+        const QString trackKey = song.uri + u'|' + song.name;
+        ++tracks[trackKey];
+        if (!song.artists.isEmpty()) ++artists[song.artists.section(u',', 0, 0).trimmed()];
+        if (!song.playedContext.isEmpty()) ++playlists[song.playedContext];
+    }
+
+    const auto mostPlayed = [](const QHash<QString, int> &counts) {
+        QString name;
+        int maximum = 0;
+        for (auto it = counts.cbegin(); it != counts.cend(); ++it) {
+            if (it.value() > maximum) {
+                name = it.key();
+                maximum = it.value();
+            }
+        }
+        return name;
+    };
+    QString topTrack = mostPlayed(tracks);
+    if (!topTrack.isEmpty()) topTrack = topTrack.section(u'|', 1);
+
+    QList<QDate> days = activeDays.values();
+    std::sort(days.begin(), days.end());
+    int longestStreak = 0;
+    int currentStreak = 0;
+    QDate previousDay;
+    for (const QDate &day : std::as_const(days)) {
+        currentStreak = previousDay.isValid() && previousDay.addDays(1) == day ? currentStreak + 1 : 1;
+        longestStreak = std::max(longestStreak, currentStreak);
+        previousDay = day;
+    }
+
+    return {
+        {QStringLiteral("playCount"), plays},
+        {QStringLiteral("durationPlayCount"), playsWithDuration},
+        {QStringLiteral("listenedMinutes"), listenedMs / 60'000},
+        {QStringLiteral("activeDays"), activeDays.size()},
+        {QStringLiteral("topTrack"), topTrack},
+        {QStringLiteral("topArtist"), mostPlayed(artists)},
+        {QStringLiteral("topPlaylist"), mostPlayed(playlists)},
+        {QStringLiteral("streakDays"), longestStreak},
+        {QStringLiteral("artist"), artistQuery},
+        {QStringLiteral("year"), year > 0 ? year : today.year()},
+    };
+}
+
+QVariantList PlaybackController::recentHistoryForArtist(const QString &artist, int limit) const
+{
+    const QString query = artist.trimmed();
+    if (query.isEmpty() || limit <= 0) return {};
+
+    QVariantList recent;
+    recent.reserve(std::min(limit, int(m_listeningHistory.size())));
+    for (const Song &song : m_listeningHistory) {
+        const QStringList artists = historyArtistNames(song.artists);
+        const bool matches = std::any_of(artists.cbegin(), artists.cend(), [&query](const QString &name) {
+            return name.compare(query, Qt::CaseInsensitive) == 0;
+        });
+        if (!matches) continue;
+        recent.append(QVariant::fromValue(song));
+        if (recent.size() >= limit) break;
+    }
+    return recent;
+}
+
+int PlaybackController::syncSpotifyRecentHistory(SongListModel *recent)
+{
+    if (!recent) return 0;
+    QSet<QString> known;
+    for (const Song &song : std::as_const(m_listeningHistory)) known.insert(historyIdentity(song));
+
+    QList<Song> added;
+    for (Song song : recent->songs()) {
+        if (song.playedAtMs <= 0) continue;
+        song.playedDurationMs = 0; // Spotify's recent-play endpoint gives timestamps, not listen duration.
+        const QString identity = historyIdentity(song);
+        if (known.contains(identity)) continue;
+        known.insert(identity);
+        added.append(song);
+    }
+    if (added.isEmpty()) return 0;
+
+    m_listeningHistory += added;
+    std::stable_sort(m_listeningHistory.begin(), m_listeningHistory.end(), [](const Song &left, const Song &right) {
+        return left.playedAtMs > right.playedAtMs;
+    });
+    if (m_listeningHistory.size() > kListeningHistoryLimit) {
+        m_listeningHistory.erase(m_listeningHistory.begin() + kListeningHistoryLimit, m_listeningHistory.end());
+    }
+    m_listeningHistoryModel->setSongs(m_listeningHistory);
+    persistListeningHistory();
+    refreshListeningHistoryYears();
+    emit listeningHistoryChanged();
+    return added.size();
+}
+
+int PlaybackController::importSpotifyHistory(const QStringList &paths)
+{
+    QSet<QString> known;
+    for (const Song &song : std::as_const(m_listeningHistory)) known.insert(historyIdentity(song));
+
+    QList<Song> imported;
+    for (const QString &path : paths) {
+        const QUrl url(path);
+        const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
+        QFile file(localPath);
+        if (!file.open(QIODevice::ReadOnly)) continue;
+        const QJsonDocument document = QJsonDocument::fromJson(file.readAll());
+        QJsonArray rows = document.array();
+        if (rows.isEmpty() && document.isObject()) {
+            const QJsonObject root = document.object();
+            rows = root.value(QStringLiteral("items")).toArray();
+            if (rows.isEmpty()) rows = root.value(QStringLiteral("data")).toArray();
+        }
+        for (const QJsonValue &value : rows) {
+            const QJsonObject row = value.toObject();
+            const QString name = historyString(row, {"trackName", "master_metadata_track_name", "name"});
+            const QString artists = historyString(row, {"artistName", "master_metadata_album_artist_name", "artists"});
+            const qint64 playedAt = historyTimestamp(row);
+            if (name.isEmpty() || playedAt <= 0) continue;
+
+            Song song;
+            song.name = name;
+            song.artists = artists;
+            song.albumName = historyString(row, {"albumName", "master_metadata_album_album_name"});
+            song.uri = historyString(row, {"spotify_track_uri", "trackUri", "uri"});
+            if (song.uri.isEmpty()) song.uri = QStringLiteral("history:spotify:%1:%2").arg(playedAt).arg(name);
+            song.playedAtMs = playedAt;
+            song.playedDurationMs = row.value(QStringLiteral("msPlayed")).toVariant().toLongLong();
+            if (song.playedDurationMs <= 0) song.playedDurationMs = row.value(QStringLiteral("ms_played")).toVariant().toLongLong();
+            song.playedContext = historyString(row, {"playlistName", "contextName", "context_name"});
+            const QString identity = historyIdentity(song);
+            if (known.contains(identity)) continue;
+            known.insert(identity);
+            imported.append(song);
+        }
+    }
+
+    if (imported.isEmpty()) return 0;
+    std::stable_sort(imported.begin(), imported.end(), [](const Song &left, const Song &right) {
+        return left.playedAtMs > right.playedAtMs;
+    });
+    m_listeningHistory += imported;
+    std::stable_sort(m_listeningHistory.begin(), m_listeningHistory.end(), [](const Song &left, const Song &right) {
+        return left.playedAtMs > right.playedAtMs;
+    });
+    if (m_listeningHistory.size() > kListeningHistoryLimit) {
+        m_listeningHistory.erase(m_listeningHistory.begin() + kListeningHistoryLimit, m_listeningHistory.end());
+    }
+    m_listeningHistoryModel->setSongs(m_listeningHistory);
+    persistListeningHistory();
+    refreshListeningHistoryYears();
+    emit listeningHistoryChanged();
+    return imported.size();
+}
+
+void PlaybackController::clearListeningHistory()
+{
+    if (m_listeningHistory.isEmpty()) return;
+    m_listeningHistory.clear();
+    m_listeningHistoryModel->clear();
+    persistListeningHistory();
+    refreshListeningHistoryYears();
+    emit listeningHistoryChanged();
+}
+
+void PlaybackController::recordListeningHistory()
+{
+    if (!m_currentSong || m_historyRecordedCurrentSong || m_currentSong->uri == QString::fromLatin1(kLoadingTestUri)) return;
+    Song entry = *m_currentSong;
+    entry.playedAtMs = m_historyStartedAtMs > 0 ? m_historyStartedAtMs : QDateTime::currentMSecsSinceEpoch();
+    entry.playedDurationMs = qint64(m_historyListenedMs);
+    entry.playedContext = m_historyContext;
+    m_historyRecordedCurrentSong = true;
+    m_listeningHistory.prepend(entry);
+    if (m_listeningHistory.size() > kListeningHistoryLimit) m_listeningHistory.removeLast();
+    m_listeningHistoryModel->setSongs(m_listeningHistory);
+    persistListeningHistory();
+    refreshListeningHistoryYears();
+    emit listeningHistoryChanged();
+}
+
+void PlaybackController::persistListeningHistory()
+{
+    QJsonArray history;
+    for (const Song &song : std::as_const(m_listeningHistory)) history.append(song.toJson());
+    m_settings->setValue(kListeningHistoryKey, QJsonDocument(history).toJson(QJsonDocument::Compact));
+    m_settings->sync();
+}
+
+void PlaybackController::refreshListeningHistoryYears()
+{
+    QSet<int> years;
+    for (const Song &song : std::as_const(m_listeningHistory)) {
+        const int year = QDateTime::fromMSecsSinceEpoch(song.playedAtMs).date().year();
+        if (year > 0) years.insert(year);
+    }
+    QList<int> sorted = years.values();
+    std::sort(sorted.begin(), sorted.end(), std::greater<>());
+    QStringList next;
+    next.reserve(sorted.size());
+    for (int year : std::as_const(sorted)) next.append(QString::number(year));
+    if (next != m_listeningHistoryYears) m_listeningHistoryYears = next;
+}
+
 PlaybackController *PlaybackController::instance()
 {
     return s_instance;
@@ -223,6 +567,11 @@ void PlaybackController::setCurrentSong(const std::optional<Song> &song, quint32
 {
     const bool changed = song.has_value() != m_currentSong.has_value()
         || (song && m_currentSong && !song->isSameInstance(*m_currentSong));
+    if (changed) {
+        m_historyListenedMs = 0;
+        m_historyRecordedCurrentSong = false;
+        m_historyLastPositionMs = 0;
+    }
     m_currentSong = song;
     m_crossfadeMs = crossfadeMs;
     m_crossfadeDeadline.setRemainingTime(qint64(crossfadeMs));
@@ -477,6 +826,7 @@ void PlaybackController::syncMediaSession()
 
 void PlaybackController::play(const Song &song, const QList<Song> &queue, bool fromSearch)
 {
+    m_historyContext.clear();
     beginPlayback(song, queue, fromSearch);
 }
 
@@ -484,6 +834,11 @@ void PlaybackController::playFromModel(SongListModel *model, int index, bool fro
 {
     if (!model || index < 0 || index >= model->count()) {
         return;
+    }
+    m_historyContext.clear();
+    if (LibraryStore *library = LibraryStore::instance(); library && model == library->displayedPlaylistSongs()) {
+        const Playlist playlist = library->selectedPlaylist();
+        if (playlist.isValid()) m_historyContext = playlist.name;
     }
     beginPlayback(model->songs().at(index), model->songs(), fromSearch);
 }
@@ -498,11 +853,17 @@ void PlaybackController::shufflePlay(SongListModel *model)
         emit shuffleChanged();
     }
     const int index = int(QRandomGenerator::global()->bounded(model->count()));
+    m_historyContext.clear();
+    if (LibraryStore *library = LibraryStore::instance(); library && model == library->displayedPlaylistSongs()) {
+        const Playlist playlist = library->selectedPlaylist();
+        if (playlist.isValid()) m_historyContext = playlist.name;
+    }
     beginPlayback(model->songs().at(index), model->songs(), false);
 }
 
 void PlaybackController::playSong(const Song &song)
 {
+    m_historyContext.clear();
     beginPlayback(song, {song}, false);
 }
 
@@ -625,6 +986,10 @@ void PlaybackController::startPlayback(const Song &song, bool recordHistory, boo
     m_playbackNeedsLoad = true;
     m_restoredPlayback = false;
     m_resumePositionMs = initialPositionMs;
+    m_historyListenedMs = 0;
+    m_historyRecordedCurrentSong = false;
+    m_historyLastPositionMs = initialPositionMs;
+    m_historyStartedAtMs = QDateTime::currentMSecsSinceEpoch();
     setCurrentSong(song, crossfadeDurationMs);
     setPlaying(false);
     setLoading(true);
@@ -1207,6 +1572,15 @@ void PlaybackController::syncPositionAndDuration()
         setLivePosition(position);
     }
     setDuration(duration);
+    if (m_playing && position >= m_historyLastPositionMs
+        && position - m_historyLastPositionMs <= 1'500) {
+        m_historyListenedMs += position - m_historyLastPositionMs;
+    }
+    m_historyLastPositionMs = position;
+    const quint64 historyThreshold = duration > 0 ? std::max<quint64>(5'000, std::min<quint64>(30'000, duration / 2)) : 30'000;
+    if (m_playing && !m_historyRecordedCurrentSong && m_historyListenedMs >= historyThreshold) {
+        recordListeningHistory();
+    }
     if (std::abs(qint64(position) - qint64(m_lastSyncedMediaPosition)) >= 1000) {
         m_lastSyncedMediaPosition = position;
         syncMediaSession();
@@ -1285,18 +1659,29 @@ void PlaybackController::loadLyrics(const Song &song)
 QCoro::Task<> PlaybackController::runLoadLyrics(Song song, CancelToken token)
 {
     std::optional<Lyrics> lyrics;
+    QString unavailableMessage;
     if (song.uri == QLatin1StringView(kLoadingTestUri)) {
         // nothing to ask anyone for
     } else if (song.isLocalFile()) {
         // spotify has nothing for a file of the person's own; a .lrc kept
         // beside it does
         lyrics = Lyrics::besideFile(song.localPath());
+        if (!lyrics) {
+            unavailableMessage = QStringLiteral("No lyrics file was found. Put a matching .lrc file beside this local track.");
+        }
     } else {
         try {
             lyrics = Lyrics::fromJson((co_await m_core->lyricsJson(song.uri)).toUtf8());
         } catch (const Cancelled &) {
             co_return;
-        } catch (const SpotifyError &) {
+        } catch (const SpotifyError &error) {
+            // Keep the service's user-facing reason. Previously this was
+            // swallowed, making missing tracks, session failures and request
+            // errors all look like the same generic "lyrics unavailable".
+            unavailableMessage = error.message();
+        }
+        if (!lyrics && unavailableMessage.isEmpty()) {
+            unavailableMessage = QStringLiteral("Spotify did not return lyrics for this track.");
         }
     }
     if (isCancelled(token) || !isCurrent(song)) {
@@ -1307,7 +1692,7 @@ QCoro::Task<> PlaybackController::runLoadLyrics(Song song, CancelToken token)
         m_lyrics = std::move(lyrics);
         m_lyricsModel->setLines(m_lyrics->lines);
     } else {
-        m_lyricsMessage = kCatchphrase;
+        m_lyricsMessage = unavailableMessage.isEmpty() ? kCatchphrase : unavailableMessage;
     }
     m_lyricsRequest.finish(token);
     emit lyricsChanged();

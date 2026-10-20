@@ -9,14 +9,17 @@
 #include "spotify/SpotifySession.h"
 
 #include <QCollator>
+#include <QDate>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QLoggingCategory>
 #include <QQmlEngine>
+#include <QChar>
 #include <QCoroTimer>
 
 #include <algorithm>
 #include <chrono>
+#include <tuple>
 
 namespace swiftify {
 
@@ -28,11 +31,120 @@ LibraryStore *s_instance = nullptr;
 
 const QString kPinnedKey = QStringLiteral("pinnedPlaylistIDs");
 const QString kSearchHistoryKey = QStringLiteral("searchPlaybackHistory");
+const QString kDailyRecommendationsDateKey = QStringLiteral("dailyRecommendationsDate");
+const QString kDailyRecommendationsSongsKey = QStringLiteral("dailyRecommendationsSongs");
 /// the saved songs' file in the song list cache: no playlist id looks like it
 const QString kSavedSongsCacheKey = QStringLiteral("saved-songs");
 const QString kCatchphrase = QStringLiteral("i mean i guess bro");
 const QString kReconnectToEdit = QStringLiteral("Reconnect your library once to create and edit playlists.");
 constexpr int kSearchHistoryLimit = 20;
+
+QString normalizedSearchText(QString text)
+{
+    text = text.normalized(QString::NormalizationForm_KD).toCaseFolded();
+    QString result;
+    result.reserve(text.size());
+    bool pendingSpace = false;
+    for (const QChar character : text) {
+        if (character.isLetterOrNumber()) {
+            if (pendingSpace && !result.isEmpty()) result.append(u' ');
+            result.append(character);
+            pendingSpace = false;
+        } else if (character.category() != QChar::Mark_NonSpacing
+                   && character.category() != QChar::Mark_SpacingCombining
+                   && character.category() != QChar::Mark_Enclosing) {
+            pendingSpace = true;
+        }
+    }
+    return result;
+}
+
+/// 0 exact, 1 prefix, 2 word match, 3 other substring, 4 no match.
+int searchMatchRank(const QString &value, const QString &query)
+{
+    const QString normalized = normalizedSearchText(value);
+    if (normalized.isEmpty() || query.isEmpty()) return 4;
+    if (normalized == query) return 0;
+    if (normalized.startsWith(query)) return 1;
+    if (normalized.contains(QStringLiteral(" ") + query)) return 2;
+    if (normalized.contains(query)) return 3;
+    return 4;
+}
+
+bool containsFamiliarArtist(const QString &artists, const QSet<QString> &familiar)
+{
+    const QString normalized = normalizedSearchText(artists);
+    for (const QString &name : familiar) {
+        if (!name.isEmpty() && normalized.contains(name)) return true;
+    }
+    return false;
+}
+
+QSet<QString> familiarArtistNames(const SongListModel *searchHistory, const SongListModel *recent,
+                                  const SongListModel *saved, const ArtistListModel *recommended)
+{
+    QSet<QString> familiar;
+    const auto addSongs = [&familiar](const SongListModel *model) {
+        if (!model) return;
+        for (const Song &song : model->songs()) {
+            for (const Artist &artist : song.artistItems) {
+                const QString name = normalizedSearchText(artist.name);
+                if (!name.isEmpty()) familiar.insert(name);
+            }
+            if (song.artistItems.isEmpty()) {
+                for (const QString &name : song.artists.split(u',')) {
+                    const QString normalized = normalizedSearchText(name);
+                    if (!normalized.isEmpty()) familiar.insert(normalized);
+                }
+            }
+        }
+    };
+    addSongs(searchHistory);
+    addSongs(recent);
+    addSongs(saved);
+    if (recommended) {
+        for (const Artist &artist : recommended->items()) {
+            const QString name = normalizedSearchText(artist.name);
+            if (!name.isEmpty()) familiar.insert(name);
+        }
+    }
+    return familiar;
+}
+
+void rankSearchResults(SearchResults &results, const QString &query, const QSet<QString> &familiar)
+{
+    const QString normalizedQuery = normalizedSearchText(query);
+    std::stable_sort(results.artists.begin(), results.artists.end(), [&](const Artist &left, const Artist &right) {
+        const auto leftRank = std::tuple {searchMatchRank(left.name, normalizedQuery),
+                                          containsFamiliarArtist(left.name, familiar) ? 0 : 1};
+        const auto rightRank = std::tuple {searchMatchRank(right.name, normalizedQuery),
+                                           containsFamiliarArtist(right.name, familiar) ? 0 : 1};
+        return leftRank < rightRank;
+    });
+    std::stable_sort(results.albums.begin(), results.albums.end(), [&](const Album &left, const Album &right) {
+        const auto leftRank = std::tuple {searchMatchRank(left.artists, normalizedQuery),
+                                          searchMatchRank(left.name, normalizedQuery),
+                                          containsFamiliarArtist(left.artists, familiar) ? 0 : 1};
+        const auto rightRank = std::tuple {searchMatchRank(right.artists, normalizedQuery),
+                                           searchMatchRank(right.name, normalizedQuery),
+                                           containsFamiliarArtist(right.artists, familiar) ? 0 : 1};
+        return leftRank < rightRank;
+    });
+    std::stable_sort(results.songs.begin(), results.songs.end(), [&](const Song &left, const Song &right) {
+        const auto leftRank = std::tuple {searchMatchRank(left.artists, normalizedQuery),
+                                          searchMatchRank(left.name, normalizedQuery),
+                                          searchMatchRank(left.albumName, normalizedQuery),
+                                          containsFamiliarArtist(left.artists, familiar) ? 0 : 1};
+        const auto rightRank = std::tuple {searchMatchRank(right.artists, normalizedQuery),
+                                           searchMatchRank(right.name, normalizedQuery),
+                                           searchMatchRank(right.albumName, normalizedQuery),
+                                           containsFamiliarArtist(right.artists, familiar) ? 0 : 1};
+        return leftRank < rightRank;
+    });
+    std::stable_sort(results.playlists.begin(), results.playlists.end(), [&](const Playlist &left, const Playlist &right) {
+        return searchMatchRank(left.name, normalizedQuery) < searchMatchRank(right.name, normalizedQuery);
+    });
+}
 
 /// a playlist made on this computer (LocalLibrary)
 bool isLocalId(const QString &id)
@@ -61,7 +173,8 @@ bool sameSongs(const QList<Song> &left, const QList<Song> &right)
 {
     return std::equal(left.begin(), left.end(), right.begin(), right.end(), [](const Song &a, const Song &b) {
         return a.uri == b.uri && a.name == b.name && a.artists == b.artists && a.albumName == b.albumName
-            && a.artworkUrl == b.artworkUrl && a.durationMs == b.durationMs && a.isPlayable == b.isPlayable;
+            && a.artworkUrl == b.artworkUrl && a.durationMs == b.durationMs && a.isPlayable == b.isPlayable
+            && a.addedAtMs == b.addedAtMs;
     });
 }
 
@@ -119,6 +232,8 @@ LibraryStore::LibraryStore(SpotifySession *session, Settings *settings, ErrorCen
     , m_recentlyPlayed(new SongListModel(this))
     , m_recommendedArtists(new ArtistListModel(this))
     , m_recommendedAlbums(new AlbumListModel(this))
+    , m_dailyRecommendationSongs(new SongListModel(this))
+    , m_dailyRecommendationArtists(new ArtistListModel(this))
     , m_albumSongs(new SongListModel(this))
     , m_artistTopSongs(new SongListModel(this))
     , m_artistAlbums(new AlbumListModel(this))
@@ -144,6 +259,19 @@ LibraryStore::LibraryStore(SpotifySession *session, Settings *settings, ErrorCen
         }
     }
     setSearchHistory(history);
+
+    const QString savedRecommendationsDate = m_settings->value(kDailyRecommendationsDateKey).toString();
+    if (savedRecommendationsDate == QDate::currentDate().toString(Qt::ISODate)) {
+        QList<Song> recommendations;
+        const QJsonArray stored = QJsonDocument::fromJson(
+            m_settings->value(kDailyRecommendationsSongsKey).toByteArray()).array();
+        for (const QJsonValue &value : stored) {
+            const Song song = Song::fromJson(value.toObject());
+            if (song.isValid()) recommendations.append(song);
+        }
+        m_dailyRecommendationSongs->setSongs(recommendations);
+        m_dailyRecommendationsDate = recommendations.isEmpty() ? QString() : savedRecommendationsDate;
+    }
 
     connect(m_savedSongs, &SongListModel::countChanged, this, &LibraryStore::savedSongTotalChanged);
     m_session->setInitialLibraryLoader([this] { return loadInitialLibrary(); });
@@ -173,6 +301,7 @@ LibraryStore *LibraryStore::create(QQmlEngine *, QJSEngine *)
 
 void LibraryStore::attachPlayer(PlaybackController *player)
 {
+    m_player = player;
     connect(player, &PlaybackController::playedFromSearch, this, &LibraryStore::recordSearchPlayback);
 }
 
@@ -382,6 +511,13 @@ void LibraryStore::refreshDisplayedSongs()
             });
         }
         break;
+    case SortOrder::DateAdded:
+        std::stable_sort(shown.begin(), shown.end(), [this](const Song &left, const Song &right) {
+            if (left.addedAtMs < 0) return false;
+            if (right.addedAtMs < 0) return true;
+            return m_sortReversed ? left.addedAtMs > right.addedAtMs : left.addedAtMs < right.addedAtMs;
+        });
+        break;
     }
     m_displayedPlaylistSongs->setSongs(shown);
 }
@@ -468,6 +604,157 @@ void LibraryStore::refreshRecommendations()
     m_recommendedAlbums->setItems(albums);
 }
 
+void LibraryStore::buildDailyRecommendations()
+{
+    if (!m_player) return;
+
+    QSet<QString> heard;
+    QSet<QString> saved;
+    QHash<QString, int> familiarArtists;
+    const auto noteListening = [&](const QList<Song> &songs, int weight) {
+        for (const Song &song : songs) {
+            if (!song.uri.isEmpty()) heard.insert(song.uri);
+            for (const Artist &artist : song.artistItems) {
+                const QString key = normalizedSearchText(artist.name);
+                if (!key.isEmpty()) familiarArtists[key] += weight;
+            }
+            if (song.artistItems.isEmpty()) {
+                for (const QString &name : song.artists.split(u',')) {
+                    const QString key = normalizedSearchText(name.trimmed());
+                    if (!key.isEmpty()) familiarArtists[key] += weight;
+                }
+            }
+        }
+    };
+
+    const QList<Song> history = m_player->listeningHistory()->songs();
+    noteListening(history, 3);
+    noteListening(m_recentlyPlayed->songs(), 2);
+    for (const Song &song : m_savedSongs->songs()) {
+        if (!song.uri.isEmpty()) saved.insert(song.uri);
+    }
+    saved.unite(m_savedUris);
+    if (familiarArtists.isEmpty()) noteListening(m_savedSongs->songs(), 1);
+    if (familiarArtists.isEmpty()) {
+        m_dailyRecommendationSongs->clear();
+        m_dailyRecommendationArtists->setItems({});
+        m_dailyRecommendationsDate.clear();
+        emit dailyRecommendationsChanged();
+        return;
+    }
+
+    QList<QList<Song>> playlistTracks;
+    QSet<QString> loadedPlaylistIds;
+    for (const Playlist &playlist : std::as_const(m_playlistList)) {
+        if (playlist.isLocal() || loadedPlaylistIds.contains(playlist.id)) continue;
+        const QList<Song> *opened = m_openedPlaylists.find(playlist.id);
+        if (opened) {
+            playlistTracks.append(*opened);
+            loadedPlaylistIds.insert(playlist.id);
+        } else if (const auto cached = m_songListCache.load(playlist.id)) {
+            playlistTracks.append(*cached);
+            m_openedPlaylists.insert(playlist.id, *cached);
+            loadedPlaylistIds.insert(playlist.id);
+        }
+        // Reading a very large library's cache is cheap, but keeping the
+        // discovery pool bounded makes each daily ranking predictable.
+        if (loadedPlaylistIds.size() >= 18) break;
+    }
+
+    struct RankedSong { Song song; int score = 0; };
+    struct RankedArtist { Artist artist; int score = 0; };
+    QHash<QString, RankedSong> candidates;
+    QHash<QString, RankedArtist> newArtists;
+    for (const QList<Song> &tracks : std::as_const(playlistTracks)) {
+        QSet<QString> familiarInPlaylist;
+        for (const Song &song : tracks) {
+            for (const Artist &artist : song.artistItems) {
+                const QString key = normalizedSearchText(artist.name);
+                if (familiarArtists.contains(key)) familiarInPlaylist.insert(key);
+            }
+            if (song.artistItems.isEmpty()) {
+                for (const QString &name : song.artists.split(u',')) {
+                    const QString key = normalizedSearchText(name.trimmed());
+                    if (familiarArtists.contains(key)) familiarInPlaylist.insert(key);
+                }
+            }
+        }
+        if (familiarInPlaylist.isEmpty()) continue;
+
+        int playlistAffinity = 0;
+        for (const QString &key : std::as_const(familiarInPlaylist)) {
+            playlistAffinity += std::min(familiarArtists.value(key), 8);
+        }
+        for (const Song &song : tracks) {
+            if (!song.isValid() || song.isLocalFile() || !song.isPlayable
+                || heard.contains(song.uri) || saved.contains(song.uri)) continue;
+
+            int score = playlistAffinity * 2;
+            for (const Artist &artist : song.artistItems) {
+                const QString key = normalizedSearchText(artist.name);
+                score += familiarArtists.value(key) * 5;
+            }
+            if (score <= 0) continue;
+            auto it = candidates.find(song.uri);
+            if (it == candidates.end()) candidates.insert(song.uri, {song, score});
+            else it->score = std::max(it->score, score);
+
+            for (Artist artist : song.artistItems) {
+                const QString key = normalizedSearchText(artist.name);
+                if (key.isEmpty() || familiarArtists.contains(key)) continue;
+                if (artist.artworkUrl.isEmpty()) artist.artworkUrl = song.artworkUrl;
+                auto found = newArtists.find(artist.id.isEmpty() ? key : artist.id);
+                if (found == newArtists.end()) newArtists.insert(artist.id.isEmpty() ? key : artist.id,
+                                                                  {artist, playlistAffinity});
+                else found->score += playlistAffinity;
+            }
+        }
+    }
+
+    QList<RankedSong> rankedSongs = candidates.values();
+    std::stable_sort(rankedSongs.begin(), rankedSongs.end(), [](const RankedSong &left, const RankedSong &right) {
+        if (left.score != right.score) return left.score > right.score;
+        const int titleOrder = QString::compare(left.song.name, right.song.name, Qt::CaseInsensitive);
+        return titleOrder == 0 ? left.song.uri < right.song.uri : titleOrder < 0;
+    });
+    QList<RankedArtist> rankedArtists = newArtists.values();
+    std::stable_sort(rankedArtists.begin(), rankedArtists.end(), [](const RankedArtist &left, const RankedArtist &right) {
+        if (left.score != right.score) return left.score > right.score;
+        return QString::compare(left.artist.name, right.artist.name, Qt::CaseInsensitive) < 0;
+    });
+
+    QList<Song> dailySongs;
+    if (!rankedSongs.isEmpty()) {
+        const int start = QDate::currentDate().dayOfYear() % rankedSongs.size();
+        const int count = std::min(24, int(rankedSongs.size()));
+        dailySongs.reserve(count);
+        for (int index = 0; index < count; ++index) {
+            dailySongs.append(rankedSongs.at((start + index) % rankedSongs.size()).song);
+        }
+    }
+    QList<Artist> dailyArtists;
+    for (const RankedArtist &ranked : std::as_const(rankedArtists)) {
+        if (!ranked.artist.isValid()) continue;
+        dailyArtists.append(ranked.artist);
+        if (dailyArtists.size() >= 12) break;
+    }
+
+    m_dailyRecommendationSongs->setSongs(dailySongs);
+    m_dailyRecommendationArtists->setItems(dailyArtists);
+    const QString today = QDate::currentDate().toString(Qt::ISODate);
+    if (!dailySongs.isEmpty()) {
+        QJsonArray stored;
+        for (const Song &song : std::as_const(dailySongs)) stored.append(song.toJson());
+        m_settings->setValue(kDailyRecommendationsSongsKey, QJsonDocument(stored).toJson(QJsonDocument::Compact));
+        m_settings->setValue(kDailyRecommendationsDateKey, today);
+        m_settings->sync();
+        m_dailyRecommendationsDate = today;
+    } else {
+        m_dailyRecommendationsDate.clear();
+    }
+    emit dailyRecommendationsChanged();
+}
+
 // --- navigation ---------------------------------------------------------------------
 
 void LibraryStore::navigate(const Destination &destination)
@@ -503,11 +790,13 @@ void LibraryStore::goBack()
     switch (destination.page) {
     case Page::Home: showHome(); break;
     case Page::Search: showSearch(); break;
+    case Page::Recommendations: showRecommendations(); break;
     case Page::Songs: showSavedSongs(); break;
     case Page::Playlists: showPlaylists(); break;
     case Page::PinnedPlaylists: showPinnedPlaylists(); break;
     case Page::LocalFiles: showLocalFiles(); break;
     case Page::LocalTracks: showLocalTracks(); break;
+    case Page::ListeningHistory: showListeningHistory(); break;
     case Page::Playlist: {
         if (isLocalId(destination.playlistId)) {
             const Playlist local = m_localFiles ? m_localFiles->playlist(destination.playlistId) : Playlist {};
@@ -555,6 +844,22 @@ void LibraryStore::showSearch()
     navigate({Page::Search});
 }
 
+void LibraryStore::showRecommendations()
+{
+    cancelDetailLoads();
+    navigate({Page::Recommendations});
+}
+
+void LibraryStore::loadDailyRecommendations(bool forceRefresh)
+{
+    const QString today = QDate::currentDate().toString(Qt::ISODate);
+    if (!forceRefresh && m_dailyRecommendationsDate == today
+        && m_dailyRecommendationSongs->count() > 0 && m_dailyRecommendationArtists->count() > 0) return;
+
+    if (m_player) m_player->syncSpotifyRecentHistory(m_recentlyPlayed);
+    buildDailyRecommendations();
+}
+
 void LibraryStore::showSavedSongs()
 {
     cancelDetailLoads();
@@ -592,6 +897,12 @@ void LibraryStore::showLocalTracks()
 {
     cancelDetailLoads();
     navigate({Page::LocalTracks});
+}
+
+void LibraryStore::showListeningHistory()
+{
+    cancelDetailLoads();
+    navigate({Page::ListeningHistory});
 }
 
 void LibraryStore::selectPlaylistById(const QString &id)
@@ -871,14 +1182,17 @@ QCoro::Task<> LibraryStore::runSearch(QString query, CancelToken token)
         if (m_searchQuery.trimmed() != query) {
             co_return;
         }
-        m_searchSongs->setSongs(results.songs);
-        m_searchAlbums->setItems(results.albums);
-        m_searchArtists->setItems(results.artists);
-        m_searchPlaylists->setItems(results.playlists);
+        SearchResults rankedResults = results;
+        rankSearchResults(rankedResults, query,
+                          familiarArtistNames(m_searchHistory, m_recentlyPlayed, m_savedSongs, m_recommendedArtists));
+        m_searchSongs->setSongs(rankedResults.songs);
+        m_searchAlbums->setItems(rankedResults.albums);
+        m_searchArtists->setItems(rankedResults.artists);
+        m_searchPlaylists->setItems(rankedResults.playlists);
         setLoading(m_searching, false);
         emit searchChanged();
         m_search.finish(token);
-        co_await loadSavedStatuses(results.songs);
+        co_await loadSavedStatuses(rankedResults.songs);
     } catch (const Cancelled &) {
     } catch (const SpotifyError &error) {
         if (!isCancelled(token)) {
@@ -1637,6 +1951,12 @@ void LibraryStore::reset()
     m_recentlyPlayed->clear();
     m_recommendedAlbums->setItems({});
     m_recommendedArtists->setItems({});
+    m_dailyRecommendationSongs->clear();
+    m_dailyRecommendationArtists->setItems({});
+    m_dailyRecommendationsDate.clear();
+    m_settings->remove(kDailyRecommendationsDateKey);
+    m_settings->remove(kDailyRecommendationsSongsKey);
+    m_settings->sync();
     m_albumSongs->clear();
     m_artistAlbums->setItems({});
     m_artistTopSongs->clear();
@@ -1663,6 +1983,7 @@ void LibraryStore::reset()
     emit searchChanged();
     emit savedChanged();
     emit playlistViewChanged();
+    emit dailyRecommendationsChanged();
 }
 
 } // namespace swiftify

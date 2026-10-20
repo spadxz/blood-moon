@@ -65,6 +65,14 @@ Item {
                 selected: root.isSelected(Library.Page.Search)
                 onClicked: Library.showSearch()
             }
+            NavigationItem {
+                width: parent.width
+                text: qsTr("Recommended")
+                iconShape: "circle"
+                symbol: "auto_awesome"
+                selected: root.isSelected(Library.Page.Recommendations)
+                onClicked: Library.showRecommendations()
+            }
 
             SectionLabel {
                 width: parent.width
@@ -89,6 +97,14 @@ Item {
                 selected: root.isSelected(Library.Page.LocalFiles) || root.isSelected(Library.Page.LocalTracks)
                           || (root.isSelected(Library.Page.Playlist) && Library.selectedPlaylist.isLocal)
                 onClicked: Library.showLocalFiles()
+            }
+            NavigationItem {
+                width: parent.width
+                text: qsTr("Listening History")
+                iconShape: "circle"
+                symbol: "history"
+                selected: root.isSelected(Library.Page.ListeningHistory)
+                onClicked: Library.showListeningHistory()
             }
 
             SectionLabel {

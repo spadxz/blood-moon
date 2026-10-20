@@ -14,7 +14,7 @@ ShaderEffect {
 
     property size itemSize: Qt.size(width, height)
     property real cornerRadius: Math.min(width, height) / 2
-    property real amplitude: Settings.noShapes ? 0 : (pressed ? 4 : (hovered ? 3.2 : 2.2))
+    property real amplitude: Settings.noShapes || Appearance.bloodMoon ? 0 : (pressed ? 4 : (hovered ? 3.2 : 2.2))
     property real wavelength: 15
     readonly property real phase: drift.value
 
@@ -27,7 +27,7 @@ ShaderEffect {
     // they are when the pointer leaves
     Drift {
         id: drift
-        active: root.hovered && root.visible && !Settings.noShapes
+        active: root.hovered && root.visible && !Settings.noShapes && !Appearance.bloodMoon
         speed: 2 * Math.PI / 1.6
     }
 

@@ -177,24 +177,24 @@ Flickable {
             Reveal.shown: !root.empty && !Library.searchIsCatchphrase && !Library.searching && Library.hasSearchResults
             spacing: 0
 
-            TitleText {
-                x: root.margin
-                Reveal.shown: Library.searchSongs.count > 0
-                bottomPadding: 10
-                text: qsTr("Songs")
-                font.pixelSize: Appearance.fontSize.title
-                font.weight: Font.Bold
-            }
-
-            Repeater {
-                model: Library.searchSongs
-
-                SongRow {
-                    x: root.margin
-                    width: root.width - 2 * root.margin
-                    songs: Library.searchSongs
-                    showsNumber: false
-                    fromSearch: true
+            Shelf {
+                width: root.width
+                onScreen: root.reaches(column.y + results.y + y, height, 0)
+                nearScreen: root.reaches(column.y + results.y + y, height, root.height / 2)
+                Reveal.shown: Library.searchArtists.count > 0
+                topPadding: 28
+                title: qsTr("Artists")
+                symbol: "person"
+                iconShape: "cookie12"
+                model: Library.searchArtists
+                delegate: MediaCard {
+                    required property artist artist
+                    artworkUrl: artist.artworkUrl
+                    title: artist.name
+                    circular: true
+                    titleLines: 1
+                    badgeSymbol: "chevron_right"
+                    onClicked: Library.selectArtist(artist)
                 }
             }
 
@@ -217,24 +217,25 @@ Flickable {
                 }
             }
 
-            Shelf {
-                width: root.width
-                onScreen: root.reaches(column.y + results.y + y, height, 0)
-                nearScreen: root.reaches(column.y + results.y + y, height, root.height / 2)
-                Reveal.shown: Library.searchArtists.count > 0
+            TitleText {
+                x: root.margin
+                Reveal.shown: Library.searchSongs.count > 0
                 topPadding: 28
-                title: qsTr("Artists")
-                symbol: "person"
-                iconShape: "cookie12"
-                model: Library.searchArtists
-                delegate: MediaCard {
-                    required property artist artist
-                    artworkUrl: artist.artworkUrl
-                    title: artist.name
-                    circular: true
-                    titleLines: 1
-                    badgeSymbol: "chevron_right"
-                    onClicked: Library.selectArtist(artist)
+                bottomPadding: 10
+                text: qsTr("Songs")
+                font.pixelSize: Appearance.fontSize.title
+                font.weight: Font.Bold
+            }
+
+            Repeater {
+                model: Library.searchSongs
+
+                SongRow {
+                    x: root.margin
+                    width: root.width - 2 * root.margin
+                    songs: Library.searchSongs
+                    showsNumber: false
+                    fromSearch: true
                 }
             }
 

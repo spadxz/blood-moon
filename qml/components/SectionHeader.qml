@@ -14,7 +14,7 @@ Item {
     signal seeAll()
 
     implicitHeight: 40
-    implicitWidth: titleText.x + titleText.implicitWidth
+    implicitWidth: Appearance.bloodMoon ? root.width : titleText.x + titleText.implicitWidth
 
     HoverHandler {
         id: hover
@@ -24,7 +24,7 @@ Item {
         id: badge
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        visible: root.symbol.length > 0
+        visible: root.symbol.length > 0 && !Appearance.bloodMoon
         size: 34
         iconSize: 18
         shape: root.iconShape
@@ -41,6 +41,7 @@ Item {
         text: root.title
         elide: Text.ElideRight
         font.pixelSize: root.width < 320 ? Appearance.fontSize.larger : Appearance.fontSize.title
+        visible: !Appearance.bloodMoon
     }
 
     WavyLine {
@@ -50,7 +51,7 @@ Item {
         anchors.rightMargin: 14
         anchors.verticalCenter: parent.verticalCenter
         height: 8
-        visible: width > 24
+        visible: width > 24 && !Appearance.bloodMoon
         color: Appearance.colors.outlineVariant
     }
 
@@ -59,12 +60,38 @@ Item {
         objectName: "sectionSeeAll"
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        visible: root.showsSeeAll
+        visible: root.showsSeeAll && !Appearance.bloodMoon
         variant: TextButton.Tonal
         symbol: "arrow_forward"
         text: qsTr("See All")
         iconOnly: root.width < titleText.x + titleText.implicitWidth + naturalWidth + 24
         compactSize: root.width < 280 ? 32 : 40
         onClicked: root.seeAll()
+    }
+
+    Row {
+        anchors.centerIn: parent
+        spacing: 10
+        visible: Appearance.bloodMoon
+
+        TitleText {
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.min(implicitWidth, Math.max(0, root.width - (centeredSeeAll.visible ? centeredSeeAll.implicitWidth + 10 : 0)))
+            text: root.title
+            elide: Text.ElideRight
+            font.pixelSize: root.width < 320 ? Appearance.fontSize.larger : Appearance.fontSize.title
+        }
+
+        TextButton {
+            id: centeredSeeAll
+            visible: root.showsSeeAll
+            anchors.verticalCenter: parent.verticalCenter
+            variant: TextButton.Tonal
+            symbol: "arrow_forward"
+            text: qsTr("See All")
+            iconOnly: root.width < 280
+            compactSize: root.width < 280 ? 32 : 40
+            onClicked: root.seeAll()
+        }
     }
 }

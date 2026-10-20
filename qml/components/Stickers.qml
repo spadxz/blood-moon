@@ -11,6 +11,8 @@ import Swiftify
 Item {
     id: root
 
+    visible: !Appearance.bloodMoon
+
     /// what the layout is drawn from: a page's or a collection's name
     property string key: "swiftify"
     property int count: 4

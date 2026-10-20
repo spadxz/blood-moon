@@ -94,6 +94,7 @@ T.AbstractButton {
 
                     width: 24
                     height: 24
+                    visible: !Appearance.bloodMoon
                     Reveal.shown: arrived && root.isCurrent && !root.hovered
                     shape: "cookie6"
                     color: Appearance.colors.primaryContainer
@@ -279,8 +280,8 @@ T.AbstractButton {
                 iconColor: root.saved ? Appearance.colors.primary : Appearance.colors.onSurfaceVariant
                 onClicked: {
                     if (!root.saved) {
-                        UiState.burst(star, "hearts")
-                        if (!Appearance.performanceMode) {
+                        if (!Appearance.bloodMoon) UiState.burst(star, "hearts")
+                        if (!Appearance.bloodMoon && !Appearance.performanceMode) {
                             starPop.restart()
                         }
                     }
@@ -294,6 +295,7 @@ T.AbstractButton {
                     width: 40
                     height: 40
                     z: -2
+                    visible: !Appearance.bloodMoon
                     opacity: 0
                     shape: "sunny"
                     color: Appearance.colors.primaryContainer

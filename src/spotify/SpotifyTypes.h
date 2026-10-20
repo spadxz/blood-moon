@@ -72,6 +72,10 @@ struct Song {
     Q_PROPERTY(QString albumId MEMBER albumId FINAL)
     Q_PROPERTY(QString albumUri MEMBER albumUri FINAL)
     Q_PROPERTY(bool isPlayable MEMBER isPlayable FINAL)
+    Q_PROPERTY(qint64 addedAtMs MEMBER addedAtMs FINAL)
+    Q_PROPERTY(qint64 playedAtMs MEMBER playedAtMs FINAL)
+    Q_PROPERTY(qint64 playedDurationMs MEMBER playedDurationMs FINAL)
+    Q_PROPERTY(QString playedContext MEMBER playedContext FINAL)
     Q_PROPERTY(bool valid READ isValid FINAL)
     /// a music file of the person's own (LocalLibrary), not a spotify track:
     /// nothing spotify knows can be done with it
@@ -88,6 +92,13 @@ public:
     QString uri;
     /// 0 when spotify did not say
     int durationMs = 0;
+    /// Spotify's playlist-item timestamp; -1 when this occurrence has no date.
+    qint64 addedAtMs = -1;
+    /// local or imported listening-history timestamp and time heard.
+    qint64 playedAtMs = 0;
+    qint64 playedDurationMs = 0;
+    /// the playlist name when the app could identify the source of a play.
+    QString playedContext;
     bool isExplicit = false;
     QString albumId;
     QString albumUri;
