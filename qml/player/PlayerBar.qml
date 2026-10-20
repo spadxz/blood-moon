@@ -10,6 +10,7 @@ Item {
 
     // the app's theme, as the rest of the window is
     property MaterialScheme scheme: Appearance.colors
+    property Item backdropSource: null
     signal immersiveRequested()
 
     // Give the title useful space before the controls start colliding with it.
@@ -36,6 +37,44 @@ Item {
         color: Qt.rgba(0, 0, 0, 0.2)
     }
 
+    Item {
+        id: glass
+        anchors.fill: parent
+        visible: Appearance.bloodMoon && !!root.backdropSource && !Appearance.performanceMode
+
+        Rectangle {
+            id: glassMask
+            anchors.fill: parent
+            radius: 20
+            visible: false
+            layer.enabled: true
+        }
+
+        ShaderEffectSource {
+            id: glassBackdrop
+            anchors.fill: parent
+            sourceItem: root.backdropSource
+            live: glass.visible
+            hideSource: false
+            sourceRect: {
+                const origin = root.mapToItem(root.backdropSource, 0, 0)
+                return Qt.rect(origin.x, origin.y, root.width, root.height)
+            }
+            textureSize: Qt.size(Math.max(1, Math.ceil(root.width)), Math.max(1, Math.ceil(root.height)))
+            visible: false
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: glassBackdrop
+            blurEnabled: true
+            blur: 0.72
+            blurMax: 36
+            maskEnabled: true
+            maskSource: glassMask
+        }
+    }
+
     Rectangle {
         id: surface
         anchors.fill: parent
@@ -49,9 +88,22 @@ Item {
             onWheel: (wheel) => wheel.accepted = true
         }
         radius: 20
-        color: root.scheme.surfaceContainerHigh
+        color: Appearance.bloodMoon ? Qt.alpha(root.scheme.surfaceContainerHigh, 0.72)
+                                    : root.scheme.surfaceContainerHigh
         border.width: 1
-        border.color: Qt.rgba(root.scheme.outlineVariant.r, root.scheme.outlineVariant.g, root.scheme.outlineVariant.b, 0.4)
+        border.color: Appearance.bloodMoon ? Qt.rgba(1, 0.72, 0.78, 0.34)
+                                           : Qt.rgba(root.scheme.outlineVariant.r, root.scheme.outlineVariant.g, root.scheme.outlineVariant.b, 0.4)
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            visible: Appearance.bloodMoon
+            gradient: Gradient {
+                GradientStop { position: 0; color: Qt.rgba(1, 0.88, 0.91, 0.13) }
+                GradientStop { position: 0.42; color: Qt.rgba(0.72, 0.06, 0.16, 0.045) }
+                GradientStop { position: 1; color: Qt.rgba(0.16, 0.01, 0.04, 0.14) }
+            }
+        }
     }
 
     Row {

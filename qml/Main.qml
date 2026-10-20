@@ -343,6 +343,7 @@ ApplicationWindow {
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 12
                 width: Math.max(0, Math.min(720, sheet.width - 36))
+                backdropSource: pageContent
                 Reveal.shown: !UiState.needsSetup
                 onImmersiveRequested: UiState.immersiveOpen = true
             }

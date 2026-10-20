@@ -17,6 +17,21 @@ Item {
         return Library.page === page
     }
 
+    Rectangle {
+        anchors.fill: parent
+        radius: Appearance.rounding.large
+        visible: Appearance.bloodMoon
+        color: Qt.alpha(Appearance.colors.layer1, 0.72)
+        border.width: 1
+        border.color: Qt.rgba(Appearance.colors.primary.r, Appearance.colors.primary.g,
+                              Appearance.colors.primary.b, 0.22)
+        gradient: Gradient {
+            GradientStop { position: 0; color: Qt.rgba(1, 0.84, 0.88, 0.075) }
+            GradientStop { position: 0.55; color: Qt.rgba(0.44, 0.015, 0.08, 0.025) }
+            GradientStop { position: 1; color: Qt.rgba(0.12, 0, 0.025, 0.10) }
+        }
+    }
+
     ListView {
         id: list
         anchors.fill: parent

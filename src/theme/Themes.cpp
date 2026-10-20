@@ -36,6 +36,13 @@ const QList<Family> kFamilies {
       0xff1b1b1d, 0xff5c5c61, 0xff6f6f75, 0xffc62828},
      {0xff0c0c0d, 0xff111113, 0xff19191b, 0xff232326, 0xff2e2e31, 0xff3b3b3f, 0xffececee, 0xffa9a9ae, 0xff7c7c82,
       0xffececee, 0xffb4b4b9, 0xff9a9aa0, 0xffef5350}},
+    // blood moon: black cherry grounds, a deep ruby red, ember coral and
+    // moonlit rose. the light half keeps the same heat on pale rose glass.
+    {QStringLiteral("blood-moon"), QStringLiteral("Blood Moon"),
+     {0xfffff8f8, 0xfff7e9ed, 0xfffff5f6, 0xfff0dbe1, 0xffe6c7d0, 0xffd5aab6, 0xff35151e, 0xff70424e, 0xff976c77,
+      0xffa81431, 0xffba594f, 0xff784b64, 0xffa51e32},
+     {0xff090407, 0xff11070c, 0xff1a0b12, 0xff29111a, 0xff37141f, 0xff51202e, 0xfff8e9ee, 0xffd3a9b5, 0xffa1717d,
+      0xffd8203e, 0xfff07b70, 0xffce9ab8, 0xffff6671}},
     // spotify's own: black and its greys in the dark, white in the light,
     // and its green for the highlights. the light green is a shade deeper,
     // so it still reads on white

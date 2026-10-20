@@ -9,6 +9,7 @@ QtObject {
     id: root
 
     final readonly property MaterialScheme colors: Theme.colors
+    final readonly property bool bloodMoon: Settings.themeSource === "blood-moon"
     /// nothing moves of its own accord, over and over: the shapes that turn
     /// with the music, the edges that run while hovered, the seek line's wave
     /// and the backdrop's flow hold still (Settings.reduceMotion). what
