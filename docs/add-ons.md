@@ -1,94 +1,119 @@
-# Swiftify add-ons
+# Blood Moon add-ons
 
-Swiftify add-ons are versioned QML packages. Add-ons can contribute components
-to named extension points; the first built-in host is a separate floating
-`miniPlayer` window. The package format keeps the install, enable, disable,
-update, and remove flow stable as Swiftify gains more extension hosts.
+Blood Moon add-ons are small, versioned QML packages. The host supplies the
+window chrome and app APIs; a package supplies the content for one or more
+extension points. Packages are installed from folders and run only when their
+host is shown.
 
-## Install and manage add-ons
+## Use the bundled add-ons
 
-1. Open **Settings → Add-ons**.
-2. To install Swiftify's bundled Lyrics Mini Player, choose **Install** under
-   **Get Add-ons**.
-3. To install a downloaded add-on, extract its archive, choose **Install from
-   Folder…**, then select the extracted folder that contains `manifest.json`.
-4. The package appears under **Installed Add-ons**. Use **Enabled** to turn it
-   on or off. For an add-on with the `miniPlayer` extension, choose **Open** to
-   show its floating window. The window's pin button keeps it above other
-   windows; its close button hides it.
-5. Choose **Remove** to uninstall a package. Reinstalling a package with the
-   same ID replaces the installed version.
+Open **Settings → Add-ons**. Under **Get Add-ons**, install the add-ons you
+want, then leave **Enabled** on:
 
-Swiftify copies installed packages into the directory shown at the bottom of
-the Add-ons page. It stores each add-on's enabled state in Swiftify settings.
-The app does not run add-on QML just because a package is installed; a component
-loads when its host is opened.
+- **Lyrics Mini Player** opens a pinned, floating lyrics and queue player.
+- **Blood Moon Liquid Lyrics** replaces the lyrics inspector with synchronized
+  lyrics, the Blood Moon background, and an optional live spectrum.
+- **Oniko Cursor Companion** follows the mouse inside the app window. It uses
+  vector QML artwork, not an animated image or a background polling loop.
+
+The liquid lyrics panel loads only while the lyrics inspector is open. The
+cursor companion loads only while enabled. Turn either package off under
+**Installed Add-ons** to unload it.
+
+To install a community package, extract it, choose **Install from Folder…**, and
+select the folder containing `manifest.json`. Reinstalling the same ID replaces
+the package. Removing it deletes its installed copy.
+
+## Extension points
+
+An extension's entry point creates an `Item`, except for `miniPlayer`, which is
+shown inside a separate native window.
+
+| Slot | Host behavior |
+| --- | --- |
+| `miniPlayer` | Separate, optionally pinned mini-player window. Open from the add-on's settings row. |
+| `lyricsPanel` | Replaces the lyrics inspector while it is open. If the component fails to load, the built-in lyrics panel is shown. |
+| `windowOverlay` | Draws over the app window. Use passive handlers such as `HoverHandler` so app controls remain clickable. |
+
+Each package can provide one component per slot and up to 16 slots. When
+multiple enabled packages provide the same slot, the host selects them in
+stable alphabetical order by package name and ID.
 
 ## Package format
 
-Each package has a `manifest.json`, one or more QML entry points, and any local
-assets those QML files use. For example:
+Keep each package self-contained:
 
 ```text
-lyrics-mini-player/
+my-addon/
 ├── manifest.json
-└── LyricsMiniPlayer.qml
+├── Main.qml
+└── assets/                 # optional, package-local files
 ```
 
 ```json
 {
   "apiVersion": 1,
-  "id": "lyrics-mini-player",
-  "name": "Lyrics Mini Player",
+  "id": "my-addon",
+  "name": "My Add-on",
   "version": "1.0.0",
-  "description": "A floating player with lyrics and queue browsing.",
+  "description": "A short explanation of what it adds.",
   "extensions": [
-    {
-      "slot": "miniPlayer",
-      "entryPoint": "LyricsMiniPlayer.qml"
-    }
+    { "slot": "lyricsPanel", "entryPoint": "Main.qml" }
   ]
 }
 ```
 
-The `id` uses lowercase letters, numbers, dots, and dashes. `version` follows
-`major.minor.patch` with an optional prerelease or build suffix. Entry points
-are relative `.qml` files inside the package. API version 1 permits up to 16
-extensions per package. Swiftify validates the manifest, entry point paths,
-package size (32 MB), file count (512), and symbolic links before installing.
+The ID uses lowercase letters, numbers, dots, and dashes. Versions use
+`major.minor.patch`, with an optional prerelease or build suffix. Entry points
+must be relative QML files inside the package. The installer checks the
+manifest, entry-point paths, symbolic links, package size (32 MB), and file
+count (512). It does not evaluate QML while installing.
 
-The current `miniPlayer` entry point must create a QML `Item`. It runs in a
-separate Swiftify window and can import the app module:
+The optional `requires` list currently accepts `spectrum`. Declaring it asks
+the host to enable audio analysis only while the add-on's lyrics panel is
+visible. Add-ons that do not need the spectrum should omit the field.
+
+The current public QML module import remains `Swiftify` for compatibility with
+the existing app and add-ons. This is an internal module identifier; the
+product and user-facing name is Blood Moon (BM).
 
 ```qml
+pragma ComponentBehavior: Bound
 import QtQuick
 import Swiftify
 
 Item {
-    // Player.currentSong, Player.lyrics, Player.upNext,
-    // Player.togglePlayback(), Player.skipBackward(), and other QML APIs.
+    // Player.currentSong, Player.lyrics, Player.activeLyricIndex,
+    // Player.togglePlayback(), Player.skipBackward(), and other app APIs.
 }
 ```
 
-For lyrics, `Player.lyrics` exposes `words`, `startTimeMs`, and `endTimeMs` for
-each line; `Player.activeLyricIndex` follows the current line, and
-`Player.seekToLyricLine(index)` seeks synchronized lyrics. Playback controls
-include `togglePlayback()`, `skipForward()`, `skipBackward()` (restart the
-current song or go to the previous one), and `playFromQueue(song)`. `Player.upNext`
-exposes the queue model.
+`Player.lyrics` exposes `words`, `startTimeMs`, and `endTimeMs` for each line.
+`Player.activeLyricIndex` follows synchronized lyrics, and
+`Player.seekToLyricLine(index)` seeks to a line. Playback controls include
+`togglePlayback()`, `skipForward()`, `skipBackward()` (restart or previous
+track), and `playFromQueue(song)`. `Player.upNext` exposes the queue model.
+`SpectrumView` is available for custom visualizers; set its `active` property
+only while it is visible and wanted so the shared analyzer can sleep otherwise.
 
-The manifest already allows multiple named extension points. Swiftify must add
-a host before a new slot can be displayed, and future integrations may require
-new app APIs or a later `apiVersion`. Add-ons targeting an unsupported API
-version are rejected with a settings message.
+The API version is independent of the app version. Add-ons targeting an
+unsupported API version are rejected with a settings message. A new host or
+new app API may require a future API version.
 
-## Trust and compatibility
+## Trust, permissions, and performance
 
-Add-ons are trusted QML code, not sandboxed scripts. An add-on can import
-Swiftify's public QML module and use the same exposed app APIs as built-in QML.
-Only install packages from sources you trust. Manifest checks reduce malformed
-package and path risks; they do not make an add-on's code safe.
+Add-ons are trusted QML code running in the app process; they are **not
+sandboxed**. A package can use the public QML APIs available to built-in views.
+Only install packages from people you trust. Path and size checks prevent
+malformed package installs; they do not make the code safe.
 
-The app keeps the add-on enabled/disabled state across restarts. Removing a
-package deletes its installed files. Keep a copy of a package if you want to
-reinstall that version later.
+There is no remote add-on store or automatic downloader. The app keeps the
+enabled state across restarts and does not load add-on QML merely because it is
+installed. Keep your own copy if you remove a package and want it later.
+
+## Build a community package
+
+Start by copying one of the folders under `addons/`, changing its ID, metadata,
+and QML. Use one supported extension point above. Test it by installing the
+package from its folder through **Settings → Add-ons**. No Node, browser engine,
+or extra runtime is required.

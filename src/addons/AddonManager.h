@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QStringList>
 #include <QVariantList>
 #include <QUrl>
 #include <QtQml/qqmlregistration.h>
@@ -69,6 +70,7 @@ private:
         QString name;
         QString version;
         QString description;
+        QStringList requirements;
         QList<Extension> extensions;
         bool enabled = true;
         bool bundled = false;

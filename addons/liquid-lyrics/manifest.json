@@ -1,0 +1,14 @@
+{
+  "apiVersion": 1,
+  "id": "liquid-lyrics",
+  "name": "Blood Moon Liquid Lyrics",
+  "version": "1.0.0",
+  "description": "A synchronized lyric panel with the Blood Moon backdrop and an optional live spectrum.",
+  "requires": ["spectrum"],
+  "extensions": [
+    {
+      "slot": "lyricsPanel",
+      "entryPoint": "LiquidLyrics.qml"
+    }
+  ]
+}

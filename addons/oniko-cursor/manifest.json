@@ -1,0 +1,13 @@
+{
+  "apiVersion": 1,
+  "id": "oniko-cursor",
+  "name": "Oniko Cursor Companion",
+  "version": "1.0.0",
+  "description": "A tiny animated cat that follows the pointer inside the app window.",
+  "extensions": [
+    {
+      "slot": "windowOverlay",
+      "entryPoint": "OnikoCursor.qml"
+    }
+  ]
+}

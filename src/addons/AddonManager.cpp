@@ -114,6 +114,7 @@ QVariantMap AddonManager::asVariant(const Addon &addon) const
             {QStringLiteral("name"), addon.name},
             {QStringLiteral("version"), addon.version},
             {QStringLiteral("description"), addon.description},
+            {QStringLiteral("requirements"), addon.requirements},
             {QStringLiteral("slots"), slotNames},
             {QStringLiteral("extensions"), extensions},
             {QStringLiteral("enabled"), addon.enabled},
@@ -151,6 +152,7 @@ QVariantList AddonManager::availableAddons() const
             {QStringLiteral("name"), addon.name},
             {QStringLiteral("version"), addon.version},
             {QStringLiteral("description"), addon.description},
+            {QStringLiteral("requirements"), addon.requirements},
             {QStringLiteral("slots"), slotNames},
             {QStringLiteral("bundled"), true}});
     }
@@ -231,8 +233,16 @@ void AddonManager::closeMiniPlayer()
 
 QVariantList AddonManager::enabledForSlot(const QString &slot) const
 {
+    // QHash iteration order is unspecified. Stable ordering keeps extension
+    // hosts deterministic when more than one package offers the same slot.
+    QList<Addon> sorted = m_installed.values();
+    std::sort(sorted.begin(), sorted.end(), [](const Addon &left, const Addon &right) {
+        const int byName = left.name.compare(right.name, Qt::CaseInsensitive);
+        return byName == 0 ? left.id < right.id : byName < 0;
+    });
+
     QVariantList result;
-    for (const Addon &addon : m_installed) {
+    for (const Addon &addon : sorted) {
         if (!addon.enabled) continue;
         for (const Extension &extension : addon.extensions) {
             if (extension.slot != slot) continue;
@@ -241,6 +251,7 @@ QVariantList AddonManager::enabledForSlot(const QString &slot) const
                 {QStringLiteral("name"), addon.name},
                 {QStringLiteral("version"), addon.version},
                 {QStringLiteral("description"), addon.description},
+                {QStringLiteral("requirements"), addon.requirements},
                 {QStringLiteral("slot"), extension.slot},
                 {QStringLiteral("entryPoint"), QUrl::fromLocalFile(extension.entryPoint)}});
         }
@@ -291,6 +302,7 @@ bool AddonManager::readManifest(const QString &directory, Addon &addon, QString 
     const QString version = object.value(QStringLiteral("version")).toString();
     const QString description = object.value(QStringLiteral("description")).toString().trimmed();
     const QJsonArray extensions = object.value(QStringLiteral("extensions")).toArray();
+    const QJsonArray requirements = object.value(QStringLiteral("requires")).toArray();
     const int apiVersion = object.value(QStringLiteral("apiVersion")).toInt(-1);
 
     if (!kIdPattern.match(id).hasMatch() || id.size() > 64) {
@@ -309,6 +321,24 @@ bool AddonManager::readManifest(const QString &directory, Addon &addon, QString 
     if (extensions.isEmpty() || extensions.size() > kExtensionLimit) {
         error = tr("An add-on needs between one and %1 extensions.").arg(kExtensionLimit);
         return false;
+    }
+    if ((object.contains(QStringLiteral("requires")) && !object.value(QStringLiteral("requires")).isArray())
+        || requirements.size() > 8) {
+        error = tr("The add-on requirements must be a list of at most 8 supported features.");
+        return false;
+    }
+    QStringList parsedRequirements;
+    for (const QJsonValue &value : requirements) {
+        const QString requirement = value.toString();
+        if (!value.isString() || requirement != QLatin1StringView("spectrum")) {
+            error = tr("This Blood Moon build does not support one of the add-on's requirements.");
+            return false;
+        }
+        if (parsedRequirements.contains(requirement)) {
+            error = tr("An add-on cannot list the same requirement more than once.");
+            return false;
+        }
+        parsedRequirements.append(requirement);
     }
 
     const bool resource = isResourcePath(directory);
@@ -352,9 +382,9 @@ bool AddonManager::readManifest(const QString &directory, Addon &addon, QString 
         }
 
         const bool duplicate = std::any_of(parsedExtensions.cbegin(), parsedExtensions.cend(),
-            [&](const Extension &extension) { return extension.slot == slot && extension.entryPoint == entryPoint; });
+            [&](const Extension &extension) { return extension.slot == slot; });
         if (duplicate) {
-            error = tr("The add-on lists the same extension more than once.");
+            error = tr("An add-on can provide only one component for each extension point.");
             return false;
         }
         parsedExtensions.append({slot, entryPoint});
@@ -364,6 +394,7 @@ bool AddonManager::readManifest(const QString &directory, Addon &addon, QString 
     addon.name = name;
     addon.version = version;
     addon.description = description;
+    addon.requirements = parsedRequirements;
     addon.extensions = parsedExtensions;
     return true;
 }

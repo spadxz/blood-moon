@@ -11,6 +11,13 @@ ApplicationWindow {
     id: window
 
     property real sidebarWidth: 232
+    // Extension providers refresh when packages change; their components stay
+    // unloaded until the relevant host is visible.
+    property var lyricsPanelExtensions: []
+    property var windowOverlayExtensions: []
+    readonly property bool addonSpectrumNeeded: window.onScreen && Player.showingLyrics
+        && Settings.visualizersEnabled && window.lyricsPanelExtensions.length > 0
+        && window.lyricsPanelExtensions[0].requirements.indexOf("spectrum") >= 0
     /// the window's size as its content lays out in it, smaller than the
     /// window's own when zoomed in (ctrl +) and larger when zoomed out
     readonly property real zoom: Settings.zoom
@@ -59,8 +66,19 @@ ApplicationWindow {
     visible: true
 
     Component.onCompleted: {
+        refreshExtensionHosts()
         if (App.windows) App.setNativeTitleBar(window, Settings.nativeTitleBar)
         findZoomedItems()
+    }
+
+    function refreshExtensionHosts() {
+        lyricsPanelExtensions = Addons.enabledForSlot("lyricsPanel")
+        windowOverlayExtensions = Addons.enabledForSlot("windowOverlay")
+    }
+
+    Connections {
+        target: Addons
+        function onAddonsChanged() { window.refreshExtensionHosts() }
     }
 
     Connections {
@@ -437,7 +455,15 @@ ApplicationWindow {
                     objectName: "mainLyricsPanel"
                     anchors.fill: parent
                     Reveal.shown: Player.showingLyrics
+                                  && (!customLyricsPanel.active || customLyricsPanel.status === Loader.Error)
                     suspended: UiState.immersiveOpen
+                }
+                Loader {
+                    id: customLyricsPanel
+                    anchors.fill: parent
+                    active: Player.showingLyrics && window.onScreen && window.lyricsPanelExtensions.length > 0
+                    asynchronous: true
+                    source: active ? window.lyricsPanelExtensions[0].entryPoint : ""
                 }
                 QueuePanel {
                     anchors.fill: parent
@@ -812,9 +838,9 @@ ApplicationWindow {
     Binding {
         target: Player
         property: "visualizerPresentationActive"
-        value: window.visible && (UiState.immersiveOpen
+        value: window.onScreen && (UiState.immersiveOpen
                ? Settings.immersiveVisualizer || Settings.livingBackdrop
-               : Settings.playerBarVisualizer || Settings.trackListVisualizer)
+               : Settings.playerBarVisualizer || Settings.trackListVisualizer || window.addonSpectrumNeeded)
     }
 
     // closing the window leaves the music playing; the tray brings it back.
@@ -959,6 +985,21 @@ ApplicationWindow {
 
     MiniPlayerWindow {
         transientParentWindow: window
+    }
+
+    // Passive add-ons can draw over the app (for example, a small companion
+    // that follows the pointer). Pointer handlers observe input without
+    // consuming it, so the controls beneath the overlay stay interactive.
+    Repeater {
+        anchors.fill: parent
+        model: window.onScreen ? window.windowOverlayExtensions : []
+
+        delegate: Loader {
+            required property var modelData
+            anchors.fill: parent
+            asynchronous: true
+            source: modelData.entryPoint
+        }
     }
 
     Window {

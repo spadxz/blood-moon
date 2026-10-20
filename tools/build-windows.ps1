@@ -156,7 +156,7 @@ function Invoke-WindowsBuild {
     $qtConfiguration = Get-Content -LiteralPath "$QtPath\mkspecs\qconfig.pri" -Raw
     $qtVersion = [regex]::Match($qtConfiguration, '(?m)^QT_VERSION\s*=\s*(\S+)').Groups[1].Value
     if (-not $qtVersion -or [version]$qtVersion -lt [version]'6.10' -or $qtConfiguration -notmatch '(?m)^QT_ARCH\s*=\s*x86_64\s*$') {
-        throw 'Swiftify requires a Qt 6.10+ x64 kit.'
+        throw 'Blood Moon requires a Qt 6.10+ x64 kit.'
     }
     foreach ($module in @('Qt6Core', 'Qt6Widgets', 'Qt6Quick', 'Qt6QuickControls2', 'Qt6ShaderTools')) {
         if (-not (Test-Path -LiteralPath "$QtPath\lib\cmake\$module\${module}Config.cmake")) {

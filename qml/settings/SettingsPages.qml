@@ -19,6 +19,13 @@ Item {
     readonly property list<int> qualities: [96, 160, 320]
     readonly property list<int> cacheSizes: [500, 1000, 2000]
 
+    function addOnSlotName(slot: string): string {
+        if (slot === "miniPlayer") return qsTr("Mini player")
+        if (slot === "lyricsPanel") return qsTr("Lyrics panel")
+        if (slot === "windowOverlay") return qsTr("App overlay")
+        return slot
+    }
+
     component Page: Column {
         width: parent ? parent.width : 0
         spacing: 24
@@ -239,14 +246,21 @@ Item {
                 symbol: "high_quality"
 
                 ConfigSelection {
-                    text: qsTr("Streaming")
+                    text: qsTr("Streaming quality")
                     currentIndex: Math.max(0, root.qualities.indexOf(Settings.streamingQuality))
                     segments: [
-                        Segment { text: qsTr("96 kbps") },
-                        Segment { text: qsTr("160 kbps") },
-                        Segment { text: qsTr("320 kbps") }
+                        Segment { text: qsTr("Low") },
+                        Segment { text: qsTr("Normal") },
+                        Segment { text: qsTr("Very High") }
                     ]
                     onActivated: (index) => Settings.streamingQuality = root.qualities[index]
+                }
+                NoteText {
+                    text: Settings.streamingQuality === 96
+                        ? qsTr("Low · 96 kbps. Uses less network data. This controls Spotify streaming, not local files or equalizer tone.")
+                        : Settings.streamingQuality === 160
+                            ? qsTr("Normal · 160 kbps. A balanced setting for Spotify streaming.")
+                            : qsTr("Very High · 320 kbps. The highest stream bitrate supported by this playback core; this is not lossless audio.")
                 }
                 ConfigSelection {
                     text: qsTr("Song cache")
@@ -259,7 +273,7 @@ Item {
                     onActivated: (index) => Settings.songCacheMegabytes = root.cacheSizes[index]
                 }
                 NoteText {
-                    text: qsTr("both cache and quality apply the next time playback connects")
+                    text: qsTr("Streaming quality applies the next time playback connects. Equalizer controls below change tone separately.")
                 }
             }
 
@@ -965,7 +979,7 @@ Item {
                         StyledText {
                             x: 12
                             width: parent.width - 24
-                            text: qsTr("Extension points: %1").arg(modelData.slots.join(", "))
+                            text: qsTr("Available in: %1").arg(modelData.slots.map((slot) => root.addOnSlotName(slot)).join(", "))
                             font.pixelSize: Appearance.fontSize.smaller
                             color: Appearance.colors.outline
                         }

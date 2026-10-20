@@ -2,7 +2,7 @@
 # (v0.10.0) builds all three and puts them on a draft release to publish by
 # hand. it also runs from the actions tab, and on pull requests that change how
 # the builds are made
-name: prebuilt
+name: Blood Moon builds
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          version="$(sed -n '/^project(Swiftify/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
+          version="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
           if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1
@@ -115,7 +115,7 @@ jobs:
 
       - name: version
         run: |
-          version="$(sed -n '/^project(Swiftify/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
+          version="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
           if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1
@@ -181,7 +181,7 @@ jobs:
 
       - name: version
         run: |
-          version="$(sed -n '/^project(Swiftify/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
+          version="$(sed -n '/^project(BloodMoon/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)"
           if [[ "$GITHUB_REF_TYPE" == tag && "$GITHUB_REF_NAME" != "v$version" ]]; then
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1

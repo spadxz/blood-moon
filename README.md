@@ -1,19 +1,20 @@
-# Blood Moon
+# Blood Moon (BM)
 
-a Spotify desktop player, built with Qt Quick on top of a Rust core that
-wraps [librespot](https://github.com/librespot-org/librespot). it follows
-Material 3 Expressive (heavy inspo from end4) and has an immersive player,
-synced lyrics, visualizers, an equalizer, and local files with local playlists
-where u can edit the tracks metadata.
+Blood Moon is a lightweight, customizable desktop music player built with Qt
+Quick and a Rust playback core around
+[librespot](https://github.com/librespot-org/librespot). It includes Spotify
+library and playback support, local music, synced lyrics, visualizers, an
+equalizer, listening history, and installable QML add-ons. The interface is
+native rather than an embedded web client, and optional visual effects can be
+turned off to keep background use light.
+
+This repository is a public fork. Its upstream source and current license
+status are documented in [Project provenance](docs/PROVENANCE.md).
+
 ![Alt text](/assets/home.png)
-this apps purpose is to replace spotifys heavy webview client, but its also mostly eyecandy lol
-it runs significantly lighter than the spotify client.
 
-**EVEN WITH THE EYECANDY TURNED ON....** it is lighter than spotify + spotifys renderers both on cpu AND ram!!!!!
-
-id recommend turning the visualizers and background off if the app runs in the background tho lol
-
-***anyways runs on linux (made for wayland and hyprland) macos, and windows.***
+Blood Moon runs on Windows, macOS, and Linux. Its optional visualizers and
+animated backgrounds are configurable for lower-power systems.
 
 ## previews
 first image shows equalizer, tempo and pitch settings. second picture shows how the immersive player and the visualizer/lyrics look
@@ -24,8 +25,9 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
   </tr>
 </table>
 
-> ### Note
-> Blood Moon is a personal fork built on the Swiftify framework.
+> Blood Moon is the product name. Existing build targets and the QML module
+> retain legacy identifiers so existing configuration and add-ons continue to
+> work; see the provenance note for the upstream relationship.
 
 - [Before you start](#before-you-start)
 - [Prebuilt builds](#prebuilt-builds)
@@ -49,9 +51,9 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
 
 ### Add-ons
 
-Install and manage the bundled Lyrics Mini Player or a downloaded add-on under
-**Settings → Add-ons**. Package format, API, and install steps are in
-[docs/add-ons.md](docs/add-ons.md).
+Install and manage the Lyrics Mini Player, Blood Moon Liquid Lyrics, Oniko
+Cursor Companion, or a downloaded add-on under **Settings → Add-ons**. The
+package format, API, and install steps are in [docs/add-ons.md](docs/add-ons.md).
 
 ### "spotify could not load this track" (soloist)
 
@@ -95,7 +97,7 @@ For more verbose logging run swiftify with `QT_LOGGING_RULES="swiftify.discord.d
 
 ## Prebuilt builds
 
-The [Blood Moon Releases](https://github.com/spadxz/swiftify-blood-moon/releases) page is the stable download source once a version is published. Until then, open [Actions](https://github.com/spadxz/swiftify-blood-moon/actions/workflows/prebuilt.yml), choose the latest successful `prebuilt` run on `main`, and download the artifact for your computer. Action artifacts are temporary; a versioned release is the better update channel.
+The [Blood Moon Releases](https://github.com/spadxz/blood-moon/releases) page is the stable download source once a version is published. Until then, open [Actions](https://github.com/spadxz/blood-moon/actions/workflows/prebuilt.yml), choose the latest successful `prebuilt` run on `main`, and download the artifact for your computer. Action artifacts are temporary; a versioned release is the better update channel.
 
 - **windows.** unzip it anywhere and run `bin\swiftify.exe`.
 - **linux.** unpack it anywhere and run `bin/swiftify`. it brings its own Qt, but needs
@@ -129,8 +131,8 @@ brew install qtbase qtdeclarative qtshadertools qtkeychain qcoro6 cmake ninja
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
 
-git clone https://github.com/spadxz/swiftify-blood-moon.git
-cd swiftify-blood-moon
+git clone https://github.com/spadxz/blood-moon.git
+cd blood-moon
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build
 ditto build/swiftify.app "/Applications/Blood Moon.app"
@@ -145,8 +147,8 @@ dark and tinted looks; with just the command line tools it's built from the PNGs
 on arch either build a proper package, which installs to `/usr`:
 
 ```sh
-git clone https://github.com/spadxz/swiftify-blood-moon.git
-cd swiftify-blood-moon/packaging/arch
+git clone https://github.com/spadxz/blood-moon.git
+cd blood-moon/packaging/arch
 makepkg -si
 ```
 or use cmake:
@@ -155,8 +157,8 @@ or use cmake:
 # replace with your package manager if not on arch
 sudo pacman -S --needed git qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-websockets qtkeychain-qt6 qcoro libpulse alsa-lib openssl cmake ninja rust pkgconf
 
-git clone https://github.com/spadxz/swiftify-blood-moon.git
-cd swiftify-blood-moon
+git clone https://github.com/spadxz/blood-moon.git
+cd blood-moon
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="$HOME/.local"
 cmake --build build
 cmake --install build
@@ -171,16 +173,16 @@ sudo apt-get install git qt6-base-dev qt6-declarative-dev qt6-shader-baker \
     libpulse-dev libasound2-dev libssl-dev cmake ninja-build pkg-config
 # install rust from https://rustup.rs if you dont have it
 
-git clone https://github.com/spadxz/swiftify-blood-moon.git
-cd swiftify-blood-moon
+git clone https://github.com/spadxz/blood-moon.git
+cd blood-moon
 ./tools/build-debian.sh
 ```
 
 or with `--install-deps` to install the dependencies automatically:
 
 ```sh
-git clone https://github.com/spadxz/swiftify-blood-moon.git
-cd swiftify-blood-moon
+git clone https://github.com/spadxz/blood-moon.git
+cd blood-moon
 ./tools/build-debian.sh --install-deps
 ```
 
@@ -211,8 +213,8 @@ workload, or Qt for *MinGW 64-bit* with its matching MinGW toolchain.
 then run this in Windows PowerShell:
 
 ```powershell
-git clone https://github.com/spadxz/swiftify-blood-moon.git
-Set-Location swiftify-blood-moon
+git clone https://github.com/spadxz/blood-moon.git
+Set-Location blood-moon
 .\tools\build-windows.ps1
 ```
 

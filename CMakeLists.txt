@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(Swiftify
+project(BloodMoon
     VERSION 0.17.1
-    DESCRIPTION "A native Spotify client"
+    DESCRIPTION "Blood Moon, a lightweight customizable desktop music player"
     LANGUAGES C CXX)
 
 if(WIN32)
@@ -219,7 +219,13 @@ qt_add_resources(swiftify_app "swiftify_translations"
 qt_add_resources(swiftify_app "swiftify_addons"
     PREFIX "/addons"
     BASE addons
-    FILES addons/lyrics-mini-player/manifest.json addons/lyrics-mini-player/LyricsMiniPlayer.qml)
+    FILES
+        addons/lyrics-mini-player/manifest.json
+        addons/lyrics-mini-player/LyricsMiniPlayer.qml
+        addons/liquid-lyrics/manifest.json
+        addons/liquid-lyrics/LiquidLyrics.qml
+        addons/oniko-cursor/manifest.json
+        addons/oniko-cursor/OnikoCursor.qml)
 qt_add_resources(swiftify_app "swiftify_blood_moon_background"
     PREFIX "/images"
     BASE resources
@@ -346,7 +352,7 @@ if(WIN32)
     if(SWIFTIFY_HAVE_SMTC)
         target_compile_definitions(swiftify_app PRIVATE SWIFTIFY_HAVE_SMTC)
     else()
-        message(WARNING "This toolchain's windows.media.h has no SystemMediaTransportControls, so Swiftify is "
+        message(WARNING "This toolchain's windows.media.h has no SystemMediaTransportControls, so Blood Moon is "
             "building without the Windows media controls (media overlay, lock screen, media keys). "
             "Build with MSVC, or a newer mingw-w64, for them; see the Windows section of README.md.")
     endif()

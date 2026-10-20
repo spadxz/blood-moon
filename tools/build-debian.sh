@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build-debian.sh - Build and install swiftify on Debian/Ubuntu
+# build-debian.sh - Build and install Blood Moon on Debian/Ubuntu
 #
 # Handles Qt 6.8 and 6.9 by patching out the QML features that need a newer Qt.
 # Run from the repository root or pass the repo path as an argument.
@@ -44,16 +44,16 @@ done
 # Find repo root
 if [[ -n "$REPO_DIR" ]]; then
     cd "$REPO_DIR"
-elif [[ -f "CMakeLists.txt" ]] && grep -q "project(Swiftify" CMakeLists.txt 2>/dev/null; then
+elif [[ -f "CMakeLists.txt" ]] && grep -q "project(BloodMoon" CMakeLists.txt 2>/dev/null; then
     : # already in repo root
-elif [[ -f "../CMakeLists.txt" ]] && grep -q "project(Swiftify" ../CMakeLists.txt 2>/dev/null; then
+elif [[ -f "../CMakeLists.txt" ]] && grep -q "project(BloodMoon" ../CMakeLists.txt 2>/dev/null; then
     cd ..
 else
-    error "Run this script from the swiftify repository root, or pass the path as an argument"
+    error "Run this script from the Blood Moon repository root, or pass the path as an argument"
 fi
 
 REPO_DIR="$(pwd)"
-log "Building swiftify in $REPO_DIR"
+log "Building Blood Moon in $REPO_DIR"
 
 # Check for required tools
 command -v cmake >/dev/null 2>&1 || error "cmake not found. Install it or run with --install-deps"
@@ -141,7 +141,7 @@ if [[ ":$PATH:" != *":$PREFIX/bin:"* ]]; then
     echo ""
 fi
 
-log "Done! Run 'swiftify' to start the app."
+log "Done! Launch Blood Moon from your desktop application menu."
 echo ""
 echo "Before first use:"
 echo "  1. You need Spotify Premium"
