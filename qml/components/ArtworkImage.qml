@@ -129,8 +129,8 @@ Item {
     // the scallops run round the edge while it is wavy, easing in and out
     Drift {
         id: waveDrift
-        active: Math.abs(root.waviness) > 0.01 && root.visible && !Settings.noShapes
-        speed: 2 * Math.PI / 2.4
+        active: Math.abs(root.waviness) > 0.01 && root.visible && !Settings.noShapes && !Appearance.reduceMotion
+        speed: 2 * Math.PI / 3.6
     }
 
     HoverHandler {

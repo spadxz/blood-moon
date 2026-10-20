@@ -1,6 +1,6 @@
-# Swiftify
+# Blood Moon
 
-a spotify player for desktop, built with Qt Quick on top of a Rust core that
+a Spotify desktop player, built with Qt Quick on top of a Rust core that
 wraps [librespot](https://github.com/librespot-org/librespot). it follows
 Material 3 Expressive (heavy inspo from end4) and has an immersive player,
 synced lyrics, visualizers, an equalizer, and local files with local playlists
@@ -25,7 +25,7 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
 </table>
 
 > ### Note
-> i will probably not be maintaining it, if you are interested in taking over this project you can send me an email
+> Blood Moon is a personal fork built on the Swiftify framework.
 
 - [Before you start](#before-you-start)
 - [Prebuilt builds](#prebuilt-builds)
@@ -43,14 +43,20 @@ first image shows equalizer, tempo and pitch settings. second picture shows how 
   web api through your own developer app. the first launch walks u through it:
   make an app in the [spotify developer dashboard](https://developer.spotify.com/dashboard),
   add `http://127.0.0.1:8898/login` as a redirect uri, and paste the apps client id
-  into swiftify. you dont need the client secret.
+  into Blood Moon. you dont need the client secret.
 
 ## Tutorials
+
+### Add-ons
+
+Install and manage the bundled Lyrics Mini Player or a downloaded add-on under
+**Settings → Add-ons**. Package format, API, and install steps are in
+[docs/add-ons.md](docs/add-ons.md).
 
 ### "spotify could not load this track" (soloist)
 
 spotify refuses librespot the keys to decrypt songs on newer accounts (librespot's
-logs say `error audio key 0 1`), so every song fails. on linux swiftify can play
+logs say `error audio key 0 1`), so every song fails. on linux Blood Moon can play
 spotify's songs through [spotify soloist](https://developer.spotify.com/documentation/soloist)
 instead, spotify's own connect client, which isnt affected.
 
@@ -58,12 +64,12 @@ instead, spotify's own connect client, which isnt affected.
    (`~/.local/bin/soloist` is fine)
 2. make a soloist api key in the [developer dashboard](https://developer.spotify.com/dashboard/soloist)
    and put it in `~/.config/soloist/api-key` (or `SOLOIST_API_KEY`)
-3. start swiftify. it starts soloist itself, as a connect device called "Swiftify".
-   the first time, pick "Swiftify" once in the devices list of the spotify desktop app on
+3. start Blood Moon. it starts soloist itself, as a connect device called "Blood Moon".
+   the first time, pick "Blood Moon" once in the devices list of the spotify desktop app on
    the same computer (or the phone app), so soloist is signed in
-4. press play in swiftify
+4. press play in Blood Moon
 
-with soloist, swiftify makes a sink called "Swiftify (Soloist)" for soloist to play into,
+with soloist, Blood Moon makes a sink called "Blood Moon (Soloist)" for soloist to play into,
 and plays that on through its own output, so the equalizer and the visualizers still work.
 this needs pipewire, under pulseaudio alone soloist plays straight to the speakers.
 `SWIFTIFY_SOLOIST_ROUTE=off` does that on purpose. tempo and pitch only work on your own
@@ -71,33 +77,32 @@ music files, and crossfade waits for each song to end. soloist builds expire aft
 download a new one when it says so.
 `SWIFTIFY_PLAYBACK=librespot swiftify` goes back to librespot alone.
 
-if spotify on your phone doesnt list "Swiftify" for step 3, a firewall (ufw) is probably
+if spotify on your phone doesnt list "Blood Moon" for step 3, a firewall (ufw) is probably
 dropping the pairing connection; pair from the spotify desktop app on the same computer.
 
 ### Discord RPC
 
 Enable under Settings → Account → Discord Rich Presence (disabled by default) to broadcast 
 your current track, artist, public album cover, and playback status to the Discord desktop app.
-This uses a standard listening activity named Swiftify; pauses freeze progress and display Paused. 
+This uses a standard listening activity named Blood Moon; pauses freeze progress and display Paused.
 Because this uses custom RPC rather than Spotify's official account integration, Listen Along is not supported.
 Ensure Discord’s own activity privacy settings allow game/activity status.
 To use Discord RPC you need to create an application on [Discord's Developer Portal](https://discord.com/developers/applications)
-and copy it's ID into the settings. Swiftify connects over local IPC (Unix sockets or Windows named pipes) with zero external
+and copy it's ID into the settings. Blood Moon connects over local IPC (Unix sockets or Windows named pipes) with zero external
 SDKs and automatic reconnection.
 It checks standard paths for native, Flatpak, Snap, Canary, PTB, and third-party clients like Vesktop.
 For more verbose logging run swiftify with `QT_LOGGING_RULES="swiftify.discord.debug=true"`
 
 ## Prebuilt builds
 
-[releases](https://github.com/shredos67/swiftify/releases) have windows and linux x86_64 builds,
-and a macos dmg for apple silicon.
+The [Blood Moon Releases](https://github.com/spadxz/swiftify-blood-moon/releases) page is the stable download source once a version is published. Until then, open [Actions](https://github.com/spadxz/swiftify-blood-moon/actions/workflows/prebuilt.yml), choose the latest successful `prebuilt` run on `main`, and download the artifact for your computer. Action artifacts are temporary; a versioned release is the better update channel.
 
 - **windows.** unzip it anywhere and run `bin\swiftify.exe`.
 - **linux.** unpack it anywhere and run `bin/swiftify`. it brings its own Qt, but needs
   alsa and libsecret, which pretty much every desktop already has.
-- **macos.** needs macos 14.4 or newer. open the dmg and drag swiftify into applications.
+- **macos.** needs macos 14.4 or newer. open the dmg and drag Blood Moon into Applications.
   its signed ad hoc, so the first launch gets blocked, open it anyway from system settings ›
-  privacy & security, or run `xattr -dr com.apple.quarantine /Applications/Swiftify.app`.
+  privacy & security, or run `xattr -dr com.apple.quarantine "/Applications/Blood Moon.app"`.
 
 ## Building from source
 
@@ -124,11 +129,11 @@ brew install qtbase qtdeclarative qtshadertools qtkeychain qcoro6 cmake ninja
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
 
-git clone https://github.com/shredos67/swiftify.git
-cd swiftify
+git clone https://github.com/spadxz/swiftify-blood-moon.git
+cd swiftify-blood-moon
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build
-ditto build/swiftify.app /Applications/Swiftify.app
+ditto build/swiftify.app "/Applications/Blood Moon.app"
 ```
 
 it's signed ad hoc, so no developer account needed.
@@ -140,8 +145,8 @@ dark and tinted looks; with just the command line tools it's built from the PNGs
 on arch either build a proper package, which installs to `/usr`:
 
 ```sh
-git clone https://github.com/shredos67/swiftify.git
-cd swiftify/packaging/arch
+git clone https://github.com/spadxz/swiftify-blood-moon.git
+cd swiftify-blood-moon/packaging/arch
 makepkg -si
 ```
 or use cmake:
@@ -150,8 +155,8 @@ or use cmake:
 # replace with your package manager if not on arch
 sudo pacman -S --needed git qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-websockets qtkeychain-qt6 qcoro libpulse alsa-lib openssl cmake ninja rust pkgconf
 
-git clone https://github.com/shredos67/swiftify.git
-cd swiftify
+git clone https://github.com/spadxz/swiftify-blood-moon.git
+cd swiftify-blood-moon
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="$HOME/.local"
 cmake --build build
 cmake --install build
@@ -166,16 +171,16 @@ sudo apt-get install git qt6-base-dev qt6-declarative-dev qt6-shader-baker \
     libpulse-dev libasound2-dev libssl-dev cmake ninja-build pkg-config
 # install rust from https://rustup.rs if you dont have it
 
-git clone https://github.com/shredos67/swiftify.git
-cd swiftify
+git clone https://github.com/spadxz/swiftify-blood-moon.git
+cd swiftify-blood-moon
 ./tools/build-debian.sh
 ```
 
 or with `--install-deps` to install the dependencies automatically:
 
 ```sh
-git clone https://github.com/shredos67/swiftify.git
-cd swiftify
+git clone https://github.com/spadxz/swiftify-blood-moon.git
+cd swiftify-blood-moon
 ./tools/build-debian.sh --install-deps
 ```
 
@@ -206,8 +211,8 @@ workload, or Qt for *MinGW 64-bit* with its matching MinGW toolchain.
 then run this in Windows PowerShell:
 
 ```powershell
-git clone https://github.com/shredos67/swiftify.git
-Set-Location swiftify
+git clone https://github.com/spadxz/swiftify-blood-moon.git
+Set-Location swiftify-blood-moon
 .\tools\build-windows.ps1
 ```
 
@@ -215,7 +220,7 @@ for a different Qt kit, toolchain location or install directory, pass overrides:
 
 ```powershell
 .\tools\build-windows.ps1 -QtPath 'C:\Qt\6.11.2\msvc2022_64'
-.\tools\build-windows.ps1 -QtPath 'C:\Qt\6.10.3\mingw_64' -MingwPath 'C:\Qt\Tools\mingw1310_64\bin' -InstallPrefix "$env:LOCALAPPDATA\Programs\Swiftify"
+.\tools\build-windows.ps1 -QtPath 'C:\Qt\6.10.3\mingw_64' -MingwPath 'C:\Qt\Tools\mingw1310_64\bin' -InstallPrefix "$env:LOCALAPPDATA\Programs\Blood Moon"
 ```
 
 adjust the example paths to your installed versions, MinGW must match your Qt
@@ -244,7 +249,7 @@ this applies only to that process, not your machine's execution policy.
 start the installed app with:
 
 ```powershell
-& "$env:LOCALAPPDATA\Programs\Swiftify\bin\swiftify.exe"
+& "$env:LOCALAPPDATA\Programs\Blood Moon\bin\swiftify.exe"
 ```
 
 font downloads are hash-checked on every configure; on Windows, a failed CMake

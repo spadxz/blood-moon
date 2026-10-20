@@ -58,7 +58,7 @@ Flickable {
             spacing: 6
 
             TitleText {
-                text: "Swiftify"
+                text: "Blood Moon"
                 font.pixelSize: Appearance.fontSize.display
                 font.weight: Font.Bold
                 font.letterSpacing: -0.8

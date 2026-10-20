@@ -234,7 +234,7 @@ struct WindowsIntegration::Native {
 
 void WindowsIntegration::initializeProcess()
 {
-    SetCurrentProcessExplicitAppUserModelID(L"dev.addenator.Swiftify.Qt");
+    SetCurrentProcessExplicitAppUserModelID(L"dev.addenator.BloodMoon.Qt");
 }
 
 void WindowsIntegration::setNativeTitleBar(QWindow *window, bool enabled)
@@ -320,6 +320,7 @@ void WindowsIntegration::setWindow(QWindow *window)
     if (!m_window) return;
     m_window->installEventFilter(this);
     m_window->create();
+    m_window->setIcon(QGuiApplication::windowIcon());
     attachWindow();
     connect(m_window, &QWindow::visibleChanged, this, [this](bool visible) {
         if (visible) {
@@ -334,6 +335,22 @@ void WindowsIntegration::setWindow(QWindow *window)
     styleWindow();
     QTimer::singleShot(0, this, &WindowsIntegration::initializeTaskbar);
     QTimer::singleShot(0, this, &WindowsIntegration::initializeMediaControls);
+}
+
+void WindowsIntegration::activateWindow()
+{
+    if (!m_window || !m_native) return;
+    if (!m_window->isVisible()) m_window->show();
+    const HWND handle = reinterpret_cast<HWND>(m_window->winId());
+    if (IsIconic(handle)) {
+        ShowWindow(handle, SW_RESTORE);
+    } else {
+        ShowWindow(handle, SW_SHOW);
+    }
+    m_window->raise();
+    m_window->requestActivate();
+    BringWindowToTop(handle);
+    SetForegroundWindow(handle);
 }
 
 void WindowsIntegration::attachWindow()
@@ -437,7 +454,7 @@ void WindowsIntegration::updateButtons()
         m_native->taskbar->ThumbBarUpdateButtons(handle, UINT(buttons.size()), buttons.data());
     }
     const Song song = m_player->currentSong();
-    const QString tooltip = m_player->hasSong() ? song.name + QStringLiteral(" — ") + song.artists : QStringLiteral("Swiftify");
+    const QString tooltip = m_player->hasSong() ? song.name + QStringLiteral(" — ") + song.artists : QStringLiteral("Blood Moon");
     m_native->taskbar->SetThumbnailTooltip(handle, reinterpret_cast<LPCWSTR>(tooltip.utf16()));
     updateProgress();
 }

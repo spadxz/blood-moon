@@ -51,7 +51,7 @@ Item {
 
         TitleText {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: "Swiftify"
+            text: "Blood Moon"
             font.pixelSize: Appearance.fontSize.headline
             font.weight: Font.Bold
         }

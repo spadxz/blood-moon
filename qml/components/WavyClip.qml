@@ -27,8 +27,8 @@ Item {
 
     Drift {
         id: drift
-        active: root.wavy && root.visible && !Settings.noShapes
-        speed: 2 * Math.PI / 2.4
+        active: root.wavy && root.visible && !Settings.noShapes && !Appearance.reduceMotion
+        speed: 2 * Math.PI / 3.6
     }
 
     Item {

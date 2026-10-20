@@ -1,4 +1,5 @@
 #include "app/AppController.h"
+#include "addons/AddonManager.h"
 #include "app/ErrorCenter.h"
 #include "app/Fonts.h"
 #include "app/Paths.h"
@@ -45,6 +46,7 @@
 #include <QIcon>
 #include <QPlatformSurfaceEvent>
 #include <QSet>
+#include <QTimer>
 #include <QWindow>
 #include <QNetworkAccessManager>
 #include <QQmlApplicationEngine>
@@ -203,17 +205,17 @@ private:
 #ifdef Q_OS_LINUX
 /// alsa audio streams routing through pipewire or pulseaudio default to generic
 /// labels like "PipeWire ALSA [swiftify]" or "PulseAudio ALSA [swiftify]".
-/// these variables tell their alsa plugins to present the stream as Swiftify
+/// these variables tell their alsa plugins to present the stream as Blood Moon
 /// with its application icon and music media role in pavucontrol and mixers
 void setupAudioEnvironment()
 {
     if (!qEnvironmentVariableIsSet("PIPEWIRE_ALSA")) {
         qputenv("PIPEWIRE_ALSA",
-                "{ application.name=\"Swiftify\" application.icon-name=\"swiftify\" node.name=\"Swiftify\" "
-                "node.description=\"Swiftify\" media.name=\"Playback\" media.role=\"music\" }");
+                "{ application.name=\"Blood Moon\" application.icon-name=\"swiftify\" node.name=\"Blood Moon\" "
+                "node.description=\"Blood Moon\" media.name=\"Playback\" media.role=\"music\" }");
     }
     if (!qEnvironmentVariableIsSet("PULSE_PROP")) {
-        qputenv("PULSE_PROP", "application.name=Swiftify application.icon_name=swiftify media.role=music");
+        qputenv("PULSE_PROP", "application.name=Blood Moon application.icon_name=swiftify media.role=music");
     }
 }
 #endif
@@ -233,7 +235,9 @@ int main(int argc, char *argv[])
     startCompact(argv);
 #endif
     tuneSceneGraph();
+    // Preserve the settings identity; expose Blood Moon as the product name.
     QGuiApplication::setApplicationName(QStringLiteral("Swiftify"));
+    QGuiApplication::setApplicationDisplayName(QStringLiteral("Blood Moon"));
     QGuiApplication::setApplicationVersion(QStringLiteral(SWIFTIFY_VERSION));
     // the wayland app id, which hyprland window rules and the .desktop file match.
     QGuiApplication::setDesktopFileName(QStringLiteral("swiftify"));
@@ -269,6 +273,10 @@ int main(int argc, char *argv[])
     fonts::loadInterfaceFont();
 
     Settings settings(nullptr);
+    // Add-ons are discovered before QML requests the singleton; keeping this
+    // object for the app lifetime also gives dynamically loaded components a
+    // stable manager instance.
+    AddonManager addons(nullptr);
     Translations translations(&settings);
     Theme theme(&settings);
     ErrorCenter errors(nullptr);
@@ -336,12 +344,15 @@ int main(int argc, char *argv[])
     QObject::connect(&translations, &Translations::languageChanged, &engine, &QQmlEngine::retranslate);
 #ifdef Q_OS_WIN
     WindowsIntegration windowsIntegration(&player, &theme);
+    QObject::connect(&app, &AppController::raiseRequested,
+                     &windowsIntegration, &WindowsIntegration::activateWindow);
     engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &windowsIntegration,
                      [&windowsIntegration](QObject *object, const QUrl &) {
         if (auto *window = qobject_cast<QWindow *>(object)) {
             windowsIntegration.setWindow(window);
             window->show();
+            QTimer::singleShot(0, &windowsIntegration, &WindowsIntegration::activateWindow);
         }
     });
 #endif

@@ -1,0 +1,13 @@
+{
+  "apiVersion": 1,
+  "id": "lyrics-mini-player",
+  "name": "Lyrics Mini Player",
+  "version": "1.0.0",
+  "description": "A compact floating player with synced lyrics, queue browsing, and playback controls.",
+  "extensions": [
+    {
+      "slot": "miniPlayer",
+      "entryPoint": "LyricsMiniPlayer.qml"
+    }
+  ]
+}

@@ -54,8 +54,8 @@ T.AbstractButton {
             visible: opacity > 0
             radius: height / 2
             wavy: root.selected && root.hovered
-            depth: 2
-            wavelength: 14
+            depth: 1.25
+            wavelength: 30
 
             Behavior on openness {
                 enabled: !Appearance.performanceMode
@@ -77,6 +77,15 @@ T.AbstractButton {
             }
         }
 
+        HoverSheen {
+            anchors.centerIn: pill
+            width: pill.width
+            height: pill.height
+            radius: height / 2
+            active: root.hovered && root.selected
+            z: 1
+        }
+
         Rectangle {
             anchors.fill: parent
             visible: root.visualFocus
@@ -84,6 +93,7 @@ T.AbstractButton {
             color: "transparent"
             border.width: 2
             border.color: Appearance.colors.secondary
+            z: 2
         }
     }
 

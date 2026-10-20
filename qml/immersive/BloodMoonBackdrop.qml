@@ -2,12 +2,21 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Swiftify
 
-// A black, clean backdrop with an original procedural blood moon and a warm
-// halo. It uses the same shader in the main window and immersive player.
-ShaderEffect {
+// The supplied eclipse photograph, upscaled from its original pixels and
+// fitted as a 4K backdrop for the main window and immersive player.
+Item {
     id: root
 
-    property size itemSize: Qt.size(width, height)
+    clip: true
 
-    fragmentShader: "qrc:/shaders/blood_moon.frag.qsb"
+    Image {
+        anchors.fill: parent
+        source: Appearance.bloodMoon ? "qrc:/images/blood-moon-background.png" : ""
+        sourceSize: Qt.size(3840, 2160)
+        fillMode: Image.PreserveAspectCrop
+        asynchronous: true
+        smooth: true
+        mipmap: true
+        cache: true
+    }
 }

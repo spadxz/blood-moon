@@ -13,10 +13,10 @@ T.Popup {
 
     property int page: 0
     readonly property list<string> titles: [qsTr("Visualizer"), qsTr("Background"), qsTr("Playback"), qsTr("Files"), qsTr("Appearance"), qsTr("Performance"),
-                                            qsTr("Account"), qsTr("About")]
+                                            qsTr("Account"), qsTr("About"), qsTr("Add-ons")]
     readonly property list<string> symbols: ["graphic_eq", "wallpaper", "play_circle", "folder", "palette", "speed",
-                                             "account_circle", "info"]
-    readonly property list<string> shapes: ["sunny", "flower", "cookie9", "softBoom", "clover4", "gem", "cookie12", "heart"]
+                                             "account_circle", "info", "extension"]
+    readonly property list<string> shapes: ["sunny", "flower", "cookie9", "softBoom", "clover4", "gem", "cookie12", "heart", "gem"]
 
     parent: T.Overlay.overlay
     anchors.centerIn: parent

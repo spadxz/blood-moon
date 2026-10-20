@@ -46,7 +46,7 @@ Item {
         scale: root.hovered ? 1.015 : 1
         // hidden while a cover flies home to it
         opacity: UiState.heroTarget === art ? 0 : 1
-        waviness: root.wavy ? 3.5 : 0
+        waviness: root.wavy ? 2.2 : 0
         borderWidth: root.current ? 2 : 0
         borderColor: Appearance.colors.primary
         // a round cover's squiggle runs while the card is hovered
@@ -60,6 +60,12 @@ Item {
         Behavior on scale {
             NumberAnimation { duration: Appearance.motion(160); easing.type: Easing.OutCubic }
         }
+    }
+
+    HoverSheen {
+        anchors.fill: art
+        radius: root.effectiveRadius
+        active: root.hovered
     }
 
     Rectangle {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# builds an arm64 swiftify.app with qt bundled, signed ad hoc, in a dmg,
+# builds the Blood Moon app for arm64 with Qt bundled, signed ad hoc, in a dmg,
 # against a qt kit from the qt installer or aqtinstall
 #
 # usage
@@ -41,12 +41,12 @@ done
 SOURCE="$(cd "$(dirname "$0")/.." && pwd)"
 VERSION="$(sed -n '/^project(Swiftify/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' "$SOURCE/CMakeLists.txt")"
 [[ -n "$VERSION" ]] || fail "could not read the version from CMakeLists.txt"
-NAME="swiftify-$VERSION-macos-arm64"
+NAME="blood-moon-$VERSION-macos-arm64"
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 WORK="$SOURCE/build-macos-dmg"
 DEPS="$WORK/deps"
-APP="$WORK/Swiftify.app"
+APP="$WORK/Blood Moon.app"
 mkdir -p "$WORK/sources"
 
 # the oldest macos the kit's qt runs on, which the app can't go below
@@ -137,11 +137,11 @@ done < <(find "$APP" -type f -print0)
 STAGE="$WORK/dmg"
 rm -rf "${STAGE:?}"
 mkdir -p "$STAGE"
-ditto "$APP" "$STAGE/Swiftify.app"
+ditto "$APP" "$STAGE/Blood Moon.app"
 ln -s /Applications "$STAGE/Applications"
 rm -f "$OUT/$NAME.dmg"
 for attempt in 1 2 3; do
-    if hdiutil create -volname Swiftify -srcfolder "$STAGE" -fs HFS+ -format UDZO "$OUT/$NAME.dmg"; then
+    if hdiutil create -volname "Blood Moon" -srcfolder "$STAGE" -fs HFS+ -format UDZO "$OUT/$NAME.dmg"; then
         break
     fi
     [[ $attempt -lt 3 ]] || fail "hdiutil could not make the dmg"

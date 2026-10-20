@@ -237,7 +237,7 @@ private:
     bool m_reduceMotion = false;
     bool m_performanceMode = false;
     bool m_noShapes = false;
-    QString m_themeSource = QStringLiteral("spotify");
+    QString m_themeSource = QStringLiteral("blood-moon");
     QString m_themeMode = QStringLiteral("system");
     QString m_matugenColorsPath = QString();
     bool m_showWindowControls = true;

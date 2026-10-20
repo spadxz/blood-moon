@@ -3,7 +3,7 @@ param(
     [string]$QtPath,
     [string]$MingwPath,
     [string]$BuildRoot,
-    [string]$InstallPrefix = "$env:LOCALAPPDATA\Programs\Swiftify",
+    [string]$InstallPrefix = "$env:LOCALAPPDATA\Programs\Blood Moon",
     [ValidateRange(1, 256)]
     [int]$Jobs = [Math]::Max(1, [Math]::Min(8, [Environment]::ProcessorCount))
 )
@@ -250,7 +250,7 @@ function Invoke-WindowsBuild {
             Invoke-Native $cmake @('--install', $dependencyBuild) | Out-Host
         }
 
-        Write-Host 'Building Swiftify...'
+        Write-Host 'Building Blood Moon...'
         $appBuild = Join-Path $buildDirectory 'swiftify'
         Invoke-Native $cmake (@('-S', $sourceRoot, '-B', $appBuild) + $commonOptions + @("-DRust_TOOLCHAIN=$rustToolchain", "-DRust_CARGO_TARGET=$rustTarget", "-DCMAKE_INSTALL_PREFIX=$($InstallPrefix.Replace('\', '/'))")) | Out-Host
         Invoke-Native $cmake @('--build', $appBuild, '--parallel', "$Jobs") | Out-Host
@@ -281,7 +281,7 @@ function Invoke-WindowsBuild {
                 Copy-Item -LiteralPath $runtimePath -Destination $installBin -Force
             }
         }
-        Write-Host "Installed Swiftify. Run: & `"$executable`""
+        Write-Host "Installed Blood Moon. Run: & `"$executable`""
     } finally {
         foreach ($entry in Get-ChildItem Env:) {
             if (-not $originalEnvironment.ContainsKey($entry.Name)) {

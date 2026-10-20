@@ -41,14 +41,25 @@ T.AbstractButton {
 
     onClicked: Player.playFromModel(songs, index, fromSearch)
 
-    background: Rectangle {
-        radius: 8
-        color: root.isCurrent ? Qt.alpha(Appearance.colors.primary, 0.07)
-             : root.hovered ? Qt.alpha(Appearance.colors.onSurface, 0.05)
-             : Qt.alpha(Appearance.colors.onSurface, 0)
+    background: Item {
+        clip: true
 
-        Behavior on color {
-            ColorAnimation { duration: Appearance.duration(120) }
+        Rectangle {
+            anchors.fill: parent
+            radius: 8
+            color: root.isCurrent ? Qt.alpha(Appearance.colors.primary, 0.07)
+                 : root.hovered ? Qt.alpha(Appearance.colors.onSurface, 0.05)
+                 : Qt.alpha(Appearance.colors.onSurface, 0)
+
+            Behavior on color {
+                ColorAnimation { duration: Appearance.duration(120) }
+            }
+        }
+
+        HoverSheen {
+            anchors.fill: parent
+            radius: 8
+            active: root.hovered
         }
     }
 

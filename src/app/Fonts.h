@@ -11,13 +11,12 @@ void loadIconFont();
 /// "Material Symbols Rounded"
 QString iconFamily();
 
-/// makes google sans flex available, from the system or beside swiftify:
-/// the interface's face, and its titles drawn round through its variable
-/// axes (TitleText). before interfaceFamily() is first asked.
+/// prefers OPPO Sans when installed locally, then makes Google Sans Flex
+/// available from the system or beside swiftify before interfaceFamily().
 void loadInterfaceFont();
 
-/// the first installed face of end4's google sans flex, google sans, rubik,
-/// inter and noto sans, or the platform default.
+/// OPPO Sans when installed, then Google Sans Flex, Google Sans, Rubik, Inter,
+/// Noto Sans, or the platform default.
 QString interfaceFamily();
 /// the platform's own fixed-width face: a generic name like "monospace"
 /// means nothing to macos, which then searches every family for it

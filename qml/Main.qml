@@ -38,7 +38,7 @@ ApplicationWindow {
         target: Player
         function onPanelsChanged() { window.closeCrowdedPanels() }
     }
-    title: "Swiftify"
+    title: "Blood Moon"
     // on linux the app draws its whole frame. on macos the content runs under
     // a transparent title bar that keeps the traffic lights and nothing else.
     flags: App.macOS ? Qt.Window | Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint
@@ -293,11 +293,11 @@ ApplicationWindow {
             anchors.topMargin: 8
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
-            radius: Appearance.rounding.large
-            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.78)
+            radius: Appearance.rounding.window
+            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.70)
                                         : Appearance.colors.layer1
             border.width: Appearance.bloodMoon ? 1 : 0
-            border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.91, 0.96, 0.34)
+            border.color: Appearance.bloodMoon ? Qt.rgba(0.82, 0.84, 0.90, 0.24)
                                                : "transparent"
 
             Rectangle {
@@ -305,9 +305,9 @@ ApplicationWindow {
                 radius: parent.radius
                 visible: Appearance.bloodMoon
                 gradient: Gradient {
-                    GradientStop { position: 0; color: Qt.rgba(1, 0.94, 0.97, 0.09) }
-                    GradientStop { position: 0.24; color: Qt.rgba(0.72, 0.11, 0.20, 0.035) }
-                    GradientStop { position: 1; color: Qt.rgba(0.015, 0.005, 0.01, 0.16) }
+                    GradientStop { position: 0; color: Qt.rgba(1, 0.97, 1, 0.065) }
+                    GradientStop { position: 0.24; color: Qt.rgba(0.56, 0.035, 0.09, 0.022) }
+                    GradientStop { position: 1; color: Qt.rgba(0.005, 0.006, 0.01, 0.14) }
                 }
             }
 
@@ -320,8 +320,8 @@ ApplicationWindow {
                 visible: Appearance.bloodMoon
                 gradient: Gradient {
                     GradientStop { position: 0; color: "transparent" }
-                    GradientStop { position: 0.22; color: Qt.rgba(1, 0.98, 1, 0.58) }
-                    GradientStop { position: 0.72; color: Qt.rgba(1, 0.72, 0.78, 0.4) }
+                    GradientStop { position: 0.22; color: Qt.rgba(0.96, 0.97, 1, 0.36) }
+                    GradientStop { position: 0.72; color: Qt.rgba(0.62, 0.10, 0.18, 0.24) }
                     GradientStop { position: 1; color: "transparent" }
                 }
             }
@@ -824,7 +824,7 @@ ApplicationWindow {
             objectName: "swiftifyTrayIcon"
             visible: true
             icon.source: "qrc:/qt/qml/Swiftify/resources/swiftify-icon.png"
-            tooltip: Player.hasSong ? Player.currentSong.name + " — " + Player.currentSong.artists : "Swiftify"
+            tooltip: Player.hasSong ? Player.currentSong.name + " — " + Player.currentSong.artists : "Blood Moon"
             onActivated: (reason) => {
                 if (reason === Platform.SystemTrayIcon.Trigger || reason === Platform.SystemTrayIcon.DoubleClick) {
                     window.reveal()
@@ -833,7 +833,7 @@ ApplicationWindow {
 
             menu: Platform.Menu {
                 Platform.MenuItem {
-                    text: qsTr("Show Swiftify")
+                    text: qsTr("Show Blood Moon")
                     onTriggered: window.reveal()
                 }
                 Platform.MenuItem {
@@ -843,7 +843,7 @@ ApplicationWindow {
                 }
                 Platform.MenuSeparator {}
                 Platform.MenuItem {
-                    text: qsTr("Quit Swiftify")
+                    text: qsTr("Quit Blood Moon")
                     onTriggered: App.quit()
                 }
             }
@@ -953,5 +953,9 @@ ApplicationWindow {
             onZoomRequested: window.visibility === Window.Maximized ? window.showNormal() : window.showMaximized()
             onShowWindowRequested: window.reveal()
         }
+    }
+
+    MiniPlayerWindow {
+        transientParentWindow: window
     }
 }

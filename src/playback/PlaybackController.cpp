@@ -510,7 +510,7 @@ void PlaybackController::playLoadingTest()
 {
     Song song;
     song.name = QStringLiteral("Loading Test");
-    song.artists = QStringLiteral("Swiftify");
+    song.artists = QStringLiteral("Blood Moon");
     song.albumName = QStringLiteral("Debugging");
     song.uri = QString::fromLatin1(kLoadingTestUri);
     song.durationMs = 180'000;

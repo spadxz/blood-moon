@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Dialogs
 import Swiftify
 
 // the settings themselves (SwiftifySettingsView), one page per rail
@@ -11,6 +12,9 @@ Item {
     id: root
 
     property int page: 0
+    property string addOnMessage: ""
+    property string pendingRemoveId: ""
+    property string pendingRemoveName: ""
     readonly property list<string> fades: ["none", "finalSeconds", "entire"]
     readonly property list<int> qualities: [96, 160, 320]
     readonly property list<int> cacheSizes: [500, 1000, 2000]
@@ -487,7 +491,7 @@ Item {
                 }
                 NoteText {
                     text: App.windows
-                        ? qsTr("closing the window keeps Swiftify running in the tray. choose Quit Swiftify from the tray menu to exit.")
+                        ? qsTr("closing the window keeps Blood Moon running in the tray. choose Quit Blood Moon from the tray menu to exit.")
                         : qsTr("window buttons are for desktops that draw none of their own, Hyprland closes and moves windows itself")
                 }
             }
@@ -657,7 +661,7 @@ Item {
                     headline: qsTr("Log Out of Spotify?")
                     symbol: "logout"
                     iconShape: "ghostish"
-                    body: qsTr("swiftify forgets your library and playback logins on this computer. you can connect again any time.")
+                    body: qsTr("Blood Moon forgets your library and playback logins on this computer. you can connect again any time.")
 
                     buttons: [
                         TextButton {
@@ -711,7 +715,7 @@ Item {
                 }
                 NoteText {
                     text: Session.libraryNeedsAuthorizationUpgrade
-                          ? qsTr("reconnect once to let Swiftify edit playlists and save songs")
+                          ? qsTr("reconnect once to let Blood Moon edit playlists and save songs")
                           : qsTr("your playlists, saved songs and search come through the Spotify app whose Client ID is above.")
                 }
             }
@@ -816,7 +820,7 @@ Item {
                         spacing: 2
 
                         StyledText {
-                            text: "Swiftify " + App.version
+                            text: "Blood Moon " + App.version
                             font.weight: Font.Medium
 
                             TapHandler {
@@ -852,5 +856,214 @@ Item {
                 }
             }
         }
+
+        Page {
+            visible: root.page === 8
+
+            ContentSection {
+                title: qsTr("Installed Add-ons")
+                symbol: "extension"
+
+                Repeater {
+                    model: Addons.installedAddons
+
+                    delegate: Column {
+                        required property var modelData
+                        width: parent.width
+                        spacing: 6
+
+                        Row {
+                            width: parent.width
+                            spacing: 8
+
+                            Column {
+                                width: parent.width - actions.width - 8
+                                spacing: 2
+
+                                StyledText {
+                                    width: parent.width
+                                    text: modelData.name + "  ·  " + modelData.version
+                                    font.weight: Font.DemiBold
+                                    elide: Text.ElideRight
+                                }
+                                StyledText {
+                                    width: parent.width
+                                    text: modelData.description
+                                    color: Appearance.colors.onSurfaceVariant
+                                    font.pixelSize: Appearance.fontSize.smaller
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+
+                            Flow {
+                                id: actions
+                                spacing: 4
+
+                                TextButton {
+                                    visible: modelData.slots.indexOf("miniPlayer") >= 0
+                                    enabled: modelData.enabled
+                                    variant: TextButton.Tonal
+                                    symbol: "open_in_new"
+                                    text: qsTr("Open")
+                                    onClicked: {
+                                        if (!Addons.openMiniPlayer(modelData.id)) {
+                                            root.addOnMessage = qsTr("This add-on cannot open a mini-player.")
+                                        }
+                                    }
+                                }
+                                TextButton {
+                                    variant: TextButton.Text
+                                    symbol: "delete"
+                                    text: qsTr("Remove")
+                                    onClicked: {
+                                        root.pendingRemoveId = modelData.id
+                                        root.pendingRemoveName = modelData.name
+                                        removeAddOnDialog.open()
+                                    }
+                                }
+                            }
+                        }
+
+                        ConfigSwitch {
+                            text: qsTr("Enabled")
+                            checked: modelData.enabled
+                            onToggledTo: (checked) => Addons.setEnabled(modelData.id, checked)
+                        }
+                        StyledText {
+                            x: 12
+                            width: parent.width - 24
+                            text: qsTr("Extension points: %1").arg(modelData.slots.join(", "))
+                            font.pixelSize: Appearance.fontSize.smaller
+                            color: Appearance.colors.outline
+                        }
+                    }
+                }
+
+                StyledText {
+                    x: 12
+                    visible: Addons.installedAddons.length === 0
+                    text: qsTr("No add-ons installed yet.")
+                    color: Appearance.colors.onSurfaceVariant
+                }
+            }
+
+            ContentSection {
+                title: qsTr("Get Add-ons")
+                symbol: "download"
+
+                Flow {
+                    x: 8
+                    width: parent.width - 16
+                    spacing: 8
+                    topPadding: 4
+
+                    TextButton {
+                        variant: TextButton.Tonal
+                        symbol: "folder_open"
+                        text: qsTr("Install from Folder…")
+                        onClicked: addOnFolderDialog.open()
+                    }
+                }
+
+                Repeater {
+                    model: Addons.availableAddons
+
+                    delegate: Column {
+                        required property var modelData
+                        width: parent.width
+                        spacing: 6
+
+                        StyledText {
+                            x: 12
+                            width: parent.width - 24
+                            text: modelData.name + "  ·  " + modelData.version
+                            font.weight: Font.DemiBold
+                        }
+                        StyledText {
+                            x: 12
+                            width: parent.width - 24
+                            text: modelData.description
+                            color: Appearance.colors.onSurfaceVariant
+                            font.pixelSize: Appearance.fontSize.smaller
+                            wrapMode: Text.Wrap
+                        }
+                        TextButton {
+                            x: 8
+                            variant: TextButton.Tonal
+                            symbol: "add"
+                            text: qsTr("Install")
+                            onClicked: {
+                                root.addOnMessage = Addons.installBundled(modelData.id)
+                                UiState.toastRequested(root.addOnMessage)
+                            }
+                        }
+                    }
+                }
+
+                StyledText {
+                    x: 12
+                    visible: Addons.availableAddons.length === 0
+                    text: qsTr("There are no bundled add-ons waiting to be installed.")
+                    color: Appearance.colors.onSurfaceVariant
+                }
+            }
+
+            ContentSection {
+                title: qsTr("Add-on Safety")
+                symbol: "verified_user"
+
+                NoteText {
+                    text: qsTr("Add-ons are QML code with access to Blood Moon's app APIs. Only install packages from people you trust. To install a downloaded package, extract it first and choose the folder containing manifest.json.")
+                }
+                StyledText {
+                    x: 12
+                    width: parent.width - 24
+                    visible: root.addOnMessage.length > 0
+                    text: root.addOnMessage
+                    color: Appearance.colors.primary
+                    wrapMode: Text.Wrap
+                }
+                StyledText {
+                    x: 12
+                    width: parent.width - 24
+                    text: qsTr("Packages are stored in %1").arg(Addons.installDirectory)
+                    font.pixelSize: Appearance.fontSize.smaller
+                    color: Appearance.colors.outline
+                    wrapMode: Text.WrapAnywhere
+                }
+            }
+        }
+    }
+
+    FolderDialog {
+        id: addOnFolderDialog
+        title: qsTr("Choose an Add-on Folder")
+        onAccepted: {
+            root.addOnMessage = Addons.installFromFolder(selectedFolder)
+            UiState.toastRequested(root.addOnMessage)
+        }
+    }
+
+    StyledDialog {
+        id: removeAddOnDialog
+        headline: qsTr("Remove Add-on?")
+        symbol: "extension"
+        body: qsTr("Remove %1 and delete its installed files?").arg(root.pendingRemoveName)
+        buttons: [
+            TextButton {
+                variant: TextButton.Tonal
+                text: qsTr("Remove")
+                onClicked: {
+                    root.addOnMessage = Addons.remove(root.pendingRemoveId)
+                    UiState.toastRequested(root.addOnMessage)
+                    removeAddOnDialog.accept()
+                }
+            },
+            TextButton {
+                variant: TextButton.Text
+                text: qsTr("Cancel")
+                onClicked: removeAddOnDialog.close()
+            }
+        ]
     }
 }

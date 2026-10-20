@@ -14,6 +14,8 @@ namespace {
 
 constexpr auto kIconFamily = "Material Symbols Rounded";
 constexpr auto kIconFile = "MaterialSymbolsRounded.ttf";
+constexpr auto kColorOsFamily = "OPPO Sans 4.0";
+constexpr auto kColorOsFile = "OPPO Sans 4.0.ttf";
 constexpr auto kInterfaceFamily = "Google Sans Flex";
 constexpr auto kInterfaceFile = "GoogleSansFlex.ttf";
 
@@ -53,6 +55,9 @@ void loadIconFont()
 
 void loadInterfaceFont()
 {
+    if (loadBundled(kColorOsFamily, kColorOsFile)) {
+        return;
+    }
     if (!loadBundled(kInterfaceFamily, kInterfaceFile)) {
         qCInfo(lcFonts) << "Google Sans Flex is not installed; text uses the next face along, and titles are not rounded";
     }
@@ -67,7 +72,7 @@ QString interfaceFamily()
 {
     static const QString family = [] {
         const QStringList installed = QFontDatabase::families();
-        for (const auto *candidate : {"Google Sans Flex", "Google Sans", "Rubik", "Inter", "Noto Sans"}) {
+        for (const auto *candidate : {"OPPO Sans 4.0", "OPPO Sans", "Google Sans Flex", "Google Sans", "Rubik", "Inter", "Noto Sans"}) {
             if (installed.contains(QLatin1StringView(candidate))) {
                 return QString::fromLatin1(candidate);
             }

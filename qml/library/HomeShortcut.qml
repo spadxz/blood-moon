@@ -29,8 +29,8 @@ T.AbstractButton {
     background: WavyClip {
         radius: 16
         wavy: root.hovered
-        depth: 2.5
-        wavelength: 18
+        depth: 1.7
+        wavelength: 30
 
         Rectangle {
             anchors.fill: parent
@@ -41,6 +41,12 @@ T.AbstractButton {
             Behavior on color {
                 ElementMoveFastColor {}
             }
+        }
+
+        HoverSheen {
+            anchors.fill: parent
+            radius: 16
+            active: root.hovered
         }
     }
 

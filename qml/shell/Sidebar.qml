@@ -19,16 +19,16 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: Appearance.rounding.large
+        radius: Appearance.rounding.window
         visible: Appearance.bloodMoon
-        color: Qt.alpha(Appearance.colors.layer1, 0.62)
+        color: Qt.alpha(Appearance.colors.layer1, 0.68)
         border.width: 1
-        border.color: Qt.rgba(0.94, 0.92, 1, 0.46)
+        border.color: Qt.rgba(0.82, 0.84, 0.90, 0.25)
         gradient: Gradient {
-            GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.13) }
-            GradientStop { position: 0.28; color: Qt.rgba(0.75, 0.68, 0.8, 0.045) }
-            GradientStop { position: 0.64; color: Qt.rgba(0.44, 0.015, 0.08, 0.025) }
-            GradientStop { position: 1; color: Qt.rgba(0.12, 0, 0.025, 0.13) }
+            GradientStop { position: 0; color: Qt.rgba(1, 0.97, 1, 0.075) }
+            GradientStop { position: 0.28; color: Qt.rgba(0.65, 0.66, 0.72, 0.025) }
+            GradientStop { position: 0.64; color: Qt.rgba(0.42, 0.012, 0.06, 0.025) }
+            GradientStop { position: 1; color: Qt.rgba(0.01, 0.005, 0.01, 0.13) }
         }
     }
 

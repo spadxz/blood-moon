@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# builds a self contained linux x86_64 tarball of swiftify, with qt and its
+# builds a self contained Linux x86_64 tarball of Blood Moon, with Qt and its
 # libraries bundled, against a qt kit from the qt installer or aqtinstall
 #
 # usage
@@ -43,7 +43,7 @@ done
 SOURCE="$(cd "$(dirname "$0")/.." && pwd)"
 VERSION="$(sed -n '/^project(Swiftify/,/VERSION/s/^ *VERSION \([0-9.]*\).*/\1/p' "$SOURCE/CMakeLists.txt")"
 [[ -n "$VERSION" ]] || fail "could not read the version from CMakeLists.txt"
-NAME="swiftify-$VERSION-linux-x86_64"
+NAME="blood-moon-$VERSION-linux-x86_64"
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 WORK="$SOURCE/build-linux-tarball"

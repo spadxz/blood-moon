@@ -324,7 +324,7 @@ void DiscordPresence::update()
     const QString title = fitText(song.name);
     const bool playing = m_player->isPlaying();
     QJsonObject activity {{QStringLiteral("type"), 2},
-                          {QStringLiteral("name"), QStringLiteral("Swiftify")},
+                          {QStringLiteral("name"), QStringLiteral("Blood Moon")},
                           {QStringLiteral("details"), title.isEmpty() ? QStringLiteral("Listening to music") : title},
                           {QStringLiteral("instance"), false}};
     const QString state = fitText(playing ? song.artists

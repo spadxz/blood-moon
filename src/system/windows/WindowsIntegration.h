@@ -23,6 +23,8 @@ public:
     static void initializeProcess();
     static void setNativeTitleBar(QWindow *window, bool enabled);
     void setWindow(QWindow *window);
+    /// Restore and raise the main window after a user launches another instance.
+    void activateWindow();
     bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
     bool eventFilter(QObject *watched, QEvent *event) override;
 

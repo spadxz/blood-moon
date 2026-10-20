@@ -5,6 +5,10 @@ project(Swiftify
     DESCRIPTION "A native Spotify client"
     LANGUAGES C CXX)
 
+if(WIN32)
+    enable_language(RC)
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -212,6 +216,14 @@ qt_add_resources(swiftify_app "swiftify_translations"
     PREFIX "/translations"
     BASE translations
     FILES translations/ru.json)
+qt_add_resources(swiftify_app "swiftify_addons"
+    PREFIX "/addons"
+    BASE addons
+    FILES addons/lyrics-mini-player/manifest.json addons/lyrics-mini-player/LyricsMiniPlayer.qml)
+qt_add_resources(swiftify_app "swiftify_blood_moon_background"
+    PREFIX "/images"
+    BASE resources
+    FILES resources/blood-moon-background.png)
 qt_add_qml_module(swiftify_app
     URI Swiftify
     VERSION 1.0
@@ -342,6 +354,10 @@ endif()
 
 qt_add_executable(swiftify src/main.cpp)
 target_link_libraries(swiftify PRIVATE swiftify_app swiftify_appplugin)
+if(WIN32)
+    configure_file(packaging/icons/swiftify.rc.in "${CMAKE_CURRENT_BINARY_DIR}/swiftify.rc" @ONLY)
+    target_sources(swiftify PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/swiftify.rc")
+endif()
 if(SWIFTIFY_IS_LINUX)
     target_link_libraries(swiftify PRIVATE Qt6::Widgets)
 endif()
@@ -411,7 +427,7 @@ if(APPLE)
     set_target_properties(swiftify PROPERTIES
         MACOSX_BUNDLE ON
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in
-        MACOSX_BUNDLE_BUNDLE_NAME Swiftify
+        MACOSX_BUNDLE_BUNDLE_NAME "Blood Moon"
         MACOSX_BUNDLE_GUI_IDENTIFIER dev.addenator.Swiftify.Qt
         MACOSX_BUNDLE_ICON_FILE swiftify.icns
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}

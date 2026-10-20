@@ -35,7 +35,7 @@ jobs:
             echo "the tag $GITHUB_REF_NAME does not match the version $version in CMakeLists.txt" >&2
             exit 1
           fi
-          echo "name=swiftify-$version-windows-x86_64" >> "$GITHUB_OUTPUT"
+          echo "name=blood-moon-$version-windows-x86_64" >> "$GITHUB_OUTPUT"
 
       # as ctest runs it. the test runs a failing command on purpose, which a
       # plain pwsh step would report as its own exit code

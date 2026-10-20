@@ -21,7 +21,7 @@ Platform.MenuBar {
         title: qsTr("File")
 
         Platform.MenuItem {
-            text: qsTr("About Swiftify")
+            text: qsTr("About Blood Moon")
             role: Platform.MenuItem.AboutRole
             onTriggered: UiState.settingsRequested()
         }
@@ -32,7 +32,7 @@ Platform.MenuBar {
             onTriggered: UiState.settingsRequested()
         }
         Platform.MenuItem {
-            text: qsTr("Quit Swiftify")
+            text: qsTr("Quit Blood Moon")
             role: Platform.MenuItem.QuitRole
             shortcut: StandardKey.Quit
             onTriggered: App.quit()
@@ -221,7 +221,7 @@ Platform.MenuBar {
         }
         Platform.MenuSeparator {}
         Platform.MenuItem {
-            text: "Swiftify"
+            text: "Blood Moon"
             onTriggered: root.showWindowRequested()
         }
     }
