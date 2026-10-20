@@ -645,7 +645,12 @@ impl SpClient {
     }
 
     pub async fn get_lyrics(&self, track_id: &SpotifyId) -> SpClientResult {
-        let endpoint = format!("/color-lyrics/v2/track/{}", track_id.to_base62()?);
+        // Lyrics are market-specific. Resolve against the signed-in account's
+        // market and explicitly request the JSON response the decoder expects.
+        let endpoint = format!(
+            "/color-lyrics/v2/track/{}?format=json&market=from_token&vocalRemoval=false",
+            track_id.to_base62()?
+        );
 
         self.request_as_json(&Method::GET, &endpoint, None, None)
             .await
