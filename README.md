@@ -100,9 +100,9 @@ For more verbose logging run scarlett with `QT_LOGGING_RULES="scarlett.discord.d
 
 ## Prebuilt builds
 
-The [Scarlett Releases](https://github.com/spadxz/scarlett/releases) page is the stable download source once a version is published. Until then, open [Actions](https://github.com/spadxz/scarlett/actions/workflows/prebuilt.yml), choose the latest successful `prebuilt` run on `main`, and download the artifact for your computer. Action artifacts are temporary; a versioned release is the better update channel.
+The [Scarlett Releases](https://github.com/spadxz/scarlett/releases) page will host reviewed versioned downloads. The build workflow creates a Windows setup installer and portable archive, a Linux archive, and a macOS DMG. Tag builds create a draft release for manual review. No official release is published yet; see [the project’s license status](docs/PROVENANCE.md) before redistributing builds.
 
-- **windows.** unzip it anywhere and run `bin\scarlett.exe`.
+- **windows installer.** run `scarlett-<version>-windows-x86_64-setup.exe`; it installs per-user under `%LOCALAPPDATA%\Programs\Scarlett`. The portable ZIP can be unpacked anywhere and started with `bin\scarlett.exe`.
 - **linux.** unpack it anywhere and run `bin/scarlett`. it brings its own Qt, but needs
   alsa and libsecret, which pretty much every desktop already has.
 - **macos.** needs macos 14.4 or newer. open the dmg and drag Scarlett into Applications.

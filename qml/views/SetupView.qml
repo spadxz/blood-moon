@@ -58,13 +58,6 @@ Flickable {
         }
     }
 
-    Stickers {
-        width: root.width
-        height: Math.max(root.height, column.y + column.height)
-        key: "setup"
-        count: 6
-    }
-
     Column {
         id: column
         anchors.horizontalCenter: parent.horizontalCenter
@@ -193,6 +186,36 @@ Flickable {
             font.pixelSize: Appearance.fontSize.smaller
             color: Session.libraryConnected !== Session.connected ? Appearance.colors.primary
                                                                   : Appearance.colors.onSurfaceVariant
+        }
+
+        Rectangle {
+            width: parent.width
+            implicitHeight: quickStart.implicitHeight + 24
+            radius: Appearance.rounding.medium
+            color: Qt.alpha(Appearance.colors.surfaceContainerHigh, 0.78)
+            border.width: 1
+            border.color: Appearance.colors.outlineVariant
+
+            Column {
+                id: quickStart
+                x: 14
+                y: 12
+                width: parent.width - 28
+                spacing: 5
+
+                StyledText {
+                    width: parent.width
+                    text: qsTr("Other connections, whenever you're ready")
+                    font.weight: Font.DemiBold
+                }
+                StyledText {
+                    width: parent.width
+                    text: qsTr("Local music: open Local Files or drag in a folder. Add-ons: Settings → Add-ons for the lyrics mini-player, Liquid Lyrics, and Oniko. Choose headphones or speakers in Settings → Playback. Discord Rich Presence is optional in Settings → Account and requires a Discord Application ID.")
+                    wrapMode: Text.Wrap
+                    color: Appearance.colors.onSurfaceVariant
+                    font.pixelSize: Appearance.fontSize.smallie
+                }
+            }
         }
     }
 }

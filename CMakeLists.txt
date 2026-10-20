@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(Scarlett
-    VERSION 0.17.1
+    VERSION 0.18.0
     DESCRIPTION "Scarlett, a lightweight customizable desktop music player"
     LANGUAGES C CXX)
 
