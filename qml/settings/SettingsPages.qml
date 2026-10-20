@@ -286,6 +286,30 @@ Item {
                     checked: Sound.equalizerEnabled
                     onToggledTo: (checked) => Sound.equalizerEnabled = checked
                 }
+                Row {
+                    width: parent.width
+                    spacing: 8
+
+                    TextButton {
+                        id: equalizerPresetButton
+                        variant: TextButton.Tonal
+                        symbol: "equalizer"
+                        text: Sound.activePresetName.length > 0
+                            ? qsTranslate("Presets", Sound.activePresetName) : qsTr("Custom")
+                        enabled: Sound.equalizerEnabled
+                        onClicked: equalizerPresetMenu.popup(equalizerPresetButton, 0, equalizerPresetButton.height + 4)
+                    }
+                    TextButton {
+                        variant: TextButton.Text
+                        symbol: "save"
+                        text: qsTr("Save custom preset")
+                        enabled: Sound.equalizerEnabled && !Sound.flat
+                        onClicked: equalizerPresetDialog.ask()
+                    }
+                }
+                NoteText {
+                    text: qsTr("Pick one of five starting curves, then adjust the bands below. Save your curve to reuse it.")
+                }
                 Repeater {
                     model: Sound.bandLabels.length
 
@@ -301,8 +325,72 @@ Item {
                         onMoved: (gain) => Sound.setGain(index, gain)
                     }
                 }
-                NoteText {
-                    text: qsTr("Adjust each frequency band; changes apply to Blood Moon playback.")
+                StyledMenu {
+                    id: equalizerPresetMenu
+
+                    StyledMenuItem {
+                        readonly property string preset: Sound.activePresetName
+                        text: qsTr("Delete “%1”").arg(preset)
+                        symbol: "delete"
+                        destructive: true
+                        visible: preset.length > 0 && Sound.isSavedPreset(preset)
+                        height: visible ? implicitHeight : 0
+                        onTriggered: Sound.deletePreset(preset)
+                    }
+                    Instantiator {
+                        model: Sound.presetNames
+                        delegate: StyledMenuItem {
+                            required property string modelData
+                            text: Sound.isSavedPreset(modelData)
+                                ? modelData : qsTranslate("Presets", modelData)
+                            checkmark: true
+                            checked: modelData === Sound.activePresetName
+                            onTriggered: Sound.applyPreset(modelData)
+                        }
+                        onObjectAdded: (index, object) => equalizerPresetMenu.insertItem(index, object as StyledMenuItem)
+                        onObjectRemoved: (index, object) => equalizerPresetMenu.removeItem(object as StyledMenuItem)
+                    }
+                }
+
+                StyledDialog {
+                    id: equalizerPresetDialog
+
+                    function ask() {
+                        presetName.text = Sound.isSavedPreset(Sound.activePresetName)
+                            ? Sound.activePresetName : ""
+                        open()
+                        presetName.inputItem.forceActiveFocus()
+                    }
+                    function save() {
+                        const trimmed = presetName.text.trim()
+                        if (trimmed.length > 0) {
+                            Sound.savePreset(trimmed)
+                            accept()
+                        }
+                    }
+
+                    headline: qsTr("Save custom EQ preset")
+                    symbol: "tune"
+
+                    OutlinedTextField {
+                        id: presetName
+                        width: parent.width
+                        placeholder: qsTr("Preset name")
+                        onAccepted: equalizerPresetDialog.save()
+                    }
+
+                    buttons: [
+                        TextButton {
+                            text: qsTr("Save")
+                            enabled: presetName.text.trim().length > 0
+                            onClicked: equalizerPresetDialog.save()
+                        },
+                        TextButton {
+                            variant: TextButton.Text
+                            text: qsTr("Cancel")
+                            onClicked: equalizerPresetDialog.close()
+                        }
+                    ]
                 }
             }
         }

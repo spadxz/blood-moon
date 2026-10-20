@@ -55,30 +55,13 @@ bool EqualizerPreset::matches(const QList<double> &other) const
 
 const QList<EqualizerPreset> &EqualizerPreset::builtIn()
 {
-    // presets use the same names as spotify
+    // Five simple starting points; the band sliders remain fully editable.
     static const QList<EqualizerPreset> presets {
         {QStringLiteral("Flat"), {0, 0, 0, 0, 0, 0}},
-        {QStringLiteral("Bass Booster"), {7, 5.5, 2.5, 0, 0, 0}},
-        {QStringLiteral("Bass Reducer"), {-7, -5.5, -2.5, 0, 0, 0}},
-        {QStringLiteral("Treble Booster"), {0, 0, 0, 2.5, 5, 7}},
-        {QStringLiteral("Treble Reducer"), {0, 0, 0, -2.5, -5, -7}},
-        {QStringLiteral("Vocal Booster"), {-2.5, -3, 2.5, 5, 3.5, -1.5}},
-        {QStringLiteral("Acoustic"), {4.5, 3.5, 1.5, 2, 3, 3.5}},
-        {QStringLiteral("Classical"), {4.5, 3.5, 2, 0, -1.5, 3}},
-        {QStringLiteral("Dance"), {6, 4.5, 1, -1, 2, 3.5}},
-        {QStringLiteral("Deep"), {6, 4, 1.5, 1, -2, -4.5}},
-        {QStringLiteral("Electronic"), {5, 3.5, -0.5, 1, 2, 5}},
-        {QStringLiteral("Hip-Hop"), {6, 4.5, 1.5, 1.5, -1, 2}},
-        {QStringLiteral("Jazz"), {4, 3, 1, 2, 2, 3}},
-        {QStringLiteral("Latin"), {5, 2.5, 0, 0, 2.5, 5}},
-        {QStringLiteral("Loudness"), {6.5, 4, 0, 1, -2.5, 5}},
-        {QStringLiteral("Lounge"), {-3, 0.5, 2.5, 3, 1, -1.5}},
-        {QStringLiteral("Piano"), {3, 1.5, 0, 2, 3, 3}},
-        {QStringLiteral("Pop"), {-1.5, 1, 3.5, 3.5, 1, -1.5}},
-        {QStringLiteral("R&B"), {5, 5.5, 2, -1.5, 2, 3.5}},
-        {QStringLiteral("Rock"), {5, 3.5, 1, -1, 2.5, 4.5}},
-        {QStringLiteral("Small Speakers"), {5.5, 4, 2, 0, -1, -3}},
-        {QStringLiteral("Spoken Word"), {-3, -1, 3, 4.5, 3, 0}},
+        {QStringLiteral("Bass Boost"), {4.5, 3.5, 1.5, 0, 0, 0}},
+        {QStringLiteral("Vocal Focus"), {-2, -1, 2, 3.5, 2.5, 0}},
+        {QStringLiteral("Bright"), {0, 0, -1, 1.5, 3, 4}},
+        {QStringLiteral("Warm"), {3, 2.5, 1, 0, -1, -2}},
     };
     return presets;
 }
