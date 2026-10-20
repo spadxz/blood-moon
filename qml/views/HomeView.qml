@@ -122,7 +122,8 @@ Flickable {
                             : Math.max(spotlightArt.height, spotlightDetails.implicitHeight) + 2 * inset
             Reveal.shown: root.hasSpotlight && !(Library.loadingHome && Library.recentlyPlayed.count === 0)
             radius: 22
-            color: Appearance.colors.surfaceContainerLow
+            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.42)
+                                        : Appearance.colors.surfaceContainerLow
             border.width: 0.75
             border.color: Qt.rgba(1, 1, 1, 0.09)
 
@@ -173,7 +174,8 @@ Flickable {
                 saturation: 0.2
                 maskEnabled: true
                 maskSource: spotlightMask
-                opacity: Appearance.colors.dark ? 0.42 : 0.3
+                opacity: Appearance.bloodMoon ? 0.2
+                         : Appearance.colors.dark ? 0.42 : 0.3
             }
 
             // a wave along the bottom, flowing only while this plays
@@ -328,8 +330,7 @@ Flickable {
                 // spotify's count, until the list itself has loaded
                 subtitle: Library.savedSongTotal >= 0 ? qsTr("Favourited: %1").arg(Library.savedSongTotal) : qsTr("Made for repeat")
                 symbol: "star"
-                iconShape: "heart"
-                keepsShape: true
+                artworkSource: root.hasSpotlight ? root.spotlightSong.artworkUrl : ""
                 onClicked: Library.showSavedSongs()
             }
             HomeShortcut {
@@ -337,7 +338,7 @@ Flickable {
                 title: qsTr("Your Playlists")
                 subtitle: qsTr("Collections to explore: %1").arg(Library.playlists.count)
                 symbol: "library_music"
-                iconShape: "bun"
+                artworkSource: Library.playlists.count > 0 ? Library.playlists.at(0).artworkUrl : ""
                 onClicked: Library.showPlaylists()
             }
         }

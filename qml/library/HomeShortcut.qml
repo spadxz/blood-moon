@@ -10,9 +10,7 @@ T.AbstractButton {
     property string title
     property string subtitle
     property string symbol
-    property string iconShape: "cookie9"
-    /// keeps its shape with no shapes: the favourite songs' heart
-    property bool keepsShape: false
+    property url artworkSource
 
     implicitHeight: 64
     hoverEnabled: true
@@ -51,19 +49,32 @@ T.AbstractButton {
     }
 
     contentItem: Item {
-        ShapeIcon {
+        Item {
             id: badge
             anchors.left: parent.left
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            size: 44
-            iconSize: 21
-            shape: root.iconShape
-            keepsShape: root.keepsShape
-            symbol: root.symbol
-            color: Appearance.colors.primaryContainer
-            iconColor: Appearance.colors.onPrimaryContainer
-            hovered: root.hovered
+            width: 44
+            height: 44
+
+            ArtworkImage {
+                anchors.fill: parent
+                visible: root.artworkSource.toString().length > 0
+                source: root.artworkSource
+                fallbackKey: root.title
+                radius: 10
+                borderWidth: 1
+                borderColor: Qt.rgba(0.88, 0.88, 0.94, 0.2)
+            }
+
+            // Keep an undecorated glyph when this library has no cover art.
+            MaterialSymbol {
+                anchors.centerIn: parent
+                visible: root.artworkSource.toString().length === 0
+                text: root.symbol
+                iconSize: 21
+                color: Appearance.colors.primary
+            }
         }
 
         Column {

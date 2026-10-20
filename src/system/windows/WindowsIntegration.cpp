@@ -350,7 +350,10 @@ void WindowsIntegration::activateWindow()
     m_window->raise();
     m_window->requestActivate();
     BringWindowToTop(handle);
-    SetForegroundWindow(handle);
+    if (!SetForegroundWindow(handle)) {
+        FLASHWINFO flash {sizeof(FLASHWINFO), handle, FLASHW_ALL, 3, 0};
+        FlashWindowEx(&flash);
+    }
 }
 
 void WindowsIntegration::attachWindow()

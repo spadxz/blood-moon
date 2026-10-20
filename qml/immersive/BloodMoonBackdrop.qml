@@ -11,6 +11,9 @@ Item {
 
     Image {
         anchors.fill: parent
+        // Bring the supplied moon forward in the composition while keeping
+        // its center fixed; the parent clips the extra image area cleanly.
+        scale: Appearance.bloodMoon ? 1.45 : 1
         source: Appearance.bloodMoon ? "qrc:/images/blood-moon-background.png" : ""
         sourceSize: Qt.size(3840, 2160)
         fillMode: Image.PreserveAspectCrop

@@ -294,7 +294,7 @@ ApplicationWindow {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
             radius: Appearance.rounding.window
-            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.70)
+            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.50)
                                         : Appearance.colors.layer1
             border.width: Appearance.bloodMoon ? 1 : 0
             border.color: Appearance.bloodMoon ? Qt.rgba(0.82, 0.84, 0.90, 0.24)
@@ -414,7 +414,7 @@ ApplicationWindow {
                 width: Appearance.sizes.sideSheetWidth
                 height: parent.height
                 radius: Appearance.rounding.large
-                color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.74)
+                color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.56)
                                             : Appearance.colors.layer1
                 border.width: Appearance.bloodMoon ? 1 : 0
                 border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.91, 0.96, 0.3)

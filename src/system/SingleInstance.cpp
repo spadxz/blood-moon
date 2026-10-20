@@ -3,6 +3,10 @@
 #include <QDir>
 #include <QLocalSocket>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 namespace swiftify {
 
 QString SingleInstance::commandFrom(const QStringList &arguments)
@@ -43,6 +47,15 @@ bool SingleInstance::forwardToRunningInstance(const QStringList &arguments)
     if (!socket.waitForConnected(300)) {
         return false;
     }
+#ifdef Q_OS_WIN
+    // A second launch comes from a deliberate user action. Pass its temporary
+    // foreground permission to the existing window before forwarding "raise".
+    DWORD serverProcessId = 0;
+    const HANDLE serverPipe = reinterpret_cast<HANDLE>(socket.socketDescriptor());
+    if (GetNamedPipeServerProcessId(serverPipe, &serverProcessId)) {
+        AllowSetForegroundWindow(serverProcessId);
+    }
+#endif
     socket.write(commandFrom(arguments).toUtf8() + '\n');
     socket.waitForBytesWritten(300);
     socket.disconnectFromServer();

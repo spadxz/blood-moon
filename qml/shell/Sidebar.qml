@@ -21,7 +21,7 @@ Item {
         anchors.fill: parent
         radius: Appearance.rounding.window
         visible: Appearance.bloodMoon
-        color: Qt.alpha(Appearance.colors.layer1, 0.68)
+        color: Qt.alpha(Appearance.colors.layer1, 0.54)
         border.width: 1
         border.color: Qt.rgba(0.82, 0.84, 0.90, 0.25)
         gradient: Gradient {
