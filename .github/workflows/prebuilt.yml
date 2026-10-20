@@ -8,6 +8,12 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      run_checks:
+        description: Run build-script checks before compiling
+        required: false
+        type: boolean
+        default: false
   pull_request:
     paths:
       - .github/workflows/prebuilt.yml
@@ -40,6 +46,7 @@ jobs:
       # as ctest runs it. the test runs a failing command on purpose, which a
       # plain pwsh step would report as its own exit code
       - name: test the build script
+        if: github.event_name != 'workflow_dispatch' || inputs.run_checks
         shell: pwsh
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./tests/check_windows_build.ps1
 
