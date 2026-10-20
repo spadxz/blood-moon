@@ -45,7 +45,7 @@ Row {
                 tabularNumbers: true
                 font.pixelSize: root.pixelSize
                 font.weight: root.weight
-                font.variableAxes: root.rounded ? ({ "ROND": 100, "wdth": 110, "wght": 720 }) : ({})
+                font.variableAxes: root.rounded ? Appearance.roundedFontAxes : ({})
                 color: root.color
             }
             // set by hand, not bound, so the old character is still here to roll away
@@ -56,7 +56,7 @@ Row {
                 tabularNumbers: true
                 font.pixelSize: root.pixelSize
                 font.weight: root.weight
-                font.variableAxes: root.rounded ? ({ "ROND": 100, "wdth": 110, "wght": 720 }) : ({})
+                font.variableAxes: root.rounded ? Appearance.roundedFontAxes : ({})
                 color: root.color
             }
 

@@ -54,7 +54,7 @@ Item {
         font.family: root.font.family.length > 0 ? root.font.family : Appearance.fontFamily
         font.pixelSize: root.font.pixelSize > 0 ? root.font.pixelSize : Appearance.fontSize.small
         font.weight: root.font.weight
-        font.variableAxes: root.rounded ? ({ "ROND": 100, "wdth": 110, "wght": 720 }) : ({})
+        font.variableAxes: root.rounded ? Appearance.roundedFontAxes : ({})
     }
 
     Item {

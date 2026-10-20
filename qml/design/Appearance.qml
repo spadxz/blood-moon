@@ -10,6 +10,12 @@ QtObject {
 
     final readonly property MaterialScheme colors: Theme.colors
     final readonly property bool bloodMoon: Settings.themeSource === "blood-moon"
+    // Google Sans Flex is bundled by the app. These restrained variable-font
+    // settings borrow ColorOS's clean, rounded display feel without bundling
+    // OPPO Sans, which is not part of this project.
+    final readonly property var roundedFontAxes: bloodMoon
+        ? ({ "ROND": 18, "wdth": 100, "wght": 600 })
+        : ({ "ROND": 100, "wdth": 110, "wght": 720 })
     /// nothing moves of its own accord, over and over: the shapes that turn
     /// with the music, the edges that run while hovered, the seek line's wave
     /// and the backdrop's flow hold still (Settings.reduceMotion). what
