@@ -88,10 +88,10 @@ Item {
             onWheel: (wheel) => wheel.accepted = true
         }
         radius: 20
-        color: Appearance.bloodMoon ? Qt.alpha(root.scheme.surfaceContainerHigh, 0.72)
+        color: Appearance.bloodMoon ? Qt.alpha(root.scheme.surfaceContainerHigh, 0.64)
                                     : root.scheme.surfaceContainerHigh
         border.width: 1
-        border.color: Appearance.bloodMoon ? Qt.rgba(1, 0.72, 0.78, 0.34)
+        border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.92, 1, 0.52)
                                            : Qt.rgba(root.scheme.outlineVariant.r, root.scheme.outlineVariant.g, root.scheme.outlineVariant.b, 0.4)
 
         Rectangle {
@@ -99,9 +99,25 @@ Item {
             radius: parent.radius
             visible: Appearance.bloodMoon
             gradient: Gradient {
-                GradientStop { position: 0; color: Qt.rgba(1, 0.88, 0.91, 0.13) }
-                GradientStop { position: 0.42; color: Qt.rgba(0.72, 0.06, 0.16, 0.045) }
-                GradientStop { position: 1; color: Qt.rgba(0.16, 0.01, 0.04, 0.14) }
+                GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.16) }
+                GradientStop { position: 0.18; color: Qt.rgba(0.82, 0.74, 0.86, 0.055) }
+                GradientStop { position: 0.52; color: Qt.rgba(0.72, 0.06, 0.16, 0.04) }
+                GradientStop { position: 1; color: Qt.rgba(0.16, 0.01, 0.04, 0.16) }
+            }
+        }
+
+        Rectangle {
+            x: 2
+            y: 1
+            width: parent.width - 4
+            height: 1
+            radius: 1
+            visible: Appearance.bloodMoon
+            gradient: Gradient {
+                GradientStop { position: 0; color: "transparent" }
+                GradientStop { position: 0.2; color: Qt.rgba(1, 1, 1, 0.8) }
+                GradientStop { position: 0.65; color: Qt.rgba(1, 0.86, 0.9, 0.64) }
+                GradientStop { position: 1; color: "transparent" }
             }
         }
     }

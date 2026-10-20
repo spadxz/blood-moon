@@ -52,7 +52,8 @@ ApplicationWindow {
     leftPadding: 0
     rightPadding: 0
     bottomPadding: 0
-    color: App.windows && immersiveReveal > 0 ? PlayerStyle.darkScheme.layer0 : Appearance.colors.layer0
+    color: Appearance.bloodMoon ? "#000000"
+          : App.windows && immersiveReveal > 0 ? PlayerStyle.darkScheme.layer0 : Appearance.colors.layer0
     // shown and hidden by hand: closing hides it to the tray
     visible: true
 
@@ -225,6 +226,11 @@ ApplicationWindow {
         fitAllZoomed()
     }
 
+    BloodMoonBackdrop {
+        anchors.fill: parent
+        visible: Appearance.bloodMoon && !UiState.immersiveOpen
+    }
+
     Item {
         id: shell
         anchors.fill: parent
@@ -288,7 +294,37 @@ ApplicationWindow {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
             radius: Appearance.rounding.large
-            color: Appearance.colors.layer1
+            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.78)
+                                        : Appearance.colors.layer1
+            border.width: Appearance.bloodMoon ? 1 : 0
+            border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.91, 0.96, 0.34)
+                                               : "transparent"
+
+            Rectangle {
+                anchors.fill: parent
+                radius: parent.radius
+                visible: Appearance.bloodMoon
+                gradient: Gradient {
+                    GradientStop { position: 0; color: Qt.rgba(1, 0.94, 0.97, 0.09) }
+                    GradientStop { position: 0.24; color: Qt.rgba(0.72, 0.11, 0.20, 0.035) }
+                    GradientStop { position: 1; color: Qt.rgba(0.015, 0.005, 0.01, 0.16) }
+                }
+            }
+
+            Rectangle {
+                x: 1
+                y: 1
+                width: parent.width - 2
+                height: 1
+                radius: 1
+                visible: Appearance.bloodMoon
+                gradient: Gradient {
+                    GradientStop { position: 0; color: "transparent" }
+                    GradientStop { position: 0.22; color: Qt.rgba(1, 0.98, 1, 0.58) }
+                    GradientStop { position: 0.72; color: Qt.rgba(1, 0.72, 0.78, 0.4) }
+                    GradientStop { position: 1; color: "transparent" }
+                }
+            }
 
             // the pages fill the sheet: they scroll up under the top bar,
             // which has no background, only its buttons on their shapes
@@ -378,7 +414,22 @@ ApplicationWindow {
                 width: Appearance.sizes.sideSheetWidth
                 height: parent.height
                 radius: Appearance.rounding.large
-                color: Appearance.colors.layer1
+                color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.74)
+                                            : Appearance.colors.layer1
+                border.width: Appearance.bloodMoon ? 1 : 0
+                border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.91, 0.96, 0.3)
+                                                   : "transparent"
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    visible: Appearance.bloodMoon
+                    gradient: Gradient {
+                        GradientStop { position: 0; color: Qt.rgba(1, 0.94, 0.97, 0.08) }
+                        GradientStop { position: 0.45; color: Qt.rgba(0.68, 0.06, 0.15, 0.025) }
+                        GradientStop { position: 1; color: Qt.rgba(0.01, 0.003, 0.008, 0.16) }
+                    }
+                }
 
                 LyricsPanel {
                     objectName: "mainLyricsPanel"

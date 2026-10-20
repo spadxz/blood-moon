@@ -21,14 +21,14 @@ Item {
         anchors.fill: parent
         radius: Appearance.rounding.large
         visible: Appearance.bloodMoon
-        color: Qt.alpha(Appearance.colors.layer1, 0.72)
+        color: Qt.alpha(Appearance.colors.layer1, 0.62)
         border.width: 1
-        border.color: Qt.rgba(Appearance.colors.primary.r, Appearance.colors.primary.g,
-                              Appearance.colors.primary.b, 0.22)
+        border.color: Qt.rgba(0.94, 0.92, 1, 0.46)
         gradient: Gradient {
-            GradientStop { position: 0; color: Qt.rgba(1, 0.84, 0.88, 0.075) }
-            GradientStop { position: 0.55; color: Qt.rgba(0.44, 0.015, 0.08, 0.025) }
-            GradientStop { position: 1; color: Qt.rgba(0.12, 0, 0.025, 0.10) }
+            GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.13) }
+            GradientStop { position: 0.28; color: Qt.rgba(0.75, 0.68, 0.8, 0.045) }
+            GradientStop { position: 0.64; color: Qt.rgba(0.44, 0.015, 0.08, 0.025) }
+            GradientStop { position: 1; color: Qt.rgba(0.12, 0, 0.025, 0.13) }
         }
     }
 

@@ -72,7 +72,9 @@ Item {
     }
 
     Repeater {
-        model: Settings.noShapes ? 0 : root.count
+        // Blood Moon keeps the pages quiet so the black backdrop and moon own
+        // the atmosphere; the other themes retain their expressive stickers.
+        model: Settings.noShapes || Appearance.bloodMoon ? 0 : root.count
 
         MaterialShape {
             id: sticker

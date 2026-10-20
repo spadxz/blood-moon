@@ -45,9 +45,37 @@ T.Popup {
 
     background: Rectangle {
         radius: Appearance.rounding.large + 8
-        color: Appearance.colors.layer0
+        color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer0, 0.88)
+                                    : Appearance.colors.layer0
         border.width: 1
-        border.color: Appearance.colors.layer0Border
+        border.color: Appearance.bloodMoon ? Qt.rgba(0.95, 0.92, 1, 0.48)
+                                           : Appearance.colors.layer0Border
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            visible: Appearance.bloodMoon
+            gradient: Gradient {
+                GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.12) }
+                GradientStop { position: 0.22; color: Qt.rgba(0.76, 0.66, 0.78, 0.035) }
+                GradientStop { position: 1; color: Qt.rgba(0.07, 0.004, 0.018, 0.2) }
+            }
+        }
+
+        Rectangle {
+            x: 10
+            y: 1
+            width: parent.width - 20
+            height: 1
+            radius: 1
+            visible: Appearance.bloodMoon
+            gradient: Gradient {
+                GradientStop { position: 0; color: "transparent" }
+                GradientStop { position: 0.18; color: Qt.rgba(1, 1, 1, 0.72) }
+                GradientStop { position: 0.82; color: Qt.rgba(1, 0.8, 0.88, 0.5) }
+                GradientStop { position: 1; color: "transparent" }
+            }
+        }
     }
 
     contentItem: Item {
@@ -154,7 +182,22 @@ T.Popup {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 8
             radius: Appearance.rounding.large
-            color: Appearance.colors.layer1
+            color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.68)
+                                        : Appearance.colors.layer1
+            border.width: Appearance.bloodMoon ? 1 : 0
+            border.color: Appearance.bloodMoon ? Qt.rgba(0.92, 0.89, 0.97, 0.3)
+                                               : "transparent"
+
+            Rectangle {
+                anchors.fill: parent
+                radius: parent.radius
+                visible: Appearance.bloodMoon
+                gradient: Gradient {
+                    GradientStop { position: 0; color: Qt.rgba(1, 0.95, 1, 0.08) }
+                    GradientStop { position: 0.42; color: Qt.rgba(0.62, 0.05, 0.13, 0.025) }
+                    GradientStop { position: 1; color: Qt.rgba(0.06, 0.004, 0.015, 0.16) }
+                }
+            }
 
             // each page's own scatter of faint shapes, kept inside the card
             // and its rounding

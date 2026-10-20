@@ -51,7 +51,37 @@ Column {
         width: parent.width
         implicitHeight: rows.implicitHeight + 16
         radius: Appearance.rounding.normal
-        color: Appearance.colors.layer1
+        color: Appearance.bloodMoon ? Qt.alpha(Appearance.colors.layer1, 0.72)
+                                    : Appearance.colors.layer1
+        border.width: Appearance.bloodMoon ? 1 : 0
+        border.color: Appearance.bloodMoon ? Qt.rgba(0.94, 0.92, 1, 0.34)
+                                           : "transparent"
+
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            visible: Appearance.bloodMoon
+            gradient: Gradient {
+                GradientStop { position: 0; color: Qt.rgba(1, 0.96, 1, 0.10) }
+                GradientStop { position: 0.3; color: Qt.rgba(0.8, 0.7, 0.8, 0.035) }
+                GradientStop { position: 1; color: Qt.rgba(0.12, 0.005, 0.025, 0.14) }
+            }
+        }
+
+        Rectangle {
+            x: 1
+            y: 1
+            width: parent.width - 2
+            height: 1
+            radius: 1
+            visible: Appearance.bloodMoon
+            gradient: Gradient {
+                GradientStop { position: 0; color: "transparent" }
+                GradientStop { position: 0.25; color: Qt.rgba(1, 1, 1, 0.56) }
+                GradientStop { position: 0.8; color: Qt.rgba(1, 0.82, 0.9, 0.4) }
+                GradientStop { position: 1; color: "transparent" }
+            }
+        }
 
         Column {
             id: rows
